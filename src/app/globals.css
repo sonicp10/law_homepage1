@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
+:root {
+  /* Strategy Color Palette */
+  --primary: #2C3E50;       /* Deep Navy Blue */
+  --secondary: #B2C9AB;     /* Soft Sage Green */
+  --accent: #FFD8B1;        /* Mellow Peach */
+  --background: #F9F7F2;    /* Creamy White */
+  --foreground: #2C3E50;
+  --card: #ffffff;
+  --border: #E8E4D8;
+  
+  /* System Tokens */
+  --radius-soft: 16px;
+  --radius-card: 24px;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-outfit {
+  font-family: 'Outfit', 'Pretendard', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Custom Tailwind Utilities (Tailwind 4.0 Style) */
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-[var(--primary)] text-white rounded-[var(--radius-soft)] font-semibold transition-all hover:opacity-90 active:scale-95;
+  }
+  
+  .btn-accent {
+    @apply px-6 py-3 bg-[var(--accent)] text-[var(--primary)] rounded-[var(--radius-soft)] font-bold transition-all hover:bg-[#ffcd9b] active:scale-95 shadow-sm;
+  }
+  
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-[var(--radius-card)] shadow-xl;
+  }
+  
+  .pastel-card {
+    @apply bg-white border border-[var(--border)] rounded-[var(--radius-card)] p-8 shadow-sm transition-all hover:shadow-md hover:-translate-y-1;
+  }
+}
+
+/* Animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+/* Case Ticker Animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

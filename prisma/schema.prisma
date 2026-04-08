@@ -1,0 +1,73 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  name            String
+  phone           String
+  debtAmount      String?  // 채무액 (선택)
+  preferredType   String?  // 선호 제도 (회생/파산 등)
+  content         String?  // 상세 상담 내용
+  status          LeadStatus @default(PENDING)
+  source          String?  // 유입 경로 (메인폼, 자가진단 등)
+  isEncrypted     Boolean  @default(true) // 데이터 보안 강조용
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum LeadStatus {
+  PENDING
+  CONTACTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model CaseStatus {
+  id        String   @id @default(cuid())
+  region    String   // 지역 (예: 서울 서초구)
+  clientName String  // 이름 (예: 김○○)
+  caseType  String   // 사건 종류 (예: 개인회생)
+  milestone String   // 단계 (예: 개시 결정)
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id          String       @id @default(cuid())
+  title       String
+  content     String       @db.Text
+  excerpt     String?      // 요약글
+  thumbnail   String?      // 썸네일 이미지 URL
+  category    PostCategory
+  published   Boolean      @default(true)
+  viewCount   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum PostCategory {
+  REHAB         // 개인회생
+  BANKRUPTCY    // 개인파산
+  SUCCESS_STORY // 성공사례
+  COLUMN        // 법률컬럼/정보
+}

@@ -1,0 +1,11 @@
+{
+  "project": "law_homepage1",
+  "version": "1.0.0",
+  "stack": {
+    "frontend": "React",
+    "build_tool": "Vite",
+    "language": "JavaScript"
+  },
+  "docs_path": "docs",
+  "bkit_path": ".bkit"
+}

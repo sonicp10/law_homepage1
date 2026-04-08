@@ -1,22 +1,26 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-06T11:13:23.265Z",
+  "lastUpdated": "2026-04-08T14:30:00Z",
   "platform": "gemini",
   "data": {
     "session": {
-      "sessionCount": 5,
-      "lastSessionStarted": "2026-04-06T11:13:23.265Z",
-      "lastSessionEnded": "2026-03-22T06:32:46.834Z"
+      "sessionCount": 6,
+      "lastSessionStarted": "2026-04-08T12:00:00Z",
+      "lastSessionEnded": "2026-04-08T14:30:00Z"
     },
     "pdca": {
-      "lastFeature": null,
-      "activePdca": null,
-      "preferredLevel": "Starter"
+      "lastFeature": "Footer Redesign & Post Board",
+      "activePdca": "Success",
+      "preferredLevel": "Advanced"
     },
     "preferences": {
-      "language": "en",
+      "language": "ko",
+      "designConcept": "Warm & Professional Dual Tone",
       "automationLevel": "semi-auto"
     },
-    "custom": {}
+    "custom": {
+      "gnb_structure": ["intro", "rehab", "bankruptcy", "s_story", "qna"],
+      "footer_state": "Complete (Dual-tone, Re-aligned, Detail Info labels)"
+    }
   }
 }

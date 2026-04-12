@@ -1,76 +1,130 @@
+'use client';
+
 import React from 'react';
 
 export default function MapPage() {
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('주소가 복사되었습니다.');
+  };
+
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-6">오시는 길</h2>
-        <div className="w-12 h-1 bg-[#A67C52] mx-auto mb-8"></div>
-        <p className="text-lg text-[var(--primary)]/60 font-medium max-w-2xl mx-auto">
-          편하게 방문하실 수 있도록 최선을 다하겠습니다.
+    <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="text-center mb-16 animate-slide-up">
+        <h1 className="text-4xl md:text-5xl font-bold text-[var(--primary)] mb-6">오시는 길</h1>
+        <div className="w-12 h-1 bg-[var(--secondary)] mx-auto mb-8 rounded-full"></div>
+        <p className="text-lg md:text-xl text-[var(--primary)]/60 font-medium max-w-2xl mx-auto">
+          여러분의 발걸음이 무겁지 않도록, 가장 따뜻하고 명확한 길을 안내합니다.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         {/* Info Column */}
-        <div className="lg:col-span-1 space-y-8">
-          <div className="bg-white p-8 rounded-[var(--radius-card)] border border-[var(--border)] shadow-sm">
-            <h3 className="text-xl font-bold text-[var(--primary)] mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 bg-[var(--primary)] text-white rounded-full flex items-center justify-center text-sm">📍</span>
-              주소 안내
-            </h3>
-            <div className="space-y-6">
+        <div className="space-y-8 animate-slide-up">
+          <div className="bg-white p-10 rounded-[var(--radius-card)] border border-[var(--border)] shadow-sm">
+            <h2 className="text-2xl font-bold text-[var(--primary)] mb-8 flex items-center gap-3">
+              <span className="w-10 h-10 bg-[var(--secondary)] text-white rounded-full flex items-center justify-center shadow-lg">📍</span>
+              찾아오시는 주소
+            </h2>
+            
+            <div className="space-y-8">
               <div>
-                <p className="text-sm text-[var(--primary)]/40 font-bold mb-1">도로명 주소</p>
-                <p className="text-[var(--primary)] text-lg font-medium">경기도 부천시 원미구 상일로 126</p>
-                <p className="text-[var(--primary)]/60 text-sm">(세정6블럭 401호)</p>
+                <p className="text-[var(--primary)] text-2xl md:text-3xl font-black leading-tight mb-4">
+                  경기도 부천시 원미구 <br />
+                  상일로 126 <br />
+                  <span className="text-[var(--secondary)]">(세정6블럭 401호)</span>
+                </p>
+                
+                <div className="flex flex-wrap gap-3">
+                  <button 
+                    onClick={() => handleCopy('경기도 부천시 원미구 상일로 126')}
+                    className="px-6 py-3 bg-[var(--secondary)] text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
+                  >
+                    <span>📋</span> 주소 복사하기
+                  </button>
+                  <a 
+                    href="https://map.naver.com/v5/search/경기도 부천시 원미구 상일로 126" 
+                    target="_blank"
+                    className="px-6 py-3 bg-white border-2 border-[var(--secondary)] text-[var(--secondary)] rounded-full font-bold hover:bg-[var(--secondary)] hover:text-white transition-all active:scale-95 flex items-center gap-2"
+                  >
+                    <span>🧭</span> 네이버 내비 연결
+                  </a>
+                </div>
               </div>
-              <div className="pt-6 border-t border-[var(--border)]">
-                <p className="text-sm text-[var(--primary)]/40 font-bold mb-1">연락처</p>
-                <p className="text-[var(--primary)] text-2xl font-extrabold text-[#A67C52]">010-3844-3151</p>
-                <p className="text-[var(--primary)]/60 text-sm mt-1">상담문의는 언제나 환영합니다.</p>
+
+              <div className="p-6 bg-[var(--warning)] rounded-2xl border border-[var(--warning)]/50">
+                <h3 className="text-lg font-bold text-[var(--primary)] mb-4 flex items-center gap-2">
+                  <span>✨</span> 방문 전 안심하세요!
+                </h3>
+                <ul className="space-y-3 font-medium text-[var(--primary)]/80">
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600">✔</span> 철저한 익명 보장 & 비밀 상담
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600">✔</span> 방문자 전용 무료 주차 완비
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600">✔</span> 송내역 3번 출구 도보 3분 거리
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
 
-          <div className="bg-[#2C3E50] p-8 rounded-[var(--radius-card)] text-white shadow-xl">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-sm">⏰</span>
-              업무 시간
+          <div className="bg-[var(--primary)] p-10 rounded-[var(--radius-card)] text-white shadow-xl">
+            <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
+              <span className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">⏰</span>
+              업무 시간 안내
             </h3>
-            <ul className="space-y-4 text-white/70 font-medium">
-              <li className="flex justify-between">
-                <span>평일</span>
-                <span className="text-white">09:00 - 18:00</span>
-              </li>
-              <li className="flex justify-between">
-                <span>토요일</span>
-                <span className="text-white">예약 상담 가능</span>
-              </li>
-              <li className="flex justify-between">
-                <span>일요일/공휴일</span>
-                <span className="text-white">휴무</span>
-              </li>
-            </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-white/80">
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-white/40">주중</p>
+                <p className="text-2xl font-black text-white">09:00 - 18:00</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-white/40">토요일</p>
+                <p className="text-xl font-bold text-white">예약 상담 가능</p>
+              </div>
+              <div className="col-span-full pt-4 border-t border-white/10">
+                <p className="text-sm font-medium">※ 퇴근 후 시간이나 공휴일 상담이 필요하시면 미리 전화주세요.</p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Map Column */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="aspect-video w-full bg-slate-200 rounded-[var(--radius-card)] border border-[var(--border)] relative overflow-hidden flex items-center justify-center">
-            {/* Map Placeholder */}
-            <div className="text-center group cursor-pointer">
-              <div className="text-6xl mb-4 group-hover:scale-110 transition-transform">🗺️</div>
-              <p className="text-[var(--primary)] font-bold">네이버/카카오 지도 API 연동 예정 영역</p>
-              <p className="text-[var(--primary)]/40 text-sm mt-2">지번 주소: 경기도 부천시 상동 448-2</p>
+        <div className="space-y-6 lg:sticky lg:top-24">
+          <div className="aspect-[4/5] lg:aspect-square w-full bg-slate-100 rounded-[var(--radius-card)] border-4 border-white shadow-2xl relative overflow-hidden">
+            <div className="absolute inset-0 bg-blue-100/30 flex items-center justify-center group overflow-hidden">
+               {/* Map Filter Effect Overlay */}
+               <div className="absolute inset-0 bg-[#2C3E50]/5 pointer-events-none backdrop-grayscale-[0.5] backdrop-contrast-[0.9]"></div>
+               
+               <div className="text-center z-10 p-8">
+                 <div className="text-8xl mb-6 transform group-hover:rotate-12 transition-transform select-none">🏢</div>
+                 <h4 className="text-2xl font-black text-[var(--primary)] mb-2">법무사 김형근 사무소</h4>
+                 <p className="text-[var(--primary)]/60 font-medium">경기도 부천시 상동 448-2 (401호)</p>
+                 <div className="mt-8 flex justify-center gap-4">
+                    <div className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg">N</div>
+                    <div className="w-12 h-12 bg-[#FAE100] rounded-full flex items-center justify-center text-[#3C1E1E] font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg">K</div>
+                 </div>
+               </div>
+               
+               {/* Background visual elements representing a map */}
+               <div className="absolute top-1/4 left-0 w-full h-[1px] bg-white/20"></div>
+               <div className="absolute top-2/4 left-0 w-full h-[1px] bg-white/20"></div>
+               <div className="absolute top-0 left-1/3 w-[1px] h-full bg-white/20"></div>
+               <div className="absolute top-0 left-2/3 w-[1px] h-full bg-white/20"></div>
             </div>
           </div>
+          
           <div className="flex gap-4">
-            <button className="flex-1 py-4 bg-white border border-[#03C75A] text-[#03C75A] rounded-xl font-bold hover:bg-[#03C75A] hover:text-white transition-all text-sm">
-              네이버 지도에서 보기
+            <button className="flex-1 py-5 bg-white border border-[var(--border)] rounded-2xl font-bold text-[var(--primary)] hover:bg-[var(--surface)] transition-all flex flex-col items-center gap-1">
+              <span className="text-xs text-[var(--primary)]/40">자차 이용 시</span>
+              <span>무료 주차 안내</span>
             </button>
-            <button className="flex-1 py-4 bg-white border border-[#FAE100] text-[#3C1E1E] rounded-xl font-bold hover:bg-[#FAE100] transition-all text-sm">
-              카카오 맵에서 보기
+            <button className="flex-1 py-5 bg-white border border-[var(--border)] rounded-2xl font-bold text-[var(--primary)] hover:bg-[var(--surface)] transition-all flex flex-col items-center gap-1">
+              <span className="text-xs text-[var(--primary)]/40">대중교통 이용 시</span>
+              <span>지하철/버스 안내</span>
             </button>
           </div>
         </div>

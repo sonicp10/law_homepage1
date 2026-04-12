@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FloatingMenu from "@/components/FloatingMenu";
 import "./globals.css";
 
 export const metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <FloatingMenu />
         </div>
       </body>
     </html>

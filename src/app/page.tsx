@@ -20,7 +20,7 @@ export default function HomePage() {
               <span className="text-xs font-bold text-[var(--primary)]/80 tracking-tight">도산 전문 법무사 직접 상담 | 수도권 전역 출장 상담</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-[var(--primary)] leading-[1.05] mb-10">
+            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[var(--primary)] leading-[1.1] mb-10 tracking-tight">
               당신의 <span className="text-[var(--secondary)]">무거운 빚</span>,<br />
               따뜻한 내일로<br />
               바꿔드립니다.
@@ -45,7 +45,7 @@ export default function HomePage() {
             <div className="relative">
               <div className="relative z-10 rounded-[60px] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
                 <img 
-                  src="https://images.unsplash.com/photo-1573497620053-ea531f094f52?auto=format&fit=crop&q=80&w=800" 
+                  src="/hero-consultation.png" 
                   alt="김형근 법무사 상담 현장"
                   className="w-full h-[650px] object-cover"
                 />
@@ -137,8 +137,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Floating Menu */}
-      <FloatingMenu />
     </div>
   );
 }

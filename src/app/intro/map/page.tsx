@@ -3,9 +3,32 @@
 import React from 'react';
 
 export default function MapPage() {
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('주소가 복사되었습니다.');
+  const handleCopy = async (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        alert('주소가 복사되었습니다.');
+      } else {
+        // Fallback for non-secure contexts or browsers without Clipboard API
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          alert('주소가 복사되었습니다.');
+        } catch (err) {
+          console.error('Fallback copy failed', err);
+        }
+        document.body.removeChild(textArea);
+      }
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
   };
 
   return (
@@ -30,20 +53,20 @@ export default function MapPage() {
             <div className="space-y-8">
               <div>
                 <p className="text-[var(--primary)] text-2xl md:text-3xl font-black leading-tight mb-4">
-                  경기도 부천시 원미구 <br />
-                  상일로 126 <br />
-                  <span className="text-[var(--secondary)]">(세정6블럭 401호)</span>
+                  서울 구로구 경인로 579, <br />
+                  502호 <br />
+                  <span className="text-[var(--secondary)]">(신도림동, 안성빌딩 A동)</span>
                 </p>
                 
                 <div className="flex flex-wrap gap-3">
                   <button 
-                    onClick={() => handleCopy('경기도 부천시 원미구 상일로 126')}
+                    onClick={() => handleCopy('서울 구로구 경인로 579, 502호(신도림동, 안성빌딩 A동)')}
                     className="px-6 py-3 bg-[var(--secondary)] text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
                   >
                     <span>📋</span> 주소 복사하기
                   </button>
                   <a 
-                    href="https://map.naver.com/v5/search/경기도 부천시 원미구 상일로 126" 
+                    href="https://map.naver.com/v5/search/서울 구로구 경인로 579" 
                     target="_blank"
                     className="px-6 py-3 bg-white border-2 border-[var(--secondary)] text-[var(--secondary)] rounded-full font-bold hover:bg-[var(--secondary)] hover:text-white transition-all active:scale-95 flex items-center gap-2"
                   >
@@ -64,7 +87,7 @@ export default function MapPage() {
                     <span className="text-green-600">✔</span> 방문자 전용 무료 주차 완비
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-green-600">✔</span> 송내역 3번 출구 도보 3분 거리
+                    <span className="text-green-600">✔</span> 신도림역 1번/5번/6번 출구 도보 5분 거리
                   </li>
                 </ul>
               </div>
@@ -102,7 +125,7 @@ export default function MapPage() {
                <div className="text-center z-10 p-8">
                  <div className="text-8xl mb-6 transform group-hover:rotate-12 transition-transform select-none">🏢</div>
                  <h4 className="text-2xl font-black text-[var(--primary)] mb-2">법무사 김형근 사무소</h4>
-                 <p className="text-[var(--primary)]/60 font-medium">경기도 부천시 상동 448-2 (401호)</p>
+                 <p className="text-[var(--primary)]/60 font-medium">서울 구로구 경인로 579, 502호 (신도림동)</p>
                  <div className="mt-8 flex justify-center gap-4">
                     <div className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg">N</div>
                     <div className="w-12 h-12 bg-[#FAE100] rounded-full flex items-center justify-center text-[#3C1E1E] font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg">K</div>

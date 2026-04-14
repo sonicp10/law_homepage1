@@ -17,7 +17,7 @@ const displayTabs = [
 
 export default function IntroLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pt-20 min-h-screen bg-[var(--background)]">
+    <main className="pt-32 min-h-screen bg-[var(--background)]">
       <SubPageBanner 
         title="회사 소개" 
         subtitle="새로운 시작을 위하여 최고의 법률 서비스를 제공해 드립니다."

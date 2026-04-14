@@ -10,7 +10,7 @@ const storyTabs = [
 
 export default function StoryLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pt-20 min-h-screen bg-[var(--background)]">
+    <main className="pt-32 min-h-screen bg-[var(--background)]">
       <SubPageBanner 
         title="성공사례" 
         subtitle="의뢰인의 새로운 시작, 그 소중한 기록들을 공유합니다."

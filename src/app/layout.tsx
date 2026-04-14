@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FloatingMenu from "@/components/FloatingMenu";
+import FloatingConsultForm from "@/components/FloatingConsultForm";
 import "./globals.css";
 
 export const metadata = {
@@ -28,6 +29,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <FloatingMenu />
+          <FloatingConsultForm />
         </div>
       </body>
     </html>

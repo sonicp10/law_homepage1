@@ -5,13 +5,13 @@ import TabNavigation from '@/components/TabNavigation';
 const bankruptcyTabs = [
   { label: '개인파산절차', href: '/bankruptcy/step' },
   { label: '자주묻는 질문', href: '/bankruptcy/ask' },
-  { label: '장단점', href: '/bankruptcy/strong' },
+  { label: '개인파산 FAQ', href: '/bankruptcy/strong' },
   { label: '법률 정보', href: '/bankruptcy/posts' },
 ];
 
 export default function BankruptcyLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pt-20 min-h-screen bg-[var(--background)]">
+    <main className="pt-32 min-h-screen bg-[var(--background)]">
       <SubPageBanner 
         title="개인파산 및 면책" 
         subtitle="채무의 굴레에서 벗어나 완전한 경제적 자유를 꿈꿉니다."

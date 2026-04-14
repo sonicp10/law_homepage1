@@ -5,13 +5,13 @@ import TabNavigation from '@/components/TabNavigation';
 const rehabTabs = [
   { label: '개인회생절차', href: '/rehab/step' },
   { label: '자주묻는 질문', href: '/rehab/ask' },
-  { label: '장단점', href: '/rehab/strong' },
+  { label: '개인회생 FAQ', href: '/rehab/strong' },
   { label: '법률 정보', href: '/rehab/posts' },
 ];
 
 export default function RehabLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pt-20 min-h-screen bg-[var(--background)]">
+    <main className="pt-32 min-h-screen bg-[var(--background)]">
       <SubPageBanner 
         title="개인회생" 
         subtitle="새로운 시작을 위한 법적 조력, 법무사 김형근 사무소가 함께합니다."

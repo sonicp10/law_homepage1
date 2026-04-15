@@ -8,7 +8,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center pt-40 pb-32 overflow-hidden bg-[var(--background)]">
+      <section className="relative min-h-[90vh] flex items-center pt-0 pb-32 overflow-hidden bg-[var(--background)]">
         {/* Background Decorative Elements */}
         <div className="absolute top-0 right-0 w-2/3 h-full bg-[var(--secondary)]/5 -skew-x-12 translate-x-1/4 -z-10"></div>
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
@@ -61,7 +61,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="font-bold text-lg text-[var(--primary)]">1:1 밀착 관리</div>
-                    <div className="text-xs text-[var(--secondary)] font-bold tracking-widest uppercase">Direct Expert Care</div>
+                    <div className="text-xs text-[var(--secondary)] font-bold tracking-widest uppercase">전문가 밀착 관리</div>
                   </div>
                 </div>
                 <p className="text-sm text-[var(--primary)]/70 leading-relaxed font-medium">
@@ -83,10 +83,12 @@ export default function HomePage() {
       <section className="py-32 bg-[var(--background)]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-24">
-            <span className="text-[var(--secondary)] font-bold tracking-[0.3em] uppercase mb-4 block">Our Expertise</span>
+            <span className="text-[var(--secondary)] font-bold tracking-[0.3em] uppercase mb-4 block">사무소 전용 솔루션</span>
             <h2 className="text-4xl md:text-6xl font-bold text-[var(--primary)] mb-8">의뢰인을 위한 맞춤형 솔루션</h2>
             <div className="w-24 h-1.5 bg-[var(--accent)] mx-auto rounded-full"></div>
           </div>
+          
+
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
@@ -95,21 +97,21 @@ export default function HomePage() {
                 desc: "원금 최대 90% 탕감, 연체 전후 모두 신청 가능합니다.",
                 stats: "평균 탕감률 78%",
                 color: "var(--secondary)",
-                tag: "Best for Earners"
+                tag: "소득자 최적화"
               },
               { 
                 title: "개인파산", 
                 desc: "소득 증빙이 어려운 고령자나 무소득자를 위한 완전 면책 제도입니다.",
                 stats: "완전 면책률 99%",
                 color: "var(--accent)",
-                tag: "Quick Solution"
+                tag: "신속한 면책"
               },
               { 
                 title: "사후 관리", 
                 desc: "인가 후 신용도 회복 및 등본 관리까지 꼼꼼하게 도와드립니다.",
                 stats: "신용회복 만족도 1위",
                 color: "#E8E4D8",
-                tag: "Final Step"
+                tag: "마지막 단계"
               }
             ].map((service, idx) => (
               <div key={idx} className="group relative h-[400px] bg-white rounded-[var(--radius-card)] p-10 border border-[var(--border)] overflow-hidden transition-all hover:border-[var(--secondary)] shadow-sm hover:shadow-2xl hover:-translate-y-2">

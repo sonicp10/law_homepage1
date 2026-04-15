@@ -1,4 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Nanum+Brush+Script&display=swap');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'KCC-Eunyoung';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/KCCEunyoung.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NanumJungHee';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105-2@1.0/NanumJungHee.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Kyobo2019';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/KyoboHandwriting2019.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'KCC-Anjunggeun';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105-2@1.0/KCC-Anjunggeun.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'KCC-Kimhoon';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KCC-Kimhoon.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
 
 @font-face {
   font-family: 'Pretendard';

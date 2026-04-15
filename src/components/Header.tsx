@@ -96,10 +96,7 @@ export default function Header() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-2xl font-bold tracking-tight text-[var(--primary)] leading-none mb-1">법무사 <span className="text-[#A67C52] font-extrabold">김형근</span> 사무소</span>
-                  <div className="flex items-center gap-2">
-                    <span className="h-[1px] w-4 bg-[#A67C52]"></span>
-                    <span className="text-[11px] text-[var(--primary)]/60 font-bold tracking-[0.3em] uppercase">All About 회생파산</span>
-                  </div>
+                  <span className="text-[11px] text-[var(--primary)]/60 font-bold tracking-[0.3em] uppercase">All About 회생파산</span>
                 </div>
               </Link>
             </div>
@@ -130,12 +127,36 @@ export default function Header() {
             isHovered ? 'max-h-[400px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'
           }`}
         >
-          <div className="max-w-7xl mx-auto px-6 py-10 flex items-start">
-            {/* Mirroring Logo Spacer */}
-            <div className="w-[320px] shrink-0 invisible" />
+          <div className="max-w-7xl mx-auto px-6 py-12 flex items-start">
+            {/* Branded Message Box (Clean & Minimal - Lifted) */}
+            <div className="w-[340px] shrink-0 pr-10">
+              <div className="relative p-0 pt-2 overflow-hidden group/box h-full">
+                <div className="relative z-10 text-left flex flex-col">
+                  {/* Slogan Section */}
+                  <div className="space-y-1 mb-4">
+                    <p className="text-[16px] font-bold text-[var(--primary)] leading-tight tracking-tight">답답한 고민을 멈추고</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-block relative">
+                        {/* Glow effect for "숨" */}
+                        <div className="absolute inset-0 bg-[#A67C52]/10 blur-xl rounded-full scale-150 opacity-0 group-hover/box:opacity-100 transition-opacity"></div>
+                        <span className="text-[32px] font-black text-[#A67C52] inline-block transform rotate-[15deg] origin-center px-1 drop-shadow-sm">"숨"</span>
+                      </span>
+                      <p className="text-[20px] font-extrabold text-[var(--primary)] tracking-tight">쉴 수 있는 공간,</p>
+                    </div>
+                    <p className="text-[18px] font-black text-[var(--primary)] tracking-tight">법무사 <span className="text-[#A67C52]">김형근</span> 사무소.</p>
+                  </div>
+                  
+                  {/* Description Section */}
+                  <div className="space-y-2 text-[15.5px] font-semibold text-[var(--primary)]/70 leading-relaxed tracking-tight">
+                    <p>고객의 무거운 고충을 함께 짊어지고</p>
+                    <p className="text-[var(--primary)] text-[16px]">다시 시작할 수 있는 평온한 공간이<br />되어드리겠습니다.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Submenu Columns - Perfectly Sync-Aligned */}
-            <div className="flex-1 flex justify-center gap-24">
+            <div className="flex-1 flex justify-center gap-24 pt-2">
               {menuData.map((menu, index) => (
                 <div key={menu.title} className="w-[100px] flex shrink-0 relative">
                   {/* Vertical Divider (Before each except first) */}
@@ -146,7 +167,7 @@ export default function Header() {
                       <Link 
                         key={sub.name}
                         href={sub.href}
-                        className="text-[15px] font-medium text-[var(--primary)]/60 hover:text-[#A67C52] hover:translate-x-1 transition-all whitespace-nowrap"
+                        className="text-[15px] font-medium text-[var(--primary)]/85 hover:text-[#A67C52] hover:translate-x-1 transition-all whitespace-nowrap"
                       >
                         {sub.name}
                       </Link>

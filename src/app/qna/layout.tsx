@@ -9,7 +9,7 @@ const qnaTabs = [
 
 export default function QnaLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pt-32 min-h-screen bg-[var(--background)]">
+    <main className="pt-0 min-h-screen bg-[var(--background)]">
       <SubPageBanner 
         title="상담문의" 
         subtitle="의뢰인의 무거운 마음을 덜어드리는 진심 어린 상담을 약속합니다."

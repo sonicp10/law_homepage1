@@ -215,7 +215,7 @@ export default function FloatingConsultForm() {
         {/* Bottom Gesture Bar */}
         <div className="h-7 flex flex-col items-center justify-center gap-1 opacity-60">
           <div className="w-14 h-1 bg-[#BFAF8F]/40 rounded-full"></div>
-          <p className="text-[9px] text-[#BFAF8F]/50 font-bold uppercase tracking-[0.2em] select-none">DRAG & MOVE</p>
+          <p className="text-[9px] text-[#BFAF8F]/50 font-bold uppercase tracking-[0.2em] select-none">드래그하여 이동</p>
         </div>
 
         {/* Close Button Inside Frame */}

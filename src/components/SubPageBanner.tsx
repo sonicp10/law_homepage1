@@ -10,7 +10,7 @@ export default function SubPageBanner({ title, subtitle, backgroundImage }: SubP
   const defaultBg = "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1600";
   
   return (
-    <section className="relative h-[350px] flex items-center justify-center overflow-hidden">
+    <section className="relative h-[480px] flex items-center justify-center overflow-hidden pt-36">
       <div className="absolute inset-0 z-0">
         <img 
           src={backgroundImage || defaultBg} 
@@ -20,11 +20,11 @@ export default function SubPageBanner({ title, subtitle, backgroundImage }: SubP
         <div className="absolute inset-0 bg-[var(--primary)]/40 backdrop-blur-[2px]"></div>
       </div>
       
-      <div className="relative z-10 text-center text-white px-6">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-slide-up tracking-tight">
+      <div className="relative z-10 text-center text-white px-6 -translate-y-4">
+        <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-slide-up tracking-tight">
           {title}
         </h1>
-        <p className="text-lg md:text-xl text-white/80 font-medium animate-slide-up" style={{ animationDelay: '0.1s' }}>
+        <p className="text-xl md:text-2xl text-white/80 font-medium animate-slide-up" style={{ animationDelay: '0.1s' }}>
           {subtitle}
         </p>
       </div>

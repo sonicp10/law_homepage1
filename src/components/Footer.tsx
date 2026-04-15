@@ -18,7 +18,7 @@ export default function Footer() {
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-xl font-bold tracking-tight leading-none mb-1 text-black">법무사 <span className="text-[#A67C52]">김형근</span> 사무소</span>
-                <span className="text-[10px] text-black/50 font-bold tracking-[0.2em] uppercase">All About 회생파산</span>
+                <span className="text-[11px] text-black/50 font-bold tracking-[0.3em] uppercase">All About 회생파산</span>
               </div>
             </Link>
 
@@ -85,7 +85,7 @@ export default function Footer() {
       <div className="bg-[#D4CEC1] py-8 border-t border-[#C4BCB1]">
         <div className="max-w-7xl mx-auto px-6 text-left">
           <p className="text-[13px] text-[#2C3E50]/60 font-bold tracking-widest uppercase">
-            COPYRIGHT Ⓒ2012 법무사 김형근 사무소 ALL RIGHTS RESERVED.
+            Ⓒ2012 법무사 김형근 사무소. 모든 권리 저작권 보호 및 무단 전재 및 재배포 금지.
           </p>
         </div>
       </div>

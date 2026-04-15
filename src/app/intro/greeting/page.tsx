@@ -1,52 +1,125 @@
+'use client';
+
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Quote } from 'lucide-react';
+import Image from 'next/image';
 
 export default function GreetingPage() {
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 }
+  };
+
+  const stagger = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const highlightSum = (text: string) => {
+    return (
+      <span className="text-[#A67C52] font-black italic inline-block transform rotate-[10deg] px-1">
+        {text}
+      </span>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[var(--surface)] py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-16 animate-slide-up">
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 text-[var(--primary)] tracking-tight">
-            다시 시작할 수 있습니다
+    <div className="min-h-screen bg-[#FDFBF7] py-20 md:py-32 px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <motion.div 
+          className="text-center mb-20 md:mb-32"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 className="text-3xl md:text-5xl font-black text-[var(--primary)] leading-tight tracking-tight">
+            다시, "{highlightSum('숨')}"을 고르고 <br className="md:hidden" />
+            내일을 꿈꿀 수 있도록.
           </h1>
-          <div className="w-20 h-1 bg-[var(--secondary)] mx-auto mb-10 rounded-full"></div>
-          <p className="text-xl md:text-2xl text-[var(--primary)]/60 font-medium">
-            절망의 끝에서 희망의 등불이 되어드리겠습니다.
-          </p>
-        </div>
+        </motion.div>
 
-        <div className="bg-white/60 backdrop-blur-sm p-8 md:p-12 rounded-[var(--radius-card)] shadow-sm border border-white/40 space-y-12">
-          <div className="space-y-8 text-[var(--primary)] text-lg md:text-xl font-medium" style={{ lineHeight: '1.8' }}>
-            <p>
-              안녕하십니까. 여러분의 든든한 동반자, <br />
-              <span className="bg-[var(--accent)] px-2">법무사 김형근 사무소</span>입니다.
-            </p>
-            <p>
-              빚이라는 무거운 짐은 단순히 경제적인 어려움을 넘어, <br />
-              우리의 마음과 소중한 일상까지 위축시키곤 합니다. <br />
-              하지만 기억해 주십시오. <span className="font-bold underline decoration-[var(--secondary)] decoration-4 underline-offset-4">실패는 있어도 좌절은 없습니다.</span>
-            </p>
-            <p>
-              우리는 단순히 법률 서류를 대신 작성하는 '대리인'이 아닙니다. <br />
-              <span className="bg-[var(--accent)] px-2">여러분의 인생 2막을 함께 설계하고 응원하는 '인생의 동반자'</span>가 되고자 합니다.
-            </p>
-            <p>
-              진심을 다하는 상담, 끝까지 책임지는 전문성으로 <br />
-              여러분이 다시 웃으며 세상을 마주할 수 있도록 <br />
-              따뜻한 햇살 같은 길잡이가 되어드리겠습니다.
-            </p>
-          </div>
-
-          <div className="pt-12 border-t border-[var(--border)] flex flex-col items-end">
-            <div className="text-right">
-              <p className="text-[var(--primary)]/40 mb-3 font-bold tracking-[0.2em] text-sm uppercase italic">Professional Legal Partner</p>
-              <div className="flex items-center gap-4">
-                <span className="text-2xl text-[var(--primary)]/60 font-light italic">진심을 담아,</span>
-                <p className="text-3xl md:text-4xl font-bold text-[var(--primary)]">
-                  법무사 <span className="text-4xl md:text-5xl text-[var(--primary)] font-black">김형근</span> 올림
-                </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+          {/* Left: Professional Photo Area */}
+          <motion.div 
+            className="lg:col-span-5 relative group"
+            variants={fadeInUp}
+            initial="initial"
+            animate="animate"
+          >
+            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-b-8 border-r-8 border-[#A67C52]/20">
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/40 to-transparent z-10"></div>
+              {/* Replace the src with actual path - using placeholder for now */}
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                <p className="font-bold">법무사 김형근 프로필 사진</p>
+                {/* Note to User: please replace this div with:
+                <Image 
+                  src="/images/lawyer_profile.png" 
+                  alt="법무사 김형근" 
+                  fill 
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                */}
               </div>
             </div>
-          </div>
+            {/* Decoration */}
+            <div className="absolute -z-10 -bottom-6 -left-6 w-full h-full bg-[#A67C52]/5 rounded-2xl"></div>
+          </motion.div>
+
+          {/* Right: Greetings Content */}
+          <motion.div 
+            className="lg:col-span-7 space-y-12"
+            variants={stagger}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div variants={fadeInUp} className="relative">
+              <span className="absolute -top-48 -left-12 text-[250px] text-[#A67C52]/15 font-serif leading-none select-none pointer-events-none">,</span>
+              <p className="text-xl md:text-2xl font-bold text-[var(--primary)] leading-relaxed relative z-10">
+                안녕하십니까,<br />
+                법무사 김형근 사무소입니다.
+              </p>
+            </motion.div>
+
+            <motion.div variants={fadeInUp} className="space-y-8 text-lg md:text-[1.15rem] text-[var(--primary)]/80 leading-loose font-medium text-justify">
+              <p>
+                감당하기 힘든 빚이라는 굴레는 단순히 경제적 어려움을 넘어, 일상의 평온과 <span className="text-[var(--primary)] font-bold">편히 {highlightSum('‘숨’')} 쉴 자유</span>마저 앗아가곤 합니다. 턱 끝까지 차오른 고통에 홀로 힘겨워하고 계신 여러분께, 저희 사무소는 다시 편안하게 {highlightSum('‘숨’')} 쉴 수 있는 쉼표가 되어드리고자 합니다.
+              </p>
+              <p>
+                개인회생과 파산은 끝이 아닙니다. 막혔던 호흡을 가다듬고 인생의 다음 페이지를 준비하는 새로운 시작입니다. 저희는 단순한 법률 대리인을 넘어, 여러분이 무거운 짐을 내려놓고 다시 웃으며 일상을 마주할 수 있도록 <span className="text-[#A67C52] font-extrabold border-b-2 border-[#A67C52]/20 pb-0.5">따뜻한 햇살 같은 길잡이</span>가 되겠습니다.
+              </p>
+              <p>
+                이제 혼자 고민하지 마십시오. 여러분의 인생 2막, 그 첫 호흡을 법무사 김형근 사무소가 진심을 다해 응원하고 함께하겠습니다.
+              </p>
+            </motion.div>
+
+            {/* Signature Area */}
+            <motion.div 
+              variants={fadeInUp} 
+              className="pt-12 border-t border-[#A67C52]/10 flex flex-col items-end"
+            >
+              <div className="text-right">
+                <div className="flex flex-col gap-2">
+                  <span className="text-3xl text-[var(--primary)]/60 font-medium italic">진심을 다해,</span>
+                  <div 
+                    key="signature-v2" 
+                    className="flex items-end gap-3 translate-y-2 text-[var(--primary)]" 
+                    style={{ fontFamily: "'Nanum Brush Script', cursive" }}
+                  >
+                    <p className="text-[44px] leading-none mb-3 opacity-90">법무사</p>
+                    <p className="text-[100px] leading-none origin-bottom-right translate-y-4 font-black" style={{ letterSpacing: '0.05em', textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.1)' }}>
+                      김&nbsp;형&nbsp;근
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </div>

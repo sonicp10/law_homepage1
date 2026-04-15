@@ -11,7 +11,7 @@ const bankruptcyTabs = [
 
 export default function BankruptcyLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pt-32 min-h-screen bg-[var(--background)]">
+    <main className="pt-0 min-h-screen bg-[var(--background)]">
       <SubPageBanner 
         title="개인파산 및 면책" 
         subtitle="채무의 굴레에서 벗어나 완전한 경제적 자유를 꿈꿉니다."

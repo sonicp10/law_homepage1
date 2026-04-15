@@ -37,10 +37,10 @@ export default function TrustStatsBar() {
     const verToday = 93 + (seededRandom(todayTime) * 6.9);
 
     setStats([
-      { label: '누적 개인회생 인가율', value: verToday, decimal: 1, suffix: 'Ver.', unit: '%' },
-      { label: '누적 채무 탕감액', value: totalDebt, decimal: 0, suffix: 'Sum', unit: '억+' },
-      { label: '총 법률 상담 건수', value: totalConsults, decimal: 0, suffix: 'Total', unit: '건+' },
-      { label: '의뢰인 비밀 보장', value: 100, decimal: 0, suffix: 'Security', unit: '% 안심' },
+      { label: '사건 인가율', value: verToday, decimal: 1, suffix: '', unit: '%' },
+      { label: '누적 탕감액', value: totalDebt, decimal: 0, suffix: '', unit: '억+' },
+      { label: '총 상담 건수', value: totalConsults, decimal: 0, suffix: '', unit: '건+' },
+      { label: '의뢰인 만족도', value: 100, decimal: 0, suffix: '', unit: '%' },
     ]);
   }, []);
 
@@ -57,12 +57,14 @@ export default function TrustStatsBar() {
                 idx !== stats.length - 1 ? 'lg:border-r lg:border-white/10' : ''
               }`}
             >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--secondary)]">
-                  {stat.suffix}
-                </span>
-                <div className="w-1 h-1 bg-[var(--accent)] rounded-full"></div>
-              </div>
+              {stat.suffix && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-[var(--secondary)]">
+                    {stat.suffix}
+                  </span>
+                  <div className="w-1 h-1 bg-[var(--accent)] rounded-full"></div>
+                </div>
+              )}
               <div className="text-2xl md:text-3xl font-bold text-white mb-1">
                 <AnimatedNumber 
                   value={stat.value} 

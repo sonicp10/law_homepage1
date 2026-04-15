@@ -31,7 +31,7 @@ export default function RequestSection() {
           {/* 1. Left: Real-time Ticker List (Optimized for Seamless Loop) */}
           <div className="lg:w-1/2 flex flex-col w-full">
             <div className="mb-8">
-              <span className="text-[var(--secondary)] font-bold tracking-widest text-sm uppercase mb-2 block">Real-time Status</span>
+              <span className="text-[var(--secondary)] font-bold tracking-widest text-sm uppercase mb-2 block">실시간 현황</span>
               <h2 className="text-3xl font-bold text-[var(--primary)]">실시간 상담 및 결과 현황</h2>
             </div>
             
@@ -45,7 +45,7 @@ export default function RequestSection() {
                       </div>
                       <div>
                         <div className="text-sm font-bold text-[var(--primary)]">{item.name} <span className="text-xs font-normal text-gray-400">({item.region})</span></div>
-                        <div className="text-[10px] text-[var(--secondary)] font-bold uppercase tracking-wider">Verified Result</div>
+                        <div className="text-[10px] text-[var(--secondary)] font-bold uppercase tracking-wider">검증된 결과</div>
                       </div>
                     </div>
                     <div className="text-[var(--primary)] font-bold text-sm bg-[var(--accent)]/30 px-3 py-1 rounded-full">

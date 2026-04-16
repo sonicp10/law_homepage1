@@ -1,23 +1,37 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
+import * as z from 'zod';
+
+const leadSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().min(9),
+  debtAmount: z.string().nullable().optional(),
+  preferredType: z.string().nullable().optional(),
+  content: z.string().nullable().optional(),
+  source: z.string().optional(),
+  extraInfo: z.any().optional(),
+});
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
-    const { name, phone, debtAmount, content, source, extraInfo } = data;
+    const json = await request.json();
+    const validation = leadSchema.safeParse(json);
 
-    if (!name || !phone) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: '이름과 연락처는 필수 입력 사항입니다.' },
+        { error: '입력 데이터가 유효하지 않습니다.', details: validation.error.format() },
         { status: 400 }
       );
     }
+
+    const { name, phone, debtAmount, preferredType, content, source, extraInfo } = validation.data;
 
     const lead = await prisma.lead.create({
       data: {
         name,
         phone,
         debtAmount: debtAmount || null,
+        preferredType: preferredType || null,
         content: content || null,
         source: source || 'UNKNOWN',
         extraInfo: extraInfo || null,

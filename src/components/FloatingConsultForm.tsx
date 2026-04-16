@@ -1,6 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { motion, AnimatePresence } from 'framer-motion';
+import { formatPhone } from '@/lib/utils';
+
+const formSchema = z.object({
+  type: z.enum(['개인회생', '개인파산']),
+  name: z.string().min(2, { message: '성함을 2자 이상 입력해주세요.' }),
+  phone: z.string().min(10, { message: '정확한 연락처를 입력해주세요.' }),
+  content: z.string().optional(),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export default function FloatingConsultForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,12 +22,37 @@ export default function FloatingConsultForm() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
-  const [formData, setFormData] = useState({
-    type: '개인회생',
-    name: '',
-    phone: '',
-    content: ''
+  const [currentStep, setCurrentStep] = useState(1); // 1: Type/Content, 2: Name/Phone, 3: Success
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    reset
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      type: '개인회생',
+      name: '',
+      phone: '',
+      content: ''
+    }
   });
+
+  const selectedType = watch('type');
+  const phoneValue = watch('phone');
+
+  // 전화번호 자동 포맷팅
+  useEffect(() => {
+    if (!phoneValue) return;
+    const formatted = formatPhone(phoneValue);
+    if (formatted !== phoneValue) {
+      setValue('phone', formatted, { shouldValidate: true });
+    }
+  }, [phoneValue, setValue]);
 
   const widgetRef = useRef<HTMLDivElement>(null);
 
@@ -71,34 +110,37 @@ export default function FloatingConsultForm() {
     };
   }, [isDragging, dragOffset, position]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.phone) {
-      alert('성함과 연락처를 입력해 주세요.');
-      return;
-    }
-
+  const onFormSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          debtAmount: null,
-          content: formData.content,
-          source: 'DRAGGABLE_KOREAN_WIDGET',
-          preferredType: formData.type
+          ...data,
+          source: 'DRAGGABLE_PREMIUM_WIDGET_STEP',
+          preferredType: data.type
         }),
       });
 
       if (response.ok) {
-        alert('상담 신청이 완료되었습니다! 전문가가 곧 연락드리겠습니다.');
-        setFormData({ type: '개인회생', name: '', phone: '', content: '' });
+        setCurrentStep(3); // Show success message
+        
+        // 3초 후 자동으로 닫기 (사용자 요청 사항)
+        setTimeout(() => {
+          setIsOpen(false);
+          // 상태 초기화
+          setCurrentStep(1);
+          reset();
+        }, 3000);
+      } else {
+        alert('전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('제입 중 오류가 발생했습니다.');
+      alert('서버 연결 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -147,68 +189,151 @@ export default function FloatingConsultForm() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* System Type Selection */}
-            <div className="flex gap-2 p-1.5 bg-white/5 rounded-xl border border-white/10">
-              {['개인회생', '개인파산'].map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setFormData({...formData, type: t})}
-                  className={`flex-1 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                    formData.type === t 
-                      ? 'bg-[#E8DCC4] text-[#2C3E50] shadow-md' 
-                      : 'text-white/30 hover:text-white/60'
-                  }`}
+          <form onSubmit={handleSubmit(onFormSubmit)} className="flex-1 flex flex-col">
+            <AnimatePresence mode="wait">
+              {currentStep === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
                 >
-                  {t}
-                </button>
-              ))}
-            </div>
+                  {/* System Type Selection */}
+                  <div className="flex gap-2 p-1.5 bg-white/5 rounded-xl border border-white/10">
+                    {['개인회생', '개인파산'].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setValue('type', t as '개인회생' | '개인파산')}
+                        className={`flex-1 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                          selectedType === t 
+                            ? 'bg-[#E8DCC4] text-[#2C3E50] shadow-md' 
+                            : 'text-white/30 hover:text-white/60'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
 
-            {/* Input Fields (Optimized Spacing) */}
-            <div className="space-y-2.5">
-              <input 
-                type="text" 
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="성함 입력"
-                className="w-full bg-white border border-transparent rounded-xl px-4 py-2.5 text-[15px] text-[#2C3E50] font-bold focus:outline-none focus:ring-2 focus:ring-[#E8DCC4]/70 transition-all placeholder:text-[#2C3E50]/40 shadow-sm"
-              />
-              <input 
-                type="tel" 
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                placeholder="연락처 입력"
-                className="w-full bg-white border border-transparent rounded-xl px-4 py-2.5 text-[15px] text-[#2C3E50] font-bold focus:outline-none focus:ring-2 focus:ring-[#E8DCC4]/70 transition-all placeholder:text-[#2C3E50]/40 shadow-sm"
-              />
-              <textarea 
-                rows={2}
-                value={formData.content}
-                onChange={(e) => setFormData({...formData, content: e.target.value})}
-                placeholder="상담 내용을 간단히 적어주세요."
-                className="w-full bg-white border border-transparent rounded-xl px-4 py-2.5 text-[15px] text-[#2C3E50] font-bold focus:outline-none focus:ring-2 focus:ring-[#E8DCC4]/70 transition-all resize-none placeholder:text-[#2C3E50]/40 shadow-sm leading-relaxed"
-              />
-            </div>
+                  <div className="space-y-2.5">
+                    <p className="text-[11px] text-[#E8DCC4] font-bold ml-1 opacity-70">어떤 고민이 있으신가요?</p>
+                    <textarea 
+                      {...register('content')}
+                      rows={3}
+                      placeholder="예: 카드값 연체가 걱정됩니다."
+                      className="w-full bg-white border border-transparent rounded-xl px-4 py-2.5 text-[15px] text-[#2C3E50] font-bold focus:outline-none focus:ring-2 focus:ring-[#E8DCC4]/70 transition-all resize-none placeholder:text-[#2C3E50]/30 shadow-sm leading-relaxed"
+                    />
+                  </div>
 
-            {/* Privacy Agreement */}
-            <label className="flex items-center gap-3 cursor-pointer group/agree px-1">
-              <div className="relative flex items-center justify-center shrink-0">
-                <input type="checkbox" className="peer sr-only" defaultChecked />
-                <div className="w-5 h-5 bg-white/10 border border-white/20 rounded-md peer-checked:bg-[#E8DCC4] peer-checked:border-[#E8DCC4] transition-all"></div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={4} stroke="#2C3E50" className="absolute w-3 h-3 opacity-0 peer-checked:opacity-100 transition-opacity">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-              <span className="text-[11px] text-white/40 group-hover/agree:text-white/70 transition-colors font-medium">개인정보 수집 및 동의 [확인]</span>
-            </label>
+                  <button 
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                    className="w-full py-3.5 bg-gradient-to-r from-[#E8DCC4] to-[#BFAF8F] text-[#2C3E50] rounded-xl font-black text-[15px] shadow-xl hover:scale-[1.02] transition-all"
+                  >
+                    다음 단계로
+                  </button>
+                </motion.div>
+              )}
 
-            <button 
-              type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-[#E8DCC4] to-[#BFAF8F] text-[#2C3E50] rounded-xl font-black text-[15px] shadow-xl hover:scale-[1.02] active:scale-95 transition-all mt-1"
-            >
-              상담 신청하기
-            </button>
+              {currentStep === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div>
+                      <input 
+                        {...register('name')}
+                        type="text" 
+                        placeholder="성함 입력"
+                        className={`w-full bg-white border ${errors.name ? 'border-red-400' : 'border-transparent'} rounded-xl px-4 py-2.5 text-[15px] text-[#2C3E50] font-bold focus:outline-none focus:ring-2 focus:ring-[#E8DCC4]/70 transition-all placeholder:text-[#2C3E50]/30 shadow-sm`}
+                      />
+                      {errors.name && <p className="text-[10px] text-red-300 mt-1 ml-1">{errors.name.message}</p>}
+                    </div>
+                    <div>
+                      <input 
+                        {...register('phone')}
+                        type="tel" 
+                        maxLength={13}
+                        placeholder="연락처 (010-0000-0000)"
+                        className={`w-full bg-white border ${errors.phone ? 'border-red-400' : 'border-transparent'} rounded-xl px-4 py-2.5 text-[15px] text-[#2C3E50] font-bold focus:outline-none focus:ring-2 focus:ring-[#E8DCC4]/70 transition-all placeholder:text-[#2C3E50]/30 shadow-sm`}
+                      />
+                      {errors.phone && <p className="text-[10px] text-red-300 mt-1 ml-1">{errors.phone.message}</p>}
+                    </div>
+                  </div>
+
+                  <label className="flex items-center gap-3 cursor-pointer group/agree px-1">
+                    <div className="relative flex items-center justify-center shrink-0">
+                      <input type="checkbox" className="peer sr-only" defaultChecked required />
+                      <div className="w-5 h-5 bg-white/10 border border-white/20 rounded-md peer-checked:bg-[#E8DCC4] peer-checked:border-[#E8DCC4] transition-all"></div>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={4} stroke="#2C3E50" className="absolute w-3 h-3 opacity-0 peer-checked:opacity-100 transition-opacity">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    </div>
+                    <span className="text-[11px] text-white/40 group-hover/agree:text-white/70 transition-colors font-medium">개인정보 수집 및 동의 [확인]</span>
+                  </label>
+
+                  <div className="flex gap-2">
+                    <button 
+                      type="button"
+                      onClick={() => setCurrentStep(1)}
+                      className="flex-1 py-3.5 bg-white/5 text-white/60 rounded-xl font-bold text-[14px] border border-white/10 hover:bg-white/10 transition-all"
+                    >
+                      이전
+                    </button>
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex-[2] py-3.5 bg-gradient-to-r from-[#E8DCC4] to-[#BFAF8F] text-[#2C3E50] rounded-xl font-black text-[15px] shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {isSubmitting ? '전송 중...' : '상담 신청하기'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {currentStep === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center py-6 text-center"
+                >
+                  <div className="w-16 h-16 bg-[#E8DCC4] rounded-full flex items-center justify-center mb-4 shadow-lg shadow-[#E8DCC4]/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="#2C3E50" className="w-8 h-8">
+                      <motion.path 
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        d="M4.5 12.75l6 6 9-13.5" 
+                      />
+                    </svg>
+                  </div>
+                  <h4 className="text-white text-lg font-bold mb-2">신청이 완료되었습니다!</h4>
+                  <p className="text-white/50 text-xs leading-relaxed">
+                    실시간으로 담당 법무사에게<br />
+                    데이터가 안전하게 전달되었습니다.<br />
+                    잠시 후 연락드리겠습니다.
+                  </p>
+                  <div className="mt-6 w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 3 }}
+                      className="h-full bg-[#E8DCC4]"
+                    />
+                  </div>
+                  <p className="text-[10px] text-white/30 mt-2">3초 후 자동으로 창이 닫힙니다.</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </form>
         </div>
 

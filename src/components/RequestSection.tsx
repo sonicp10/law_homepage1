@@ -1,15 +1,82 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { motion, AnimatePresence } from 'framer-motion';
+import { formatPhone } from '@/lib/utils';
+
+const sectionFormSchema = z.object({
+  name: z.string().min(2, { message: '성함을 입력해주세요.' }),
+  phone: z.string().min(10, { message: '정확한 연락처를 입력해주세요.' }),
+  location: z.string().optional(),
+  debtAmount: z.string().optional(),
+  content: z.string().optional(),
+});
+
+type SectionFormData = z.infer<typeof sectionFormSchema>;
 
 export default function RequestSection() {
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    location: '',
-    debtAmount: '',
-    content: ''
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit: handleSectionSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    reset
+  } = useForm<SectionFormData>({
+    resolver: zodResolver(sectionFormSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      location: '',
+      debtAmount: '',
+      content: ''
+    }
   });
+
+  const phoneValue = watch('phone');
+
+  // 전화번호 자동 포맷팅
+  useEffect(() => {
+    if (!phoneValue) return;
+    const formatted = formatPhone(phoneValue);
+    if (formatted !== phoneValue) {
+      setValue('phone', formatted, { shouldValidate: true });
+    }
+  }, [phoneValue, setValue]);
+
+  const onFormSubmit = async (data: SectionFormData) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          source: 'LANDING_SECTION_FORM',
+        }),
+      });
+
+      if (response.ok) {
+        setIsSuccess(true);
+        reset();
+        setTimeout(() => setIsSuccess(false), 5000);
+      } else {
+        alert('전송 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('서버 연결 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const tickers = [
     { name: '김*현', region: '서울 은평구', status: '8,400만원 탕감 결정' },
@@ -68,64 +135,104 @@ export default function RequestSection() {
                 <p className="text-[var(--primary)]/60 text-sm">지금 신청하시면 10분 내로 전문 상담원이 연락드립니다.</p>
               </div>
               
-              <form className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">이름</label>
-                    <input 
-                      type="text" 
-                      placeholder="성함 입력"
-                      className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">연락처</label>
-                    <input 
-                      type="tel" 
-                      placeholder="010-0000-0000"
-                      className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">지역</label>
-                    <input 
-                      type="text" 
-                      placeholder="예: 서울 서초구"
-                      className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">총 채무액 (선택)</label>
-                    <input 
-                      type="text" 
-                      placeholder="예: 5,000만원"
-                      className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
-                    />
-                  </div>
-                </div>
+              <form onSubmit={handleSectionSubmit(onFormSubmit)} className="space-y-5">
+                <AnimatePresence mode="wait">
+                  {isSuccess ? (
+                    <motion.div 
+                      key="success"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="py-12 text-center"
+                    >
+                      <div className="w-20 h-20 bg-[var(--accent)]/30 text-[var(--primary)] rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-10 h-10">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      </div>
+                      <h4 className="text-2xl font-bold text-[var(--primary)] mb-2">상담 신청 완료!</h4>
+                      <p className="text-[var(--primary)]/60">전문가팀이 확인 후 10분 내로 연락드리겠습니다.</p>
+                      <button 
+                        type="button" 
+                        onClick={() => setIsSuccess(false)}
+                        className="mt-8 text-sm font-bold text-[var(--secondary)] hover:underline"
+                      >
+                        새로 신청하기
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="form" className="space-y-5">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">이름</label>
+                          <input 
+                            {...register('name')}
+                            type="text" 
+                            placeholder="성함 입력"
+                            className={`w-full px-4 py-3.5 bg-[var(--background)] border ${errors.name ? 'border-red-400' : 'border-[var(--border)]'} rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm`}
+                          />
+                          {errors.name && <p className="text-[10px] text-red-500 mt-1 ml-1">{errors.name.message}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">연락처</label>
+                          <input 
+                            {...register('phone')}
+                            type="tel" 
+                            maxLength={13}
+                            placeholder="010-0000-0000"
+                            className={`w-full px-4 py-3.5 bg-[var(--background)] border ${errors.phone ? 'border-red-400' : 'border-[var(--border)]'} rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm`}
+                          />
+                          {errors.phone && <p className="text-[10px] text-red-500 mt-1 ml-1">{errors.phone.message}</p>}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">지역</label>
+                          <input 
+                            {...register('location')}
+                            type="text" 
+                            placeholder="예: 서울 서초구"
+                            className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">총 채무액 (선택)</label>
+                          <input 
+                            {...register('debtAmount')}
+                            type="text" 
+                            placeholder="예: 5,000만원"
+                            className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
+                          />
+                        </div>
+                      </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">고민 내용 (선택)</label>
-                  <textarea 
-                    rows={3}
-                    placeholder="상담받고 싶은 내용을 간단히 적어주세요."
-                    className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm resize-none"
-                  ></textarea>
-                </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">고민 내용 (선택)</label>
+                        <textarea 
+                          {...register('content')}
+                          rows={3}
+                          placeholder="상담받고 싶은 내용을 간단히 적어주세요."
+                          className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm resize-none"
+                        ></textarea>
+                      </div>
 
-                <div className="flex items-start gap-3 py-2">
-                  <input type="checkbox" className="mt-1 accent-[var(--secondary)]" id="agree" />
-                  <label htmlFor="agree" className="text-[11px] text-[var(--primary)]/50 leading-tight">
-                    개인정보 수집 및 이용에 동의합니다. 입력하신 정보는 법률 상담 목적으로만 사용되며 SSL 암호화로 안전하게 보호됩니다.
-                  </label>
-                </div>
+                      <div className="flex items-start gap-3 py-2">
+                        <input type="checkbox" className="mt-1 accent-[var(--secondary)]" id="agree" required />
+                        <label htmlFor="agree" className="text-[11px] text-[var(--primary)]/50 leading-tight">
+                          개인정보 수집 및 이용에 동의합니다. 입력하신 정보는 법률 상담 목적으로만 사용되며 SSL 암호화로 안전하게 보호됩니다.
+                        </label>
+                      </div>
 
-                <button className="w-full py-4 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-[var(--primary)]/20 hover:-translate-y-1 transition-all">
-                  무료 안심 상담 신청하기
-                </button>
+                      <button 
+                        disabled={isSubmitting}
+                        className="w-full py-4 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-[var(--primary)]/20 hover:-translate-y-1 transition-all disabled:opacity-50"
+                      >
+                        {isSubmitting ? '전송 중...' : '무료 안심 상담 신청하기'}
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </form>
             </div>
           </div>

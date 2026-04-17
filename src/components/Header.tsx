@@ -12,7 +12,7 @@ export default function Header() {
       href: '/intro',
       subMenus: [
         { name: '인사말', href: '/intro/greeting' },
-        { name: '사업분야', href: '/intro/business' },
+        { name: '업무분야', href: '/intro/business' },
         { name: '오시는 길', href: '/intro/map' },
       ],
     },
@@ -22,7 +22,6 @@ export default function Header() {
       subMenus: [
         { name: '개인회생절차', href: '/rehab/step' },
         { name: '자주묻는 질문', href: '/rehab/ask' },
-        { name: '개인회생 FAQ', href: '/rehab/strong' },
         { name: '법률 정보', href: '/rehab/posts' },
       ],
     },
@@ -32,7 +31,6 @@ export default function Header() {
       subMenus: [
         { name: '개인파산절차', href: '/bankruptcy/step' },
         { name: '자주묻는 질문', href: '/bankruptcy/ask' },
-        { name: '개인파산 FAQ', href: '/bankruptcy/strong' },
         { name: '법률정보', href: '/bankruptcy/posts' },
       ],
     },
@@ -40,16 +38,18 @@ export default function Header() {
       title: '성공사례',
       href: '/s_story',
       subMenus: [
-        { name: '전체보기', href: '/s_story' },
-        { name: '개인회생 사례', href: '/s_story' },
-        { name: '개인파산 사례', href: '/s_story' },
+        { name: '개인회생', href: '/s_story/rehab' },
+        { name: '개인파산', href: '/s_story/bankruptcy' },
+        { name: '의뢰인 후기', href: '/s_story/review' },
       ],
     },
     {
       title: '상담문의',
       href: '/qna',
       subMenus: [
-        { name: '1:1 상담신청', href: '/qna/ask' },
+        { name: '실시간 전화 상담', href: '/qna/phone' },
+        { name: '방문 상담', href: '/qna/visit' },
+        { name: '게시판 상담', href: '/qna/board' },
         { name: '3분 자가진단', href: '/qna/diagnosis' },
       ],
     },

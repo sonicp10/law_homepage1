@@ -228,7 +228,7 @@ export default function RequestSection() {
                         disabled={isSubmitting}
                         className="w-full py-4 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-[var(--primary)]/20 hover:-translate-y-1 transition-all disabled:opacity-50"
                       >
-                        {isSubmitting ? '전송 중...' : '무료 안심 상담 신청하기'}
+                        {isSubmitting ? '전송 중...' : '상담 신청하기'}
                       </button>
                     </motion.div>
                   )}

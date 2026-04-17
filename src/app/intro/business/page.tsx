@@ -31,7 +31,7 @@ export default function BusinessPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="text-center mb-16 animate-slide-up">
-        <h1 className="text-4xl md:text-5xl font-bold text-[var(--primary)] mb-6">사업분야</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-[var(--primary)] mb-6">업무분야</h1>
         <div className="w-12 h-1 bg-[var(--secondary)] mx-auto mb-8 rounded-full"></div>
         <p className="text-lg md:text-xl text-[var(--primary)]/60 font-medium">
           여러분의 상황에 맞는 최적의 회복 경로를 제시합니다.

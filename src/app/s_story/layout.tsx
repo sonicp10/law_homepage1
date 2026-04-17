@@ -3,9 +3,9 @@ import SubPageBanner from '@/components/SubPageBanner';
 import TabNavigation from '@/components/TabNavigation';
 
 const storyTabs = [
-  { label: '전체보기', href: '/s_story' },
-  { label: '개인회생 사례', href: '/s_story/rehab' },
-  { label: '개인파산 사례', href: '/s_story/bankruptcy' },
+  { label: '개인회생', href: '/s_story/rehab' },
+  { label: '개인파산', href: '/s_story/bankruptcy' },
+  { label: '의뢰인 후기', href: '/s_story/review' },
 ];
 
 export default function StoryLayout({ children }: { children: React.ReactNode }) {

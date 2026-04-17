@@ -36,7 +36,7 @@ export default function HomePage() {
                 자가진단 시스템 바로가기 ➔
               </Link>
               <Link href="#Request" className="px-10 py-5 bg-white border-2 border-[var(--primary)] text-[var(--primary)] rounded-2xl font-bold text-lg hover:bg-[var(--primary)] hover:text-white transition-all">
-                무료 1:1 상담 신청
+                빠른 상담 신청
               </Link>
             </div>
           </div>

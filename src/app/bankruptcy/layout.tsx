@@ -5,7 +5,6 @@ import TabNavigation from '@/components/TabNavigation';
 const bankruptcyTabs = [
   { label: '개인파산절차', href: '/bankruptcy/step' },
   { label: '자주묻는 질문', href: '/bankruptcy/ask' },
-  { label: '개인파산 FAQ', href: '/bankruptcy/strong' },
   { label: '법률 정보', href: '/bankruptcy/posts' },
 ];
 

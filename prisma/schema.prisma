@@ -53,6 +53,37 @@ model CaseStatus {
   createdAt DateTime @default(now())
 }
 
+model Consultation {
+  id            String   @id @default(cuid())
+  type          String   // PHONE or VISIT
+  name          String
+  phone         String
+  location      String?  // 거주지역
+  category      String?  // 업무분야 (회생/파산 등)
+  visitDate     DateTime? // 방문 예약 날짜
+  visitTime     String?   // 방문 예약 시간
+  content       String?  @db.Text
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BoardQna {
+  id            String   @id @default(cuid())
+  author        String
+  password      String   // 게시글 보호용
+  phone         String
+  email         String?
+  location      String?
+  title         String
+  content       String   @db.Text
+  isSecret      Boolean  @default(true)
+  replyContent  String?  @db.Text // 법무사 답변
+  status        String   @default("PENDING") // PENDING, ANSWERED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Post {
   id          String       @id @default(cuid())
   title       String
@@ -71,4 +102,16 @@ enum PostCategory {
   BANKRUPTCY    // 개인파산
   SUCCESS_STORY // 성공사례
   COLUMN        // 법률컬럼/정보
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  author    String   // 작성자 이름 (예: 김*현)
+  title     String
+  content   String   @db.Text
+  rating    Int      @default(5) // 별점 (기본 5점)
+  password  String?  // 수정/삭제를 위한 비밀번호 (비회원용 선택)
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

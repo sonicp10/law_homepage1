@@ -5,7 +5,6 @@ import TabNavigation from '@/components/TabNavigation';
 const rehabTabs = [
   { label: '개인회생절차', href: '/rehab/step' },
   { label: '자주묻는 질문', href: '/rehab/ask' },
-  { label: '개인회생 FAQ', href: '/rehab/strong' },
   { label: '법률 정보', href: '/rehab/posts' },
 ];
 

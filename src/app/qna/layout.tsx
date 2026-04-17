@@ -3,7 +3,9 @@ import SubPageBanner from '@/components/SubPageBanner';
 import TabNavigation from '@/components/TabNavigation';
 
 const qnaTabs = [
-  { label: '1:1 상담신청', href: '/qna/ask' },
+  { label: '실시간 전화 상담', href: '/qna/phone' },
+  { label: '방문 상담', href: '/qna/visit' },
+  { label: '게시판 상담', href: '/qna/board' },
   { label: '3분 자가진단', href: '/qna/diagnosis' },
 ];
 

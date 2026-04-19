@@ -7,17 +7,27 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                     String    @id @default(cuid())
+  name                   String?
+  email                  String?   @unique
+  password               String?
+  memo                   String?
+  role                   Role      @default(USER)
+  isActive               Boolean   @default(true)
+  
+  // 개별 권한 제어 플래그
+  canManagePosts         Boolean   @default(false)
+  canManageConsultations Boolean   @default(false)
+  canManageAdmins        Boolean   @default(false)
+  
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 enum Role {
   USER
   ADMIN
+  SUPERADMIN
 }
 
 model Lead {

@@ -1,7 +1,4 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import FloatingMenu from "@/components/FloatingMenu";
-import FloatingConsultForm from "@/components/FloatingConsultForm";
+import PublicLayoutWrapper from "@/components/PublicLayoutWrapper";
 import "./globals.css";
 
 export const metadata = {
@@ -21,16 +18,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet" />
       </head>
-      <body>
-        <div className="min-h-screen flex flex-col pt-0">
-          <Header />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
-          <FloatingMenu />
-          <FloatingConsultForm />
-        </div>
+      <body className="antialiased font-outfit">
+        <PublicLayoutWrapper>
+          {children}
+        </PublicLayoutWrapper>
       </body>
     </html>
   );

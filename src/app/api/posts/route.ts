@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/auth';
 
 // GET /api/posts - 법률 칼럼 목록 조회
 export async function GET(request: Request) {
@@ -58,8 +59,8 @@ export async function GET(request: Request) {
 // POST /api/posts - 관리자 글 작성
 export async function POST(request: Request) {
   // 간단한 관리자 인증 (헤더 기반)
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'lawoffice2024admin') {
+  const session = await requireAdminAuth('canManagePosts');
+  if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }
 

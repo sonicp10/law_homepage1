@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/auth';
 
 // PATCH /api/admin/board/[id]/reply - 게시판 답변 등록
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'lawoffice2024admin') {
+  const session = await requireAdminAuth('canManageConsultations');
+  if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }
 

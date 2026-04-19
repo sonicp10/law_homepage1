@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/auth';
 
 // GET /api/admin/stats - 대시보드 통계
 export async function GET(request: Request) {
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'lawoffice2024admin') {
+  const session = await requireAdminAuth();
+  if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }
 

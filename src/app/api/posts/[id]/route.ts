@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/auth';
 
 // GET /api/posts/[id] - 단건 조회 + 조회수 증가
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -19,8 +20,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 // PATCH /api/posts/[id] - 수정 (관리자 전용)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'lawoffice2024admin') {
+  const session = await requireAdminAuth('canManagePosts');
+  if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }
 
@@ -53,8 +54,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 // DELETE /api/posts/[id] - 삭제 (관리자 전용)
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'lawoffice2024admin') {
+  const session = await requireAdminAuth('canManagePosts');
+  if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }
 

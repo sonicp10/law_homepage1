@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
 }
 
 generator client {
@@ -91,6 +91,9 @@ model Post {
   excerpt     String?      // 요약글
   thumbnail   String?      // 썸네일 이미지 URL
   category    PostCategory
+  tags        String?      // 쉼표 구분 태그 (예: "신청자격,채무조정")
+  author      String?      @default("법무사 김형근") // 작성자명
+  readTime    Int?         @default(5) // 예상 읽기 시간 (분)
   published   Boolean      @default(true)
   viewCount   Int          @default(0)
   createdAt   DateTime     @default(now())

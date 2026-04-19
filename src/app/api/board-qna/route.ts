@@ -1,12 +1,26 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '10');
+  const skip = (page - 1) * limit;
+
   try {
-    const questions = await prisma.boardQna.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    return NextResponse.json(questions);
+    const [items, totalCount] = await Promise.all([
+      prisma.boardQna.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        select: {
+          id: true, author: true, phone: true, title: true,
+          content: true, replyContent: true, status: true, createdAt: true,
+        },
+      }),
+      prisma.boardQna.count(),
+    ]);
+    return NextResponse.json({ items, totalCount, totalPages: Math.ceil(totalCount / limit) });
   } catch (error) {
     console.error('BoardQna GET Error:', error);
     return NextResponse.json({ error: '게시글 조회에 실패했습니다.' }, { status: 500 });

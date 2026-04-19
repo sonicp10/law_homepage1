@@ -22,7 +22,7 @@ export default function Header() {
       subMenus: [
         { name: '개인회생절차', href: '/rehab/step' },
         { name: '자주묻는 질문', href: '/rehab/ask' },
-        { name: '법률 정보', href: '/rehab/posts' },
+        { name: 'All 개인회생', href: '/rehab/posts' },
       ],
     },
     {
@@ -31,7 +31,7 @@ export default function Header() {
       subMenus: [
         { name: '개인파산절차', href: '/bankruptcy/step' },
         { name: '자주묻는 질문', href: '/bankruptcy/ask' },
-        { name: '법률정보', href: '/bankruptcy/posts' },
+        { name: 'All 개인파산', href: '/bankruptcy/posts' },
       ],
     },
     {

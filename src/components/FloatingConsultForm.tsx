@@ -10,7 +10,7 @@ import { formatPhone } from '@/lib/utils';
 const formSchema = z.object({
   type: z.enum(['개인회생', '개인파산']),
   name: z.string().min(2, { message: '성함을 2자 이상 입력해주세요.' }),
-  phone: z.string().min(10, { message: '정확한 연락처를 입력해주세요.' }),
+  phone: z.string().regex(/^010-\d{3,4}-\d{4}$/, { message: '010으로 시작하는 정확한 연락처를 입력해주세요.' }),
   content: z.string().optional(),
 });
 
@@ -134,7 +134,9 @@ export default function FloatingConsultForm() {
           reset();
         }, 3000);
       } else {
-        alert('전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData.details || errorData.error || '알 수 없는 서버 오류';
+        alert(`전송 중 오류가 발생했습니다: ${errorMsg}\n다시 시도해 주세요.`);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -338,9 +340,9 @@ export default function FloatingConsultForm() {
         </div>
 
         {/* Bottom Gesture Bar */}
-        <div className="h-7 flex flex-col items-center justify-center gap-1 opacity-60">
-          <div className="w-14 h-1 bg-[#BFAF8F]/40 rounded-full"></div>
-          <p className="text-[9px] text-[#BFAF8F]/50 font-bold uppercase tracking-[0.2em] select-none">드래그하여 이동</p>
+        <div className="h-8 flex flex-col items-center justify-center gap-1.5 opacity-90 mt-1">
+          <div className="w-16 h-1.5 bg-[#BFAF8F]/60 rounded-full shadow-inner"></div>
+          <p className="text-[10px] text-[#7E6A4B] font-black uppercase tracking-[0.2em] select-none">드래그하여 이동</p>
         </div>
 
         {/* Close Button Inside Frame */}

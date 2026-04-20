@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { formatPhone, formatPrice } from '@/lib/utils';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -25,6 +26,29 @@ export default function DiagnosisPage() {
     reliefHistory: '',
     seizureHistory: '',
   });
+
+  // 전화번호 실시간 포맷팅
+  useEffect(() => {
+    if (formData.phone) {
+      const formatted = formatPhone(formData.phone);
+      if (formatted !== formData.phone) {
+        setFormData(prev => ({ ...prev, phone: formatted }));
+      }
+    }
+  }, [formData.phone]);
+
+  const handlePriceChange = (field: string, value: string) => {
+    const prevValue = (formData as any)[field] || "";
+    let newValue = value;
+    
+    // 백스페이스 감지: 글자수가 줄어들었고, 이전 값은 '원'으로 끝났는데 현재 값은 그렇지 않다면 마지막 숫자도 삭제
+    if (value.length < prevValue.length && prevValue.endsWith('원') && !value.endsWith('원')) {
+      newValue = value.slice(0, -1);
+    }
+    
+    const formatted = formatPrice(newValue);
+    setFormData(prev => ({ ...prev, [field]: formatted }));
+  };
 
   const nextStep = () => {
     // Validation for Step 1
@@ -107,6 +131,7 @@ export default function DiagnosisPage() {
                 <input 
                   type="tel" 
                   value={formData.phone}
+                  maxLength={13}
                   onChange={(e) => updateField('phone', e.target.value)}
                   placeholder="010-1234-5678"
                   className="w-full px-5 py-4 bg-white border border-[var(--border)] rounded-2xl focus:ring-2 focus:ring-[var(--secondary)]/20 outline-none transition-all"
@@ -139,7 +164,8 @@ export default function DiagnosisPage() {
                 <input 
                   type="text" 
                   value={formData.birth}
-                  onChange={(e) => updateField('birth', e.target.value)}
+                  maxLength={6}
+                  onChange={(e) => updateField('birth', e.target.value.replace(/[^\d]/g, ''))}
                   placeholder="6자리 입력"
                   className="w-full px-5 py-4 bg-white border border-[var(--border)] rounded-2xl outline-none"
                 />
@@ -149,8 +175,8 @@ export default function DiagnosisPage() {
                 <input 
                   type="text" 
                   value={formData.monthlyIncome}
-                  onChange={(e) => updateField('monthlyIncome', e.target.value)}
-                  placeholder="예: 280만원"
+                  onChange={(e) => handlePriceChange('monthlyIncome', e.target.value)}
+                  placeholder="예: 2,500,000원"
                   className="w-full px-5 py-4 bg-white border border-[var(--border)] rounded-2xl outline-none"
                 />
               </div>
@@ -180,8 +206,8 @@ export default function DiagnosisPage() {
                 <input 
                   type="text" 
                   value={formData.totalDebt}
-                  onChange={(e) => updateField('totalDebt', e.target.value)}
-                  placeholder="예: 7,500만원"
+                  onChange={(e) => handlePriceChange('totalDebt', e.target.value)}
+                  placeholder="예: 50,000,000원"
                   className="w-full px-5 py-4 bg-white border border-[var(--border)] rounded-2xl outline-none"
                 />
               </div>
@@ -270,7 +296,7 @@ export default function DiagnosisPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-8">
               <div>
                 <label className="block text-sm font-bold text-[var(--primary)] mb-3">최근 면책 이력 (회생/파산 등) *</label>
                 <div className="grid grid-cols-2 gap-3">

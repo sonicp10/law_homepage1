@@ -25,8 +25,8 @@ export default function AdminConsultationsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: '10', ...(typeFilter && { type: typeFilter }) });
       const res = await fetch(`/api/admin/consultations/list?${params}`, {
@@ -37,10 +37,14 @@ export default function AdminConsultationsPage() {
       setTotal(data.totalCount || 0);
       setTotalPages(data.totalPages || 1);
     } catch { setItems([]); }
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [typeFilter, page]);
+  useEffect(() => { 
+    fetchData(); 
+    const interval = setInterval(() => fetchData(true), 10000);
+    return () => clearInterval(interval);
+  }, [typeFilter, page]);
 
   const changeStatus = async (id: string, status: string) => {
     try {

@@ -5,11 +5,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatPhone } from '@/lib/utils';
+import { formatPhone, formatPrice } from '@/lib/utils';
 
 const sectionFormSchema = z.object({
   name: z.string().min(2, { message: '성함을 입력해주세요.' }),
-  phone: z.string().min(10, { message: '정확한 연락처를 입력해주세요.' }),
+  phone: z.string().regex(/^010-\d{3,4}-\d{4}$/, { message: '010으로 시작하는 정확한 연락처를 입력해주세요.' }),
   location: z.string().optional(),
   debtAmount: z.string().optional(),
   content: z.string().optional(),
@@ -41,6 +41,16 @@ export default function RequestSection() {
   });
 
   const phoneValue = watch('phone');
+  const debtValue = watch('debtAmount');
+
+  // 전화번호 자동 포맷팅
+  useEffect(() => {
+    if (!phoneValue) return;
+    const formatted = formatPhone(phoneValue);
+    if (formatted !== phoneValue) {
+      setValue('phone', formatted, { shouldValidate: true });
+    }
+  }, [phoneValue, setValue]);
 
   // 전화번호 자동 포맷팅
   useEffect(() => {
@@ -193,6 +203,10 @@ export default function RequestSection() {
                             {...register('location')}
                             type="text" 
                             placeholder="예: 서울 서초구"
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣\s]/g, '');
+                              setValue('location', value);
+                            }}
                             className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
                           />
                         </div>
@@ -201,7 +215,20 @@ export default function RequestSection() {
                           <input 
                             {...register('debtAmount')}
                             type="text" 
-                            placeholder="예: 5,000만원"
+                            placeholder="예: 50,000,000원"
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const prevValue = debtValue || "";
+                              let newValue = value;
+                              
+                              // 백스페이스 감지: 글자수가 줄어들었을 때만 작동
+                              if (value.length < prevValue.length && prevValue.endsWith('원') && !value.endsWith('원')) {
+                                newValue = value.slice(0, -1);
+                              }
+                              
+                              const formatted = formatPrice(newValue);
+                              setValue('debtAmount', formatted, { shouldValidate: true });
+                            }}
                             className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
                           />
                         </div>
@@ -219,7 +246,7 @@ export default function RequestSection() {
 
                       <div className="flex items-start gap-3 py-2">
                         <input type="checkbox" className="mt-1 accent-[var(--secondary)]" id="agree" required />
-                        <label htmlFor="agree" className="text-[11px] text-[var(--primary)]/50 leading-tight">
+                        <label htmlFor="agree" className="text-[12px] text-[var(--primary)]/70 leading-tight cursor-pointer">
                           개인정보 수집 및 이용에 동의합니다. 입력하신 정보는 법률 상담 목적으로만 사용되며 SSL 암호화로 안전하게 보호됩니다.
                         </label>
                       </div>

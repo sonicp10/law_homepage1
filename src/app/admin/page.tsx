@@ -49,13 +49,20 @@ export default function AdminDashboard() {
         if (!res.ok) throw new Error('Failed');
         const data = await res.json();
         setStats(data);
+        setErr(''); // Clear error on success
       } catch {
         setErr('통계를 불러오지 못했습니다. DB 연결을 확인하세요.');
       } finally {
         setLoading(false);
       }
     };
+
     fetchStats();
+    
+    // 10초마다 데이터 자동 갱신 (폴링)
+    const interval = setInterval(fetchStats, 10000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const formatDate = (dateStr: string) => {

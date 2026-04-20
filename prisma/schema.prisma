@@ -34,6 +34,7 @@ model Lead {
   id              String   @id @default(cuid())
   name            String
   phone           String
+  location        String?  // 거주지역
   debtAmount      String?  // 채무액 (선택)
   preferredType   String?  // 선호 제도 (회생/파산 등)
   content         String?  // 상세 상담 내용

@@ -13,7 +13,7 @@ const statusColors: Record<string, string> = {
 };
 
 interface Lead {
-  id: string; name: string; phone: string; debtAmount: string | null;
+  id: string; name: string; phone: string; location: string | null; debtAmount: string | null;
   preferredType: string | null; content: string | null; status: string;
   source: string | null; createdAt: string;
 }
@@ -25,8 +25,8 @@ export default function AdminLeadsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: '10' });
       const res = await fetch(`/api/admin/leads?${params}`, {
@@ -37,10 +37,14 @@ export default function AdminLeadsPage() {
       setTotal(data.totalCount || 0);
       setTotalPages(data.totalPages || 1);
     } catch { setItems([]); }
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [page]);
+  useEffect(() => { 
+    fetchData(); 
+    const interval = setInterval(() => fetchData(true), 10000);
+    return () => clearInterval(interval);
+  }, [page]);
 
   const changeStatus = async (id: string, status: string) => {
     try {
@@ -74,7 +78,7 @@ export default function AdminLeadsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[var(--border)] bg-gray-50">
-                {['이름', '연락처', '채무액', '희망제도', '상담내용', '유입경로', '상태', '신청일', '변경'].map((h) => (
+                {['이름', '연락처', '지역', '채무액', '희망제도', '상담내용', '유입경로', '상태', '신청일', '변경'].map((h) => (
                   <th key={h} className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -84,6 +88,7 @@ export default function AdminLeadsPage() {
                 <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm">{item.name}</td>
                   <td className="px-4 py-4 text-sm text-[var(--primary)]/70 font-medium">{item.phone}</td>
+                  <td className="px-4 py-4 text-sm text-[var(--primary)]/60">{item.location || '-'}</td>
                   <td className="px-4 py-4 text-sm text-[var(--primary)]/60">{item.debtAmount || '-'}</td>
                   <td className="px-4 py-4 text-sm text-[var(--primary)]/60">{item.preferredType || '-'}</td>
                   <td className="px-4 py-4 text-sm text-[var(--primary)]/60 max-w-xs">

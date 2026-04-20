@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-// Force reload after schema update
+// Force reload after schema update v2
 
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'

@@ -45,7 +45,7 @@ export default function Header() {
     },
     {
       title: '상담문의',
-      href: '/qna',
+      href: '/qna/phone',
       subMenus: [
         { name: '실시간 전화 상담', href: '/qna/phone' },
         { name: '방문 상담', href: '/qna/visit' },

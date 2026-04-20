@@ -19,8 +19,8 @@ export default function AdminBoardPage() {
   const [reply, setReply] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: '10' });
       const res = await fetch(`/api/board-qna?${params}`);
@@ -29,10 +29,14 @@ export default function AdminBoardPage() {
       setTotal(data.totalCount || 0);
       setTotalPages(data.totalPages || 1);
     } catch { setItems([]); }
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [page]);
+  useEffect(() => { 
+    fetchData(); 
+    const interval = setInterval(() => fetchData(true), 10000);
+    return () => clearInterval(interval);
+  }, [page]);
 
   const openDetail = (item: BoardQna) => {
     setSelected(item);

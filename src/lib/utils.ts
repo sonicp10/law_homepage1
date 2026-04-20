@@ -23,3 +23,13 @@ export const formatPhone = (value: string) => {
   // 11자리 (010-1234-5678)
   return `${nums.slice(0, 3)}-${nums.slice(3, 7)}-${nums.slice(7)}`;
 };
+
+/**
+ * 숫자에 콤마를 추가하고 '원' 접미사를 붙이는 유틸리티 함수
+ */
+export const formatPrice = (value: string) => {
+  if (!value) return "";
+  const number = value.replace(/[^\d]/g, "");
+  if (!number) return "";
+  return Number(number).toLocaleString() + "원";
+};

@@ -32,8 +32,8 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-wrap gap-5 justify-center lg:justify-start">
-              <Link href="/diagnosis" className="px-10 py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-2xl shadow-[var(--primary)]/20 hover:-translate-y-1.5 transition-all">
-                자가진단 시스템 바로가기 ➔
+              <Link href="/qna/diagnosis" className="px-10 py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-2xl shadow-[var(--primary)]/20 hover:-translate-y-1.5 transition-all">
+                <span>3분 자가진단 바로가기 ➔</span>
               </Link>
               <Link href="#Request" className="px-10 py-5 bg-white border-2 border-[var(--primary)] text-[var(--primary)] rounded-2xl font-bold text-lg hover:bg-[var(--primary)] hover:text-white transition-all">
                 빠른 상담 신청

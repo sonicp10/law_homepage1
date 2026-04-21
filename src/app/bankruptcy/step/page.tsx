@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
   FileText, 
@@ -265,12 +266,12 @@ export default function BankruptcyStepPage() {
             수많은 성공 사례를 보유한 김형근 사무소가 당신의 평범한 일상을 되찾아 드립니다.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="px-10 py-4 bg-[var(--secondary)] text-[var(--primary)] font-black rounded-full hover:scale-105 transition-all shadow-lg">
-              무료 파산 진단 신청
-            </button>
-            <button className="px-10 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all">
-              전화 바로 상담하기
-            </button>
+            <Link href="/qna/phone" className="px-10 py-4 bg-[var(--secondary)] text-[var(--primary)] font-black rounded-full hover:scale-105 transition-all shadow-lg flex items-center justify-center">
+              전화상담 신청하기
+            </Link>
+            <Link href="/s_story/bankruptcy" className="px-10 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center">
+              성공 사례 보기
+            </Link>
           </div>
         </div>
       </div>

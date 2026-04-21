@@ -139,7 +139,11 @@ export default function Header() {
                       <span className="inline-block relative">
                         {/* Glow effect for "숨" */}
                         <div className="absolute inset-0 bg-[#A67C52]/10 blur-xl rounded-full scale-150 opacity-0 group-hover/box:opacity-100 transition-opacity"></div>
-                        <span className="text-[32px] font-black text-[#A67C52] inline-block transform rotate-[15deg] origin-center px-1 drop-shadow-sm">"숨"</span>
+                        <span className="flex items-center mx-1 h-10">
+                          <span className="text-[#A67C52] font-black text-xl self-start translate-y-1">“</span>
+                          <span className="text-[32px] font-black text-[#A67C52] inline-block transform rotate-[15deg] origin-center px-1 drop-shadow-sm transition-transform group-hover/box:scale-110">숨</span>
+                          <span className="text-[#A67C52] font-black text-xl self-end -translate-y-1">”</span>
+                        </span>
                       </span>
                       <p className="text-[20px] font-extrabold text-[var(--primary)] tracking-tight">쉴 수 있는 공간,</p>
                     </div>

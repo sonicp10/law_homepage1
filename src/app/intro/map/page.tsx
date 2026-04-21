@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function MapPage() {
+  const [selectedGuide, setSelectedGuide] = useState<'car' | 'transport' | null>(null);
+
   const handleCopy = async (text: string) => {
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -55,7 +57,7 @@ export default function MapPage() {
                 <p className="text-[var(--primary)] text-2xl md:text-3xl font-black leading-tight mb-4">
                   서울 구로구 경인로 579, <br />
                   502호 <br />
-                  <span className="text-[var(--secondary)]">(신도림동, 안성빌딩 A동)</span>
+                  <span className="text-[var(--secondary)]">(구로역 2번 출구, 안성빌딩 A동)</span>
                 </p>
                 
                 <div className="flex flex-wrap gap-3">
@@ -66,11 +68,10 @@ export default function MapPage() {
                     <span>📋</span> 주소 복사하기
                   </button>
                   <a 
-                    href="https://map.naver.com/v5/search/서울 구로구 경인로 579" 
-                    target="_blank"
+                    href="tel:02-6405-6363" 
                     className="px-6 py-3 bg-white border-2 border-[var(--secondary)] text-[var(--secondary)] rounded-full font-bold hover:bg-[var(--secondary)] hover:text-white transition-all active:scale-95 flex items-center gap-2"
                   >
-                    <span>🧭</span> 네이버 내비 연결
+                    <span>📞</span> 실시간 전화 상담
                   </a>
                 </div>
               </div>
@@ -87,7 +88,7 @@ export default function MapPage() {
                     <span className="text-green-600">✔</span> 방문자 전용 무료 주차 완비
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-green-600">✔</span> 신도림역 1번/5번/6번 출구 도보 5분 거리
+                    <span className="text-green-600">✔</span> 구로역 2번 출구 도보 5분 거리
                   </li>
                 </ul>
               </div>
@@ -125,10 +126,26 @@ export default function MapPage() {
                <div className="text-center z-10 p-8">
                  <div className="text-8xl mb-6 transform group-hover:rotate-12 transition-transform select-none">🏢</div>
                  <h4 className="text-2xl font-black text-[var(--primary)] mb-2">법무사 김형근 사무소</h4>
-                 <p className="text-[var(--primary)]/60 font-medium">서울 구로구 경인로 579, 502호 (신도림동)</p>
+                 <p className="text-[var(--primary)]/60 font-medium">서울 구로구 경인로 579, 502호 (구로역 2번 출구)</p>
                  <div className="mt-8 flex justify-center gap-4">
-                    <div className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg">N</div>
-                    <div className="w-12 h-12 bg-[#FAE100] rounded-full flex items-center justify-center text-[#3C1E1E] font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg">K</div>
+                    <a 
+                      href="https://map.naver.com/v5/search/서울 구로구 경인로 579" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg"
+                      title="네이버 지도로 보기"
+                    >
+                      N
+                    </a>
+                    <a 
+                      href="https://map.kakao.com/link/search/서울 구로구 경인로 579" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-12 h-12 bg-[#FAE100] rounded-full flex items-center justify-center text-[#3C1E1E] font-bold cursor-pointer hover:scale-110 transition-transform shadow-lg"
+                      title="카카오 맵으로 보기"
+                    >
+                      K
+                    </a>
                  </div>
                </div>
                
@@ -141,15 +158,57 @@ export default function MapPage() {
           </div>
           
           <div className="flex gap-4">
-            <button className="flex-1 py-5 bg-white border border-[var(--border)] rounded-2xl font-bold text-[var(--primary)] hover:bg-[var(--surface)] transition-all flex flex-col items-center gap-1">
-              <span className="text-xs text-[var(--primary)]/40">자차 이용 시</span>
+            <button 
+              onClick={() => setSelectedGuide(selectedGuide === 'car' ? null : 'car')}
+              className={`flex-1 py-5 border rounded-2xl font-bold transition-all flex flex-col items-center gap-1 ${
+                selectedGuide === 'car' 
+                ? 'bg-[var(--primary)] text-white border-[var(--primary)] shadow-lg scale-[1.02]' 
+                : 'bg-white border-[var(--border)] text-[var(--primary)] hover:bg-[var(--surface)]'
+              }`}
+            >
+              <span className={`text-xs ${selectedGuide === 'car' ? 'text-white/60' : 'text-[var(--primary)]/40'}`}>자차 이용 시</span>
               <span>무료 주차 안내</span>
             </button>
-            <button className="flex-1 py-5 bg-white border border-[var(--border)] rounded-2xl font-bold text-[var(--primary)] hover:bg-[var(--surface)] transition-all flex flex-col items-center gap-1">
-              <span className="text-xs text-[var(--primary)]/40">대중교통 이용 시</span>
+            <button 
+              onClick={() => setSelectedGuide(selectedGuide === 'transport' ? null : 'transport')}
+              className={`flex-1 py-5 border rounded-2xl font-bold transition-all flex flex-col items-center gap-1 ${
+                selectedGuide === 'transport' 
+                ? 'bg-[var(--primary)] text-white border-[var(--primary)] shadow-lg scale-[1.02]' 
+                : 'bg-white border-[var(--border)] text-[var(--primary)] hover:bg-[var(--surface)]'
+              }`}
+            >
+              <span className={`text-xs ${selectedGuide === 'transport' ? 'text-white/60' : 'text-[var(--primary)]/40'}`}>대중교통 이용 시</span>
               <span>지하철/버스 안내</span>
             </button>
           </div>
+
+          {/* Guide Content Display */}
+          {selectedGuide && (
+            <div className="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] animate-fade-in">
+              {selectedGuide === 'car' ? (
+                <div className="space-y-3">
+                  <h5 className="font-bold text-[var(--primary)] flex items-center gap-2">
+                    <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs">P</span>
+                    주차 안내
+                  </h5>
+                  <p className="text-sm text-[var(--primary)]/80 leading-relaxed">
+                    주차장에 무료 주차가 가능합니다.<br/>
+                    <span className="font-bold text-[var(--secondary)]">(상담 방문 고객 2시간 무료 주차권 제공)</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <h5 className="font-bold text-[var(--primary)] flex items-center gap-2">
+                    <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs">Sub</span>
+                    지하철 안내
+                  </h5>
+                  <p className="text-sm text-[var(--primary)]/80 leading-relaxed">
+                    <span className="font-bold text-[var(--primary)]">구로역 하차 2번 출구</span> 광장에서 신도림 방향 e편한세상 아파트쪽으로 도보 5분 거리입니다.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

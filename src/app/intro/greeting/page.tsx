@@ -20,28 +20,37 @@ export default function GreetingPage() {
     }
   };
 
-  const highlightSum = (text: string) => {
+  const highlightSum = (text: string, isLarge = false) => {
     return (
-      <span className="text-[#A67C52] font-black italic inline-block transform rotate-[10deg] px-1">
+      <span className={`text-[#A67C52] font-black italic inline-block transform rotate-12 transition-transform hover:scale-110 cursor-default px-1 ${isLarge ? 'text-4xl md:text-6xl mx-2' : ''}`}>
         {text}
       </span>
     );
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] py-20 md:py-32 px-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Header Section */}
         <motion.div 
-          className="text-center mb-20 md:mb-32"
+          className="text-center mb-16 animate-slide-up"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="text-3xl md:text-5xl font-black text-[var(--primary)] leading-tight tracking-tight">
-            다시, "{highlightSum('숨')}"을 고르고 <br className="md:hidden" />
-            내일을 꿈꿀 수 있도록.
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-[var(--primary)] mb-6">인사말</h1>
+          <div className="w-12 h-1 bg-[var(--secondary)] mx-auto mb-8 rounded-full"></div>
+          <div className="text-xl md:text-3xl font-black text-[var(--primary)] leading-tight tracking-tight max-w-4xl mx-auto flex items-center justify-center flex-wrap gap-y-2">
+            <span>다시,</span>
+            <div className="flex items-center mx-1 h-12 md:h-16">
+              <span className="text-[var(--primary)] font-black text-2xl md:text-3xl self-start translate-y-1">“</span>
+              {highlightSum('숨', true)}
+              <span className="text-[var(--primary)] font-black text-2xl md:text-3xl self-end -translate-y-1">”</span>
+            </div>
+            <div className="flex flex-col md:flex-row items-center gap-x-2">
+              <span>을 고르고 </span>
+              <span>내일을 꿈꿀 수 있도록.</span>
+            </div>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
@@ -122,6 +131,5 @@ export default function GreetingPage() {
           </motion.div>
         </div>
       </div>
-    </div>
   );
 }

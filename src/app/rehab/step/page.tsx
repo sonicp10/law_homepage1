@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 const Card = ({ title, index, children, icon }: { title: string; index: string; children: React.ReactNode; icon?: React.ReactNode }) => (
   <div className="relative mb-20 group">
@@ -83,7 +84,7 @@ export default function RehabStepPage() {
             </div>
           </div>
           <HighlightBox>
-            변제계획안은 법률상 필수 서류는 아니나, 실무적으로는 절차의 신속한 진행을 위해 <b>신청서 제출 시 함께 접수하는 것이 일반적</b>입니다.
+            실무적으로는 절차의 신속한 진행을 위해 <b>신청서 제출 시 함께 접수하는 것이 일반적</b>입니다.
           </HighlightBox>
         </Card>
 
@@ -99,11 +100,7 @@ export default function RehabStepPage() {
         {/* Step 3 */}
         <Card index="03" title="변제계획안 제출 및 실무적 수행">
           <p>채무자는 향후 어떻게 채무를 변제할 것인지에 대한 구체적인 계획을 담은 '변제계획안'을 제출해야 합니다.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-            <div className="p-6 border border-[var(--border)] rounded-2xl bg-white">
-              <span className="text-xs font-bold text-[var(--secondary)] block mb-2">⚖️ 법적 기준</span>
-              <p className="text-[15px]">개시 신청일로부터 14일 이내 제출 (실무적으로는 동시 제출 권장)</p>
-            </div>
+          <div className="mt-6">
             <div className="p-6 border border-[var(--secondary)]/30 rounded-2xl bg-[var(--secondary)]/5">
               <span className="text-xs font-bold text-[var(--secondary)] block mb-2">👨‍💼 실무적 운용</span>
               <p className="text-[15px]">수행 가능성 입증을 위해 제출일로부터 60~90일 내에 첫 변제를 개시하도록 설정</p>
@@ -225,12 +222,12 @@ export default function RehabStepPage() {
             지금 바로 무료 상담을 신청하세요.
           </p>
           <div className="flex justify-center gap-4">
-            <button className="px-8 py-4 bg-[var(--secondary)] text-white font-black rounded-full hover:scale-105 transition-all shadow-lg">
+            <Link href="/qna/phone" className="px-8 py-4 bg-[var(--secondary)] text-white font-black rounded-full hover:scale-105 transition-all shadow-lg text-center flex items-center justify-center">
               1:1 맞춤 상담 신청
-            </button>
-            <button className="px-8 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all">
+            </Link>
+            <Link href="/s_story/rehab" className="px-8 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all text-center flex items-center justify-center">
               성공 사례 보기
-            </button>
+            </Link>
           </div>
         </div>
       </div>

@@ -64,9 +64,9 @@ export default function BusinessPage() {
         <div className="text-xl md:text-2xl text-[var(--primary)]/70 font-semibold leading-relaxed max-w-3xl mx-auto flex items-center justify-center flex-wrap gap-y-2">
           <span>막막한 부채의 끝, 당신이 다시</span>
           <div className="flex items-center mx-2 h-12">
-            <span className="text-[var(--primary)] font-black text-2xl md:text-3xl self-start">“</span>
-            <span className="inline-block text-[var(--primary)] font-black text-4xl md:text-5xl -rotate-12 transform hover:scale-110 transition-transform cursor-default px-1">숨</span>
-            <span className="text-[var(--primary)] font-black text-2xl md:text-3xl self-end">”</span>
+            <span className="text-[var(--primary)] font-black text-2xl md:text-3xl self-start translate-y-1">“</span>
+            <span className="inline-block text-[var(--primary)] font-black text-4xl md:text-5xl rotate-12 transform hover:scale-110 transition-transform cursor-default px-1">숨</span>
+            <span className="text-[var(--primary)] font-black text-2xl md:text-3xl self-end -translate-y-1">”</span>
           </div>
           <span className="text-[var(--primary)] font-black">쉴 수 있도록</span>
         </div>

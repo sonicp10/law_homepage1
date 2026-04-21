@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, HelpCircle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { faqs } from './data';
@@ -235,12 +236,12 @@ export default function RehabAskPage() {
             전문 법무사가 1:1 비밀 방문 상담을 통해 명쾌한 해답을 드립니다.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="px-10 py-5 bg-[var(--secondary)] text-white font-black rounded-full hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2">
+            <Link href="/qna/board" className="px-10 py-5 bg-[var(--secondary)] text-white font-black rounded-full hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2">
               무료 상담 신청하기
-            </button>
-            <button className="px-10 py-5 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-2">
+            </Link>
+            <Link href="/s_story/rehab" className="px-10 py-5 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-2">
               성공 사례 더보기
-            </button>
+            </Link>
           </div>
         </div>
       </div>

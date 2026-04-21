@@ -42,8 +42,14 @@ export default function BankruptcyStoryPage() {
         <div className="text-center md:text-left">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-4">개인파산 성공사례</h2>
           <div className="w-12 h-1 bg-[#A67C52] mb-6 md:mx-0 mx-auto"></div>
-          <p className="text-lg text-[var(--primary)]/60 font-medium">
-            채무의 굴레에서 벗어나 완전한 경제적 자유를 찾은 실제 결과들입니다.
+          <p className="text-lg text-[var(--primary)]/60 font-medium flex items-center gap-x-1 flex-wrap">
+            <span>여러분도 다시</span>
+            <span className="flex items-center mx-1">
+              <span className="text-[#A67C52] font-black text-xl self-start translate-y-1">“</span>
+              <span className="text-[32px] font-black text-[#A67C52] inline-block transform rotate-12 mx-1 transition-transform">숨</span>
+              <span className="text-[#A67C52] font-black text-xl self-end -translate-y-1">”</span>
+            </span>
+            <span>쉴 수 있습니다. 채무에서 벗어난 진짜 이야기!!</span>
           </p>
         </div>
         

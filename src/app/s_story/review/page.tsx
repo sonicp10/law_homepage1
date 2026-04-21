@@ -41,8 +41,13 @@ export default function ReviewPage() {
         <div className="text-center md:text-left">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-4">의뢰인 후기</h2>
           <div className="w-12 h-1 bg-[#A67C52] mb-6 md:mx-0 mx-auto"></div>
-          <p className="text-lg text-[var(--primary)]/60 font-medium">
-            김형근 사무소와 함께 새로운 시작을 하신 의뢰인분들의 생생한 목소리입니다.
+          <p className="text-lg text-[var(--primary)]/60 font-medium flex items-center gap-x-1 flex-wrap">
+            <span className="flex items-center">
+              <span className="text-[#A67C52] font-black text-xl self-start translate-y-1">“</span>
+              <span className="text-[32px] font-black text-[#A67C52] inline-block transform rotate-12 mx-1 group-hover:scale-110 transition-transform">숨</span>
+              <span className="text-[#A67C52] font-black text-xl self-end -translate-y-1">”</span>
+            </span>
+            <span>통이 트이는 순간! 의뢰인분들의 생생한 목소리입니다.</span>
           </p>
         </div>
         

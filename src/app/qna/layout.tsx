@@ -15,7 +15,7 @@ export default function QnaLayout({ children }: { children: React.ReactNode }) {
       <SubPageBanner 
         title="상담문의" 
         subtitle="의뢰인의 무거운 마음을 덜어드리는 진심 어린 상담을 약속합니다."
-        backgroundImage="https://images.unsplash.com/photo-1573497620053-ea5310f94f17?auto=format&fit=crop&q=80&w=1600"
+        backgroundImage="/images/qna-banner.png"
       />
       
       <TabNavigation tabs={qnaTabs} />

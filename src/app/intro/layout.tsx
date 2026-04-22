@@ -21,7 +21,7 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
       <SubPageBanner 
         title="회사 소개" 
         subtitle="새로운 시작을 위하여 최고의 법률 서비스를 제공해 드립니다."
-        backgroundImage="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1600"
+        backgroundImage="/images/intro_banner.png"
       />
       
       <TabNavigation tabs={displayTabs} />

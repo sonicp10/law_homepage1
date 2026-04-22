@@ -15,20 +15,22 @@ export default function HomePage() {
         
         <div className="max-w-7xl mx-auto px-6 w-full text-center lg:text-left grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="animate-slide-up lg:col-span-7">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white rounded-full border border-[var(--border)] shadow-sm mb-10 hover:shadow-md transition-shadow cursor-default">
-              <span className="w-2.5 h-2.5 bg-[var(--secondary)] rounded-full animate-pulse"></span>
-              <span className="text-xs font-bold text-[var(--primary)]/80 tracking-tight">도산 전문 법무사 직접 상담 | 수도권 전역 출장 상담</span>
-            </div>
+
             
-            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[var(--primary)] leading-[1.1] mb-10 tracking-tight">
-              당신의 <span className="text-[var(--secondary)]">무거운 빚</span>,<br />
-              따뜻한 내일로<br />
-              바꿔드립니다.
+            <h1 className="font-black text-[var(--primary)] mb-10 tracking-tight leading-none">
+              <span className="inline-block text-6xl md:text-8xl lg:text-[7rem] italic transform rotate-3 origin-left mb-4 text-[var(--primary)]">
+                &ldquo;숨&rdquo;
+              </span>
+              <div className="text-2xl md:text-4xl lg:text-[3rem] font-bold leading-[1.3] text-[var(--primary)]/90">
+                막히는 <span className="text-[var(--secondary)]">무거운 빚</span>의 굴레,<br />
+                법무사 김형근 사무소가<br />
+                끊어 드리겠습니다.
+              </div>
             </h1>
             
             <p className="text-xl md:text-2xl text-[var(--primary)]/70 mb-14 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              딱딱한 법률 문구보다 의뢰인의 마음을 먼저 듣습니다.<br />
-              김형근 법무사가 직접 당신의 재기를 끝까지 책임집니다.
+              포기하고 싶었던 순간이 있으셨나요? 그 마음 충분히<br />
+              이해합니다. 이제 내려 놓으세요! 저희가 하겠습니다.
             </p>
             
             <div className="flex flex-wrap gap-5 justify-center lg:justify-start">

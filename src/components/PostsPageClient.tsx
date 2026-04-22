@@ -71,7 +71,7 @@ export default function PostsPageClient({ defaultCategory }: { defaultCategory: 
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  const pageTitle = defaultCategory === 'REHAB' ? 'All 개인회생' : 'All 개인파산';
+  const pageTitle = defaultCategory === 'REHAB' ? 'About 개인회생' : 'About 개인파산';
   const pageSubtitle = defaultCategory === 'REHAB'
     ? '개인회생 성공을 위한 필수 지식과 실무 노하우를 전해드립니다.'
     : '개인파산 절차와 면책을 위한 전문 법률 정보를 제공합니다.';

@@ -5,7 +5,7 @@ import TabNavigation from '@/components/TabNavigation';
 const bankruptcyTabs = [
   { label: '개인파산절차', href: '/bankruptcy/step' },
   { label: '자주묻는 질문', href: '/bankruptcy/ask' },
-  { label: 'All 개인파산', href: '/bankruptcy/posts' },
+  { label: 'About 개인파산', href: '/bankruptcy/posts' },
 ];
 
 export default function BankruptcyLayout({ children }: { children: React.ReactNode }) {

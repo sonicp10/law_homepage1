@@ -129,3 +129,13 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Analytics {
+  id        String   @id @default(cuid())
+  path      String   // 방문 경로
+  referrer  String?  // 유입 경로
+  ip        String?  // 방문자 IP
+  userAgent String?  // 브라우저 정보
+  createdAt DateTime @default(now())
+}
+

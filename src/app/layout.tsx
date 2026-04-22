@@ -1,4 +1,5 @@
 import PublicLayoutWrapper from "@/components/PublicLayoutWrapper";
+import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
 import "./globals.css";
 
 export const metadata = {
@@ -19,6 +20,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased font-outfit">
+        <AnalyticsTracker />
         <PublicLayoutWrapper>
           {children}
         </PublicLayoutWrapper>
@@ -26,3 +28,4 @@ export default function RootLayout({
     </html>
   );
 }
+

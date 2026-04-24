@@ -52,16 +52,6 @@ export default function RehabStoryPage() {
             <span>을 찾은 사람들의 이야기</span>
           </p>
         </div>
-        
-        <Link 
-          href="/s_story/case-write" 
-          className="group flex items-center gap-2 px-8 py-4 bg-[var(--primary)] text-white rounded-2xl font-bold shadow-lg hover:bg-[var(--primary)]/90 hover:-translate-y-1 transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          성공사례 등록
-        </Link>
       </div>
 
       {isLoading ? (

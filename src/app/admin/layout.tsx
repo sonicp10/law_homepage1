@@ -7,8 +7,9 @@ import { usePathname, useRouter } from 'next/navigation';
 const navItems = [
   { label: '대시보드', href: '/admin', icon: '📊', requiredPermission: null },
   { label: '방문 통계', href: '/admin/statistics', icon: '📈', requiredPermission: null },
-  { label: 'All 개인회생', href: '/admin/columns?cat=REHAB', icon: '⚖️', requiredPermission: 'canManagePosts' },
-  { label: 'All 개인파산', href: '/admin/columns?cat=BANKRUPTCY', icon: '📋', requiredPermission: 'canManagePosts' },
+  { label: 'About 개인회생', href: '/admin/columns?cat=REHAB', icon: '⚖️', requiredPermission: 'canManagePosts' },
+  { label: 'About 개인파산', href: '/admin/columns?cat=BANKRUPTCY', icon: '💸', requiredPermission: 'canManagePosts' },
+  { label: '성공사례 관리', href: '/admin/columns?cat=SUCCESS_STORY', icon: '🏆', requiredPermission: 'canManagePosts' },
   { label: '전화/방문 상담', href: '/admin/consultations', icon: '📞', requiredPermission: 'canManageConsultations' },
   { label: '게시판 상담', href: '/admin/board', icon: '💬', requiredPermission: 'canManageConsultations' },
   { label: '상담 신청 (리드)', href: '/admin/leads', icon: '📌', requiredPermission: 'canManageConsultations' },

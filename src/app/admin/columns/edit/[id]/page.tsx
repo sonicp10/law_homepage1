@@ -6,8 +6,9 @@ import { useRouter, useParams } from 'next/navigation';
 const ADMIN_SECRET = 'lawoffice2024admin';
 
 const catOptions = [
-  { value: 'REHAB', label: 'All 개인회생' },
-  { value: 'BANKRUPTCY', label: 'All 개인파산' },
+  { value: 'REHAB', label: 'About 개인회생' },
+  { value: 'BANKRUPTCY', label: 'About 개인파산' },
+  { value: 'SUCCESS_STORY', label: '성공사례' },
 ];
 
 export default function EditColumnPage() {
@@ -19,7 +20,37 @@ export default function EditColumnPage() {
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setForm({ ...form, thumbnail: data.url });
+      } else {
+        setError(data.error || '업로드에 실패했습니다.');
+      }
+    } catch {
+      setError('서버 연결 오류가 발생했습니다.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -106,11 +137,36 @@ export default function EditColumnPage() {
             className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:outline-none focus:border-[#A67C52] text-sm font-medium" />
         </div>
 
+        {/* 썸네일 이미지 */}
         <div>
-          <label className="block text-sm font-bold text-[var(--primary)] mb-2">썸네일 URL</label>
-          <input type="url" value={form.thumbnail} onChange={(e) => setForm({ ...form, thumbnail: e.target.value })}
-            className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:outline-none focus:border-[#A67C52] text-sm font-mono" />
-          {form.thumbnail && <div className="mt-3 rounded-xl overflow-hidden h-32"><img src={form.thumbnail} alt="미리보기" className="w-full h-full object-cover" /></div>}
+          <label className="block text-sm font-bold text-[var(--primary)] mb-2">썸네일 이미지</label>
+          <div className="flex gap-3 mb-3">
+            <input
+              type="text"
+              value={form.thumbnail}
+              onChange={(e) => setForm({ ...form, thumbnail: e.target.value })}
+              placeholder="이미지 URL을 입력하거나 파일을 업로드하세요"
+              className="flex-1 px-4 py-3 border border-[var(--border)] rounded-xl focus:outline-none focus:border-[#A67C52] text-sm font-medium font-mono"
+            />
+            <label className={`px-5 py-3 rounded-xl font-bold text-sm cursor-pointer transition-all border ${uploading ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-[var(--primary)] border-[var(--border)] hover:bg-gray-50'}`}>
+              {uploading ? '업로드 중...' : '📁 파일 선택'}
+              <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+            </label>
+          </div>
+          {form.thumbnail && (
+            <div className="relative group rounded-xl overflow-hidden h-40 border border-[var(--border)]">
+              <img src={form.thumbnail} alt="미리보기" className="w-full h-full object-cover" />
+              <button 
+                type="button"
+                onClick={() => setForm({ ...form, thumbnail: '' })}
+                className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

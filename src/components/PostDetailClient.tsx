@@ -77,7 +77,7 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
       <div className="mb-8">
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <span className="px-3 py-1 bg-[#A67C52]/10 text-[#A67C52] text-xs font-bold rounded-full">
-            {post.category === 'REHAB' ? 'All 개인회생' : post.category === 'BANKRUPTCY' ? 'All 개인파산' : post.category}
+            {post.category === 'REHAB' ? 'About 개인회생' : post.category === 'BANKRUPTCY' ? 'About 개인파산' : post.category}
           </span>
           {post.tags && post.tags.split(',').slice(0, 4).map((tag) => (
             <span key={tag} className="px-3 py-1 bg-gray-100 text-[var(--primary)]/50 text-xs font-semibold rounded-full">

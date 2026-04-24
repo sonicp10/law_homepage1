@@ -22,7 +22,7 @@ export default function Header() {
       subMenus: [
         { name: '개인회생절차', href: '/rehab/step' },
         { name: '자주묻는 질문', href: '/rehab/ask' },
-        { name: 'All 개인회생', href: '/rehab/posts' },
+        { name: 'About 개인회생', href: '/rehab/posts' },
       ],
     },
     {
@@ -31,7 +31,7 @@ export default function Header() {
       subMenus: [
         { name: '개인파산절차', href: '/bankruptcy/step' },
         { name: '자주묻는 질문', href: '/bankruptcy/ask' },
-        { name: 'All 개인파산', href: '/bankruptcy/posts' },
+        { name: 'About 개인파산', href: '/bankruptcy/posts' },
       ],
     },
     {
@@ -50,7 +50,7 @@ export default function Header() {
         { name: '실시간 전화 상담', href: '/qna/phone' },
         { name: '방문 상담', href: '/qna/visit' },
         { name: '게시판 상담', href: '/qna/board' },
-        { name: '3분 자가진단', href: '/qna/diagnosis' },
+        { name: '1분 자가진단', href: '/qna/diagnosis' },
       ],
     },
   ];

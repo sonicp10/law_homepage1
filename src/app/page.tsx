@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import TrustStatsBar from '@/components/TrustStatsBar';
 import RequestSection from '@/components/RequestSection';
+import LandingPostSection from '@/components/LandingPostSection';
 import FloatingMenu from '@/components/FloatingMenu';
 
 export default function HomePage() {
@@ -35,7 +36,7 @@ export default function HomePage() {
             
             <div className="flex flex-wrap gap-5 justify-center lg:justify-start">
               <Link href="/qna/diagnosis" className="px-10 py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-2xl shadow-[var(--primary)]/20 hover:-translate-y-1.5 transition-all">
-                <span>3분 자가진단 바로가기 ➔</span>
+                <span>1분 자가진단 바로가기 ➔</span>
               </Link>
               <Link href="#Request" className="px-10 py-5 bg-white border-2 border-[var(--primary)] text-[var(--primary)] rounded-2xl font-bold text-lg hover:bg-[var(--primary)] hover:text-white transition-all">
                 빠른 상담 신청
@@ -81,65 +82,30 @@ export default function HomePage() {
       {/* Advanced Request Section (Integrated Layout) */}
       <RequestSection />
 
-      {/* Service Cards with Hover Detail Layout */}
-      <section className="py-32 bg-[var(--background)]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-24">
-            <span className="text-[var(--secondary)] font-bold tracking-[0.3em] uppercase mb-4 block">사무소 전용 솔루션</span>
-            <h2 className="text-4xl md:text-6xl font-bold text-[var(--primary)] mb-8">의뢰인을 위한 맞춤형 솔루션</h2>
-            <div className="w-24 h-1.5 bg-[var(--accent)] mx-auto rounded-full"></div>
-          </div>
-          
+      {/* About Section: Personal Rehabilitation */}
+      <LandingPostSection 
+        category="REHAB" 
+        title="About 개인회생" 
+        subtitle="개인회생 성공을 위한 필수 지식과 실무 노하우를 전해드립니다."
+        href="/rehab/posts"
+      />
 
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {[
-              { 
-                title: "개인회생", 
-                desc: "원금 최대 90% 탕감, 연체 전후 모두 신청 가능합니다.",
-                stats: "평균 탕감률 78%",
-                color: "var(--secondary)",
-                tag: "소득자 최적화"
-              },
-              { 
-                title: "개인파산", 
-                desc: "소득 증빙이 어려운 고령자나 무소득자를 위한 완전 면책 제도입니다.",
-                stats: "완전 면책률 99%",
-                color: "var(--accent)",
-                tag: "신속한 면책"
-              },
-              { 
-                title: "사후 관리", 
-                desc: "인가 후 신용도 회복 및 등본 관리까지 꼼꼼하게 도와드립니다.",
-                stats: "신용회복 만족도 1위",
-                color: "#E8E4D8",
-                tag: "마지막 단계"
-              }
-            ].map((service, idx) => (
-              <div key={idx} className="group relative h-[400px] bg-white rounded-[var(--radius-card)] p-10 border border-[var(--border)] overflow-hidden transition-all hover:border-[var(--secondary)] shadow-sm hover:shadow-2xl hover:-translate-y-2">
-                <div className="relative z-10 h-full flex flex-col">
-                  <div className="inline-block px-3 py-1 bg-[var(--background)] text-[var(--primary)]/50 text-[10px] font-bold rounded-md mb-6 w-fit uppercase tracking-tighter">
-                    {service.tag}
-                  </div>
-                  <h3 className="text-3xl font-bold text-[var(--primary)] mb-6 group-hover:text-[var(--secondary)] transition-colors">{service.title}</h3>
-                  <p className="text-[var(--primary)]/60 leading-relaxed mb-auto group-hover:text-[var(--primary)]/80">
-                    {service.desc}
-                  </p>
-                  
-                  <div className="mt-8 pt-8 border-t border-[var(--border)]">
-                    <div className="text-3xl font-bold text-[var(--primary)] group-hover:text-[var(--secondary)] transition-colors font-outfit">
-                      {service.stats}
-                    </div>
-                    <div className="text-xs text-[var(--primary)]/40 font-bold mt-1">김형근 사무소 실제 데이터 기준</div>
-                  </div>
-                </div>
-                
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-[var(--background)] -z-0 group-hover:scale-[3] transition-transform duration-700"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* About Section: Personal Bankruptcy */}
+      <LandingPostSection 
+        category="BANKRUPTCY" 
+        title="About 개인파산" 
+        subtitle="개인파산 절차와 면책을 위한 전문 법률 정보를 제공합니다."
+        href="/bankruptcy/posts"
+      />
+
+      {/* Success Stories Section */}
+      <LandingPostSection 
+        category="SUCCESS_STORY" 
+        title="성공사례" 
+        subtitle="법무사 김형근 사무소가 함께 이뤄낸 소중한 재기 성공 사례들입니다."
+        href="/s_story"
+        limit={6}
+      />
 
     </div>
   );

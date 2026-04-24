@@ -6,7 +6,7 @@ const qnaTabs = [
   { label: '실시간 전화 상담', href: '/qna/phone' },
   { label: '방문 상담', href: '/qna/visit' },
   { label: '게시판 상담', href: '/qna/board' },
-  { label: '3분 자가진단', href: '/qna/diagnosis' },
+  { label: '1분 자가진단', href: '/qna/diagnosis' },
 ];
 
 export default function QnaLayout({ children }: { children: React.ReactNode }) {

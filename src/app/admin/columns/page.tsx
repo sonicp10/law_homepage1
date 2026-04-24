@@ -7,8 +7,9 @@ import { useSearchParams } from 'next/navigation';
 const ADMIN_SECRET = 'lawoffice2024admin';
 
 const catOptions = [
-  { value: 'REHAB', label: 'All 개인회생' },
-  { value: 'BANKRUPTCY', label: 'All 개인파산' },
+  { value: 'REHAB', label: 'About 개인회생' },
+  { value: 'BANKRUPTCY', label: 'About 개인파산' },
+  { value: 'SUCCESS_STORY', label: '성공사례' },
 ];
 
 interface Post {
@@ -48,6 +49,11 @@ export default function AdminColumnsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const newCat = searchParams.get('cat');
+    if (newCat) setCat(newCat);
+  }, [searchParams]);
 
   useEffect(() => { fetchPosts(); }, [cat, page]);
 
@@ -93,7 +99,7 @@ export default function AdminColumnsPage() {
           <p className="text-sm text-[var(--primary)]/50 mt-1">총 {total}건의 게시글</p>
         </div>
         <Link
-          href="/admin/columns/write"
+          href={`/admin/columns/write?cat=${cat}`}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#A67C52] text-white rounded-xl font-bold text-sm hover:bg-[#8B6840] transition-all shadow-md"
         >
           <span>+</span> 새 글 작성

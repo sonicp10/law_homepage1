@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function FloatingMenu() {
   const menus = [
-    { icon: '📊', label: '3분 자가진단', color: 'var(--primary)', textColor: '#fff', pulse: true, href: '/qna/diagnosis' },
+    { icon: '📊', label: '1분 자가진단', color: 'var(--primary)', textColor: '#fff', pulse: true, href: '/qna/diagnosis' },
     { icon: '💬', label: '카톡상담', color: '#FEE500', textColor: '#000', href: '#' },
     { icon: '📞', label: '전화상담', color: 'var(--secondary)', textColor: '#fff', href: '/qna/phone' },
     { icon: '📅', label: '방문예약', color: 'var(--success)', textColor: '#fff', href: '/qna/visit' },

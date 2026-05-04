@@ -14,7 +14,7 @@ export default function BankruptcyStoryPage() {
   const fetchCases = async (page: number) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/cases?category=BANKRUPTCY&page=${page}&limit=6`);
+      const res = await fetch(`/api/cases?category=SUCCESS_STORY&tag=개인파산&page=${page}&limit=6`);
       if (res.ok) {
         const data = await res.json();
         setCases(data.cases.map((item: any) => ({

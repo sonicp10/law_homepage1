@@ -4,27 +4,26 @@ import prisma from '@/lib/prisma';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
+  const tag = searchParams.get('tag');
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '6');
   const skip = (page - 1) * limit;
 
   try {
+    const where: any = { published: true };
+    if (category) where.category = category as any;
+    if (tag) {
+      where.tags = { contains: tag, mode: 'insensitive' };
+    }
+
     const [cases, totalCount] = await Promise.all([
       prisma.post.findMany({
-        where: {
-          category: category as any,
-          published: true,
-        },
+        where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.post.count({
-        where: {
-          category: category as any,
-          published: true,
-        },
-      }),
+      prisma.post.count({ where }),
     ]);
 
     return NextResponse.json({

@@ -14,7 +14,7 @@ export default function StoryLayout({ children }: { children: React.ReactNode })
       <SubPageBanner 
         title="성공사례" 
         subtitle="의뢰인의 새로운 시작, 그 소중한 기록들을 공유합니다."
-        backgroundImage="/images/story-banner-high-impact.png"
+        backgroundImage="/story-banner-sun-right.png"
       />
       
       <TabNavigation tabs={storyTabs} />

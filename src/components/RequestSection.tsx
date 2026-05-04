@@ -89,12 +89,14 @@ export default function RequestSection() {
   };
 
   const tickers = [
-    { name: '김*현', region: '서울 은평구', status: '8,400만원 탕감 결정' },
-    { name: '이*우', region: '경기 안양시', status: '개인회생 개시 결정' },
-    { name: '박*준', region: '인천 연수구', status: '채무 전액 면책 확정' },
-    { name: '최*희', region: '충남 천안시', status: '92% 탕감인가 완료' },
-    { name: '정*민', region: '서울 강남구', status: '상담 예약 대기 중' },
-    { name: '윤*영', region: '부산 해운대', status: '회생 개시 신청 접수' },
+    { name: '원*연', region: '서울', status: '개인회생 상담신청' },
+    { name: '허*영', region: '경기', status: '개인파산 상담신청' },
+    { name: '최*희', region: '부산', status: '개인회생 상담신청' },
+    { name: '신*호', region: '인천', status: '개인회생 상담신청' },
+    { name: '이*우', region: '대구', status: '기업파산 상담신청' },
+    { name: '박*준', region: '광주', status: '개인회생 상담신청' },
+    { name: '김*현', region: '대전', status: '개인회생 상담신청' },
+    { name: '조*아', region: '울산', status: '개인파산 상담신청' },
   ];
 
   // 무한 루프를 위해 데이터를 3배로 복제하여 끊김 없는 흐름 보장
@@ -108,8 +110,7 @@ export default function RequestSection() {
           {/* 1. Left: Real-time Ticker List (Optimized for Seamless Loop) */}
           <div className="lg:w-1/2 flex flex-col w-full">
             <div className="mb-8">
-              <span className="text-[var(--secondary)] font-bold tracking-widest text-sm uppercase mb-2 block">실시간 현황</span>
-              <h2 className="text-3xl font-bold text-[var(--primary)]">실시간 상담 및 결과 현황</h2>
+              <h2 className="text-3xl font-bold text-[var(--primary)]">실시간 상담신청</h2>
             </div>
             
             <div className="relative h-[560px] bg-[var(--background)] rounded-[var(--radius-card)] p-6 overflow-hidden border border-[var(--border)]">

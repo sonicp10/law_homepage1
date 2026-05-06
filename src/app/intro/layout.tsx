@@ -20,7 +20,7 @@ export default function IntroLayout({ children }: { children: React.ReactNode })
     <main className="pt-0 min-h-screen bg-[var(--background)]">
       <SubPageBanner 
         title="회사 소개" 
-        subtitle="새로운 시작을 위하여 최고의 법률 서비스를 제공해 드립니다."
+        subtitle="개인별 상황에 맞춘 최고의 법률 서비스가 당신을 기다리고 있습니다."
         backgroundImage="/images/intro_banner.png"
       />
       

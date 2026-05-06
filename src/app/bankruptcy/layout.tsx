@@ -14,7 +14,8 @@ export default function BankruptcyLayout({ children }: { children: React.ReactNo
       <SubPageBanner 
         title="개인파산 및 면책" 
         subtitle="채무의 굴레에서 벗어나 완전한 경제적 자유를 꿈꿉니다."
-        backgroundImage="/bankruptcy-banner.png"
+        backgroundImage="/images/bankruptcy-banner-liberation.jpg"
+        position="center calc(50% + 200px)"
       />
       
       <TabNavigation tabs={bankruptcyTabs} />

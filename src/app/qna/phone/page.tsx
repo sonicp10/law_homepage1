@@ -130,7 +130,7 @@ export default function PhoneConsultPage() {
         {/* Right: Image */}
         <div className="lg:w-1/2 relative min-h-[500px] lg:min-h-full">
           <img 
-            src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1200" 
+            src="/images/phone-consultation.jpg" 
             alt="상담 이미지"
             className="absolute inset-0 w-full h-full object-cover"
           />

@@ -4,8 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-const ADMIN_SECRET = 'lawoffice2024admin';
-
 const catOptions = [
   { value: 'REHAB', label: 'About 개인회생' },
   { value: 'BANKRUPTCY', label: 'About 개인파산' },
@@ -63,7 +61,6 @@ export default function AdminColumnsPage() {
     try {
       await fetch(`/api/posts/${id}`, {
         method: 'DELETE',
-        headers: { 'x-admin-secret': ADMIN_SECRET },
       });
       fetchPosts();
     } catch {
@@ -77,7 +74,7 @@ export default function AdminColumnsPage() {
     try {
       await fetch(`/api/posts/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ published: !published }),
       });
       fetchPosts();

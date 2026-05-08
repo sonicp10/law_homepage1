@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const ADMIN_SECRET = 'lawoffice2024admin';
 
 const catOptions = [
   { value: 'REHAB', label: 'About 개인회생' },
@@ -73,7 +72,6 @@ export default function WriteColumnPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-secret': ADMIN_SECRET,
         },
         body: JSON.stringify(form),
       });

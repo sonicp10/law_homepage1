@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-const ADMIN_SECRET = 'lawoffice2024admin';
-
 interface BoardQna {
   id: string; author: string; phone: string; title: string;
   content: string; replyContent: string | null; status: string; createdAt: string;
@@ -49,7 +47,7 @@ export default function AdminBoardPage() {
     try {
       await fetch(`/api/admin/board/${selected.id}/reply`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ replyContent: reply }),
       });
       alert('답변이 저장되었습니다!');

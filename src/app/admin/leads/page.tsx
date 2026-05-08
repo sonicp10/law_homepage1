@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-const ADMIN_SECRET = 'lawoffice2024admin';
-
 const statusLabel: Record<string, string> = {
   PENDING: '대기중', CONTACTED: '연락완료', IN_PROGRESS: '진행중', COMPLETED: '완료', CANCELLED: '취소',
 };
@@ -29,9 +27,7 @@ export default function AdminLeadsPage() {
     if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: '10' });
-      const res = await fetch(`/api/admin/leads?${params}`, {
-        headers: { 'x-admin-secret': ADMIN_SECRET },
-      });
+      const res = await fetch(`/api/admin/leads?${params}`);
       const data = await res.json();
       setItems(data.items || []);
       setTotal(data.totalCount || 0);
@@ -50,7 +46,7 @@ export default function AdminLeadsPage() {
     try {
       await fetch(`/api/admin/leads/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
       fetchData();

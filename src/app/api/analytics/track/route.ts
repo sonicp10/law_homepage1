@@ -1,40 +1,41 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { z } from 'zod';
+
+const analyticsSchema = z.object({
+  path: z.string().min(1),
+  referrer: z.string().nullable().optional(),
+  userAgent: z.string().nullable().optional(),
+});
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { path, referrer, userAgent } = body;
-
-    console.log('[Analytics] Tracking visit:', { path, referrer });
-
-    // IP 주소 추출
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-
-    if (!prisma.analytics) {
-      throw new Error('Prisma Analytics model is not defined. Please run prisma generate.');
+    const validation = analyticsSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json({ success: false, error: '유효하지 않은 요청입니다.' }, { status: 400 });
     }
+
+    const { path, referrer, userAgent } = validation.data;
+    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const ip = rawIp.split(',')[0].trim();
 
     await prisma.analytics.create({
       data: {
         path,
-        referrer,
-        userAgent,
-        ip: ip.split(',')[0],
+        referrer: referrer || null,
+        userAgent: userAgent || null,
+        ip: ip || null,
       },
     });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Analytics tracking error:', error);
-    if (error.stack) {
-      console.error(error.stack);
-    }
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message || 'Unknown error',
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: '방문 기록 저장 중 오류가 발생했습니다.' },
+      { status: 500 }
+    );
   }
 }
 

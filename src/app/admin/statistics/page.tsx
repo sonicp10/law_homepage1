@@ -285,6 +285,174 @@ export default function StatisticsPage() {
           </div>
         </div>
       </div>
+
+      {/* 고도의 분석 섹션 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 시간대별 방문 분석 */}
+        <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
+          <h3 className="text-xl font-bold text-[var(--primary)] mb-6">시간대별 방문 분석</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={data?.hourlyChart}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis dataKey="hour" tick={{fill: '#94a3b8', fontSize: 12}} />
+                <YAxis tick={{fill: '#94a3b8', fontSize: 12}} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="count" fill="#A67C52" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 요일별 방문 분석 */}
+        <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
+          <h3 className="text-xl font-bold text-[var(--primary)] mb-6">요일별 방문 분석</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={data?.dayChart}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis dataKey="day" tick={{fill: '#94a3b8', fontSize: 12}} />
+                <YAxis tick={{fill: '#94a3b8', fontSize: 12}} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="count" fill="#8B6840" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* 디바이스 및 브라우저 분석 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 디바이스 분포 */}
+        <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
+          <h3 className="text-xl font-bold text-[var(--primary)] mb-6">디바이스 분포</h3>
+          <div className="space-y-6">
+            {data?.deviceChart?.map((device: any, idx: number) => (
+              <div key={device.device} className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[var(--primary)] text-sm">{device.device}</span>
+                  <span className="text-[#A67C52] font-bold text-sm">{device.percentage}%</span>
+                </div>
+                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full transition-all duration-1000"
+                    style={{ 
+                      width: `${device.percentage}%`,
+                      backgroundColor: ['#A67C52', '#D4A574', '#8B6840'][idx % 3]
+                    }}
+                  />
+                </div>
+                <span className="text-xs text-[var(--primary)]/50">{device.count.toLocaleString()}명</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 브라우저 분포 */}
+        <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
+          <h3 className="text-xl font-bold text-[var(--primary)] mb-6">브라우저 분포</h3>
+          <div className="space-y-6">
+            {data?.browserChart?.map((browser: any, idx: number) => (
+              <div key={browser.browser} className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[var(--primary)] text-sm">{browser.browser}</span>
+                  <span className="text-[#A67C52] font-bold text-sm">{browser.percentage}%</span>
+                </div>
+                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full transition-all duration-1000"
+                    style={{ 
+                      width: `${browser.percentage}%`,
+                      backgroundColor: ['#A67C52', '#D4A574', '#8B6840', '#6B5230'][idx % 4]
+                    }}
+                  />
+                </div>
+                <span className="text-xs text-[var(--primary)]/50">{browser.count.toLocaleString()}회</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 페이지별 성과 상세 분석 */}
+      <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
+        <h3 className="text-xl font-bold text-[var(--primary)] mb-6">페이지별 성과 분석</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[var(--border)]">
+                <th className="text-left px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">페이지</th>
+                <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">조회수</th>
+                <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">상담 신청</th>
+                <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">전환율</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border)]">
+              {data?.pageWithLeads?.map((page: any, idx: number) => (
+                <tr key={page.path} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm">{page.path}</td>
+                  <td className="text-right px-4 py-4 text-[var(--primary)]/70 font-medium text-sm">{page.views.toLocaleString()}</td>
+                  <td className="text-right px-4 py-4">
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold">
+                      {page.leads}건
+                    </span>
+                  </td>
+                  <td className="text-right px-4 py-4">
+                    <span className={`px-3 py-1 rounded-lg text-sm font-bold ${
+                      page.conversionRate > 5 ? 'bg-emerald-50 text-emerald-600' : 
+                      page.conversionRate > 2 ? 'bg-amber-50 text-amber-600' : 
+                      'bg-gray-50 text-gray-600'
+                    }`}>
+                      {page.conversionRate.toFixed(1)}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 리드 소스 귀속 분석 */}
+      <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
+        <h3 className="text-xl font-bold text-[var(--primary)] mb-6">유입 채널별 상담 신청 분석</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[var(--border)]">
+                <th className="text-left px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">유입 채널</th>
+                <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">방문수</th>
+                <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">신청건수</th>
+                <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">전환율</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border)]">
+              {data?.leadsByReferrer?.map((ref: any) => (
+                <tr key={ref.referrer} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm truncate max-w-[200px]">
+                    {ref.referrer === 'Direct' ? '📌 직접 방문' : ref.referrer}
+                  </td>
+                  <td className="text-right px-4 py-4 text-[var(--primary)]/70 font-medium text-sm">{ref.views.toLocaleString()}</td>
+                  <td className="text-right px-4 py-4">
+                    <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-sm font-bold">
+                      {ref.leads}건
+                    </span>
+                  </td>
+                  <td className="text-right px-4 py-4">
+                    <span className={`px-3 py-1 rounded-lg text-sm font-bold ${
+                      ref.conversionRate > 5 ? 'bg-emerald-50 text-emerald-600' : 
+                      ref.conversionRate > 2 ? 'bg-amber-50 text-amber-600' : 
+                      'bg-gray-50 text-gray-600'
+                    }`}>
+                      {ref.conversionRate.toFixed(1)}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

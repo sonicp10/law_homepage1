@@ -46,13 +46,15 @@ export async function GET(request: Request) {
 
 
     // 1. 현재 기간 데이터 집계
+    const adminPathFilter = { path: { not: { startsWith: '/admin' } } };
+
     const [totalViews, uniqueVisitors, leadCount, consultCount, qnaCount] = await Promise.all([
       prisma.analytics.count({
-        where: { createdAt: { gte: startDate, lte: endDate } },
+        where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
       }),
       prisma.analytics.groupBy({
         by: ['ip'],
-        where: { createdAt: { gte: startDate, lte: endDate } },
+        where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
       }).then(res => res.length),
       prisma.lead.count({
         where: { createdAt: { gte: startDate, lte: endDate } },
@@ -77,11 +79,11 @@ export async function GET(request: Request) {
 
     const [prevViews, prevVisitors, prevLeadC, prevConsultC, prevQnaC] = await Promise.all([
       prisma.analytics.count({
-        where: { createdAt: { gte: prevStartDate, lte: prevEndDate } },
+        where: { ...adminPathFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
       }),
       prisma.analytics.groupBy({
         by: ['ip'],
-        where: { createdAt: { gte: prevStartDate, lte: prevEndDate } },
+        where: { ...adminPathFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
       }).then(res => res.length),
       prisma.lead.count({
         where: { createdAt: { gte: prevStartDate, lte: prevEndDate } },
@@ -113,7 +115,7 @@ export async function GET(request: Request) {
     // 2. 유입 경로 통계
     const referrers = await prisma.analytics.groupBy({
       by: ['referrer'],
-      where: { createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
       _count: { referrer: true },
       orderBy: { _count: { referrer: 'desc' } },
       take: 10,
@@ -122,7 +124,7 @@ export async function GET(request: Request) {
     // 3. 인기 페이지 통계
     const popularPages = await prisma.analytics.groupBy({
       by: ['path'],
-      where: { createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
       _count: { path: true },
       orderBy: { _count: { path: 'desc' } },
       take: 10,
@@ -131,7 +133,7 @@ export async function GET(request: Request) {
     // 4. 추이 데이터 (날짜별 방문자 수)
     const trendData = await prisma.analytics.groupBy({
       by: ['createdAt'],
-      where: { createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
       _count: { id: true },
     });
 
@@ -145,6 +147,141 @@ export async function GET(request: Request) {
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // 5. 시간대별 분석 (hourly breakdown)
+    const hourlyData = await prisma.analytics.findMany({
+      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      select: { createdAt: true },
+    });
+
+    const hourlyBreakdown: { [key: string]: number } = {};
+    hourlyData.forEach(item => {
+      const hour = String(item.createdAt.getHours()).padStart(2, '0');
+      hourlyBreakdown[hour] = (hourlyBreakdown[hour] || 0) + 1;
+    });
+
+    const hourlyChart = Object.entries(hourlyBreakdown)
+      .map(([hour, count]) => ({ hour: `${hour}:00`, count }))
+      .sort((a, b) => a.hour.localeCompare(b.hour));
+
+    // 6. 디바이스/브라우저 분석 (userAgent 파싱)
+    const deviceAnalytics = await prisma.analytics.findMany({
+      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      select: { userAgent: true },
+    });
+
+    const parseDevice = (userAgent: string | null) => {
+      if (!userAgent) return 'Unknown';
+      const ua = userAgent.toLowerCase();
+      if (/mobile|android|iphone|ipad|windows phone/.test(ua)) return 'Mobile';
+      if (/tablet|ipad|kindle/.test(ua)) return 'Tablet';
+      return 'Desktop';
+    };
+
+    const parseBrowser = (userAgent: string | null) => {
+      if (!userAgent) return 'Unknown';
+      const ua = userAgent;
+      if (/edg/i.test(ua)) return 'Edge';
+      if (/chrome/i.test(ua) && !/edg/i.test(ua)) return 'Chrome';
+      if (/safari/i.test(ua) && !/chrome/i.test(ua)) return 'Safari';
+      if (/firefox/i.test(ua)) return 'Firefox';
+      if (/trident/i.test(ua)) return 'IE';
+      return 'Other';
+    };
+
+    const deviceDistribution: { [key: string]: number } = {};
+    const browserDistribution: { [key: string]: number } = {};
+
+    deviceAnalytics.forEach(item => {
+      const device = parseDevice(item.userAgent);
+      const browser = parseBrowser(item.userAgent);
+      deviceDistribution[device] = (deviceDistribution[device] || 0) + 1;
+      browserDistribution[browser] = (browserDistribution[browser] || 0) + 1;
+    });
+
+    const deviceChart = Object.entries(deviceDistribution)
+      .map(([device, count]) => ({ 
+        device, 
+        count, 
+        percentage: Number((count / deviceAnalytics.length * 100).toFixed(1)) 
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const browserChart = Object.entries(browserDistribution)
+      .map(([browser, count]) => ({ 
+        browser, 
+        count, 
+        percentage: Number((count / deviceAnalytics.length * 100).toFixed(1)) 
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // 7. 페이지별 성과 상세 분석 (상단 20개)
+    const pagePerformance = await prisma.analytics.groupBy({
+      by: ['path'],
+      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      _count: { path: true },
+      orderBy: { _count: { path: 'desc' } },
+      take: 20,
+    });
+
+    const leads = await prisma.lead.findMany({
+      where: { createdAt: { gte: startDate, lte: endDate } },
+      select: { source: true },
+    });
+
+    const consultations = await prisma.consultation.findMany({
+      where: { createdAt: { gte: startDate, lte: endDate } },
+      select: { id: true },
+    });
+
+    const pageWithLeads = pagePerformance.map(page => {
+      const pageLeads = leads.filter(l => l.source === page.path).length;
+      const convRate = page._count.path > 0 
+        ? Number((pageLeads / page._count.path * 100).toFixed(1)) 
+        : 0;
+      return {
+        path: page.path,
+        views: page._count.path,
+        leads: pageLeads,
+        conversionRate: convRate,
+      };
+    });
+
+    // 8. 리드 소스 귀속 분석 (상담/신청별 유입처)
+    const referrerLeads = await prisma.analytics.groupBy({
+      by: ['referrer'],
+      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      _count: { referrer: true },
+      orderBy: { _count: { referrer: 'desc' } },
+      take: 10,
+    });
+
+    const leadsByReferrer = referrerLeads.map(ref => {
+      const refLeads = leads.filter(l => l.source === ref.referrer).length;
+      const convRate = ref._count.referrer > 0 
+        ? Number((refLeads / ref._count.referrer * 100).toFixed(1)) 
+        : 0;
+      return {
+        referrer: ref.referrer || 'Direct',
+        views: ref._count.referrer,
+        leads: refLeads,
+        conversionRate: convRate,
+      };
+    });
+
+    // 9. 요일별 분석
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const dayAnalytics: { [key: number]: number } = {};
+
+    trendData.forEach(item => {
+      const day = item.createdAt.getDay();
+      dayAnalytics[day] = (dayAnalytics[day] || 0) + item._count.id;
+    });
+
+    const dayChart = dayNames.map((name, idx) => ({
+      day: name,
+      count: dayAnalytics[idx] || 0,
+    }));
+
     return NextResponse.json({
       summary: {
         totalViews,
@@ -153,11 +290,16 @@ export async function GET(request: Request) {
         conversionRate,
         trends
       },
-
-
       referrers,
       popularPages,
       chartData,
+      // ===== Advanced Analytics =====
+      hourlyChart,
+      deviceChart,
+      browserChart,
+      dayChart,
+      pageWithLeads,
+      leadsByReferrer,
     });
   } catch (error) {
     console.error('Failed to fetch analytics stats:', error);

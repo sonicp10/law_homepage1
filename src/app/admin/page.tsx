@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const ADMIN_SECRET = 'lawoffice2024admin';
-
 interface StatsData {
   posts: { total: number; rehab: number; bankruptcy: number };
   leads: { total: number; pending: number };
@@ -43,9 +41,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('/api/admin/stats', {
-          headers: { 'x-admin-secret': ADMIN_SECRET },
-        });
+        const res = await fetch('/api/admin/stats');
         if (!res.ok) throw new Error('Failed');
         const data = await res.json();
         setStats(data);

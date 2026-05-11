@@ -5,7 +5,7 @@ import { requireAdminAuth } from '@/lib/auth';
 // PATCH /api/admin/leads/[id] - 리드 상태 변경
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await requireAdminAuth('canManageConsultations');
+  const session = await requireAdminAuth(request, 'canManageConsultations');
   if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }

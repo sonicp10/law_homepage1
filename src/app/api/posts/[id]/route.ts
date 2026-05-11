@@ -20,7 +20,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 // PATCH /api/posts/[id] - 수정 (관리자 전용)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await requireAdminAuth('canManagePosts');
+  const session = await requireAdminAuth(request, 'canManagePosts');
   if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }
@@ -54,7 +54,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 // DELETE /api/posts/[id] - 삭제 (관리자 전용)
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await requireAdminAuth('canManagePosts');
+  const session = await requireAdminAuth(request, 'canManagePosts');
   if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }

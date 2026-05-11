@@ -3,8 +3,8 @@ import prisma from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
-export async function GET() {
-  const session = await requireAdminAuth('canManageAdmins');
+export async function GET(request: Request) {
+  const session = await requireAdminAuth(request, 'canManageAdmins');
   if (!session) return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
 
   try {
@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await requireAdminAuth('canManageAdmins');
+  const session = await requireAdminAuth(request, 'canManageAdmins');
   if (!session) return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
 
   try {

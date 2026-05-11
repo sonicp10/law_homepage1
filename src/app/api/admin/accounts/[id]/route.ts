@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await requireAdminAuth('canManageAdmins');
+  const session = await requireAdminAuth(request, 'canManageAdmins');
   if (!session) return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
 
   try {
@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await requireAdminAuth('canManageAdmins');
+  const session = await requireAdminAuth(request, 'canManageAdmins');
   if (!session) return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
 
   try {

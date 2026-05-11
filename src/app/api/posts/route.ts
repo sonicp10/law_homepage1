@@ -59,7 +59,7 @@ export async function GET(request: Request) {
 // POST /api/posts - 관리자 글 작성
 export async function POST(request: Request) {
   // 간단한 관리자 인증 (헤더 기반)
-  const session = await requireAdminAuth('canManagePosts');
+  const session = await requireAdminAuth(request, 'canManagePosts');
   if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }

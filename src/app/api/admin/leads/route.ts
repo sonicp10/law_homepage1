@@ -4,7 +4,7 @@ import { requireAdminAuth } from '@/lib/auth';
 
 // GET /api/admin/leads - 리드 목록
 export async function GET(request: Request) {
-  const session = await requireAdminAuth('canManageConsultations');
+  const session = await requireAdminAuth(request, 'canManageConsultations');
   if (!session) {
     return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
   }

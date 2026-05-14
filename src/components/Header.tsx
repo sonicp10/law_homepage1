@@ -115,22 +115,27 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8 xl:gap-16">
-              {menuData.map((menu) => (
-                <div key={menu.title} className="relative group/link">
-                  <Link 
-                    href={menu.href} 
-                    className="text-[16px] xl:text-[17px] font-bold text-[var(--primary)]/70 hover:text-[#A67C52] transition-colors h-24 flex items-center whitespace-nowrap"
-                  >
-                    {menu.title}
-                  </Link>
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#A67C52] transition-all group-hover/link:w-full"></span>
-                </div>
-              ))}
+            {/* Desktop Navigation - Fixed Width Columns for Alignment */}
+            <nav className="hidden lg:flex items-center justify-center flex-1 ml-12">
+              <div className="flex items-center gap-12 xl:gap-20">
+                {menuData.map((menu) => (
+                  <div key={menu.title} className="w-[100px] xl:w-[120px] flex justify-center relative group/link">
+                    <Link 
+                      href={menu.href} 
+                      className="text-[16px] xl:text-[17px] font-bold text-[var(--primary)]/70 hover:text-[#A67C52] transition-colors h-24 flex items-center whitespace-nowrap"
+                    >
+                      {menu.title}
+                    </Link>
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#A67C52] transition-all group-hover/link:w-full"></span>
+                  </div>
+                ))}
+              </div>
             </nav>
 
-            {/* Mobile Menu Button */}
+            {/* Balanced spacer to match Logo section width for centering */}
+            <div className="hidden lg:block flex-shrink-0 w-[280px]" />
+
+            {/* Mobile Menu Button - Restore */}
             <button 
               className="lg:hidden p-2 text-[var(--primary)]"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -154,7 +159,7 @@ export default function Header() {
           }`}
         >
           <div className="max-w-7xl mx-auto px-6 py-12 flex items-start">
-            <div className="w-[300px] shrink-0 pr-10">
+            <div className="w-[280px] shrink-0 pr-10 ml-4">
               <div className="space-y-1 mb-4">
                 <p className="text-[16px] font-bold text-[var(--primary)]">답답한 고민을 멈추고</p>
                 <div className="flex items-center gap-1.5">
@@ -165,21 +170,26 @@ export default function Header() {
               </div>
             </div>
 
-            <div className="flex-1 flex justify-between pt-2">
-              {menuData.map((menu) => (
-                <div key={menu.title} className="flex flex-col gap-4 min-w-[120px]">
-                  {menu.subMenus.map((sub) => (
-                    <Link 
-                      key={sub.name}
-                      href={sub.href}
-                      className="text-[15px] font-medium text-[var(--primary)]/85 hover:text-[#A67C52] hover:translate-x-1 transition-all"
-                    >
-                      {sub.name}
-                    </Link>
-                  ))}
-                </div>
-              ))}
+            <div className="flex-1 flex justify-center pt-2">
+              <div className="flex items-start gap-12 xl:gap-20">
+                {menuData.map((menu) => (
+                  <div key={menu.title} className="w-[100px] xl:w-[120px] flex flex-col gap-4 shrink-0">
+                    {menu.subMenus.map((sub) => (
+                      <Link 
+                        key={sub.name}
+                        href={sub.href}
+                        className="text-[15px] font-medium text-[var(--primary)]/85 hover:text-[#A67C52] hover:translate-x-1 transition-all"
+                      >
+                        {sub.name}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
+            
+            {/* Mirroring Spacer */}
+            <div className="w-[280px] shrink-0 invisible" />
           </div>
         </div>
 

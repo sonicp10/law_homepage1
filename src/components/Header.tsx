@@ -159,7 +159,7 @@ export default function Header() {
           }`}
         >
           <div className="max-w-7xl mx-auto px-6 py-12 flex items-start">
-            <div className="w-[280px] shrink-0 pr-10 ml-4">
+            <div className="w-[280px] shrink-0 pr-10 ml-16">
               <div className="space-y-1 mb-4">
                 <p className="text-[16px] font-bold text-[var(--primary)]">답답한 고민을 멈추고</p>
                 <div className="flex items-center gap-1.5">

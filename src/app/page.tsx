@@ -14,31 +14,31 @@ export default function HomePage() {
         <div className="absolute top-0 right-0 w-2/3 h-full bg-[var(--secondary)]/5 -skew-x-12 translate-x-1/4 -z-10"></div>
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
         
-        <div className="max-w-7xl mx-auto px-6 w-full text-center lg:text-left grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 w-full text-center lg:text-left grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div className="animate-slide-up lg:col-span-7">
 
             
-            <h1 className="font-black text-[var(--primary)] mb-10 tracking-tight leading-none">
-              <span className="inline-block text-6xl md:text-8xl lg:text-[7rem] italic transform rotate-3 origin-left mb-4 text-[var(--primary)]">
+            <h1 className="font-black text-[var(--primary)] mb-8 md:mb-10 tracking-tight leading-none">
+              <span className="inline-block text-5xl md:text-8xl lg:text-[7rem] italic transform rotate-3 origin-left mb-4 text-[var(--primary)]">
                 &ldquo;숨&rdquo;
               </span>
-              <div className="text-2xl md:text-4xl lg:text-[3rem] font-bold leading-[1.3] text-[var(--primary)]/90">
-                막히는 <span className="text-[var(--secondary)]">무거운 빚</span>의 굴레,<br />
+              <div className="text-xl md:text-4xl lg:text-[3rem] font-bold leading-[1.4] md:leading-[1.3] text-[var(--primary)]/90">
+                막히는 <span className="text-[var(--secondary)]">무거운 빚</span>의 굴레,<br className="hidden md:block" />
                 법무사 김형근 사무소가<br />
                 끊어 드리겠습니다.
               </div>
             </h1>
             
-            <p className="text-xl md:text-2xl text-[var(--primary)]/70 mb-14 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              포기하고 싶었던 순간이 있으셨나요? 그 마음 충분히<br />
+            <p className="text-lg md:text-2xl text-[var(--primary)]/70 mb-10 md:mb-14 leading-relaxed max-w-2xl mx-auto lg:mx-0 px-2 md:px-0">
+              포기하고 싶었던 순간이 있으셨나요? 그 마음 충분히<br className="hidden md:block" />
               이해합니다. 이제 내려 놓으세요! 저희가 하겠습니다.
             </p>
             
-            <div className="flex flex-wrap gap-5 justify-center lg:justify-start">
-              <Link href="/qna/diagnosis" className="px-10 py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-2xl shadow-[var(--primary)]/20 hover:-translate-y-1.5 transition-all">
+            <div className="flex flex-col sm:flex-row gap-4 md:gap-5 justify-center lg:justify-start px-4 sm:px-0">
+              <Link href="/qna/diagnosis" className="px-6 md:px-10 py-4 md:py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-base md:text-lg shadow-2xl shadow-[var(--primary)]/20 hover:-translate-y-1.5 transition-all text-center">
                 <span>1분 자가진단 바로가기 ➔</span>
               </Link>
-              <Link href="#Request" className="px-10 py-5 bg-white border-2 border-[var(--primary)] text-[var(--primary)] rounded-2xl font-bold text-lg hover:bg-[var(--primary)] hover:text-white transition-all">
+              <Link href="#Request" className="px-6 md:px-10 py-4 md:py-5 bg-white border-2 border-[var(--primary)] text-[var(--primary)] rounded-2xl font-bold text-base md:text-lg hover:bg-[var(--primary)] hover:text-white transition-all text-center">
                 빠른 상담 신청
               </Link>
             </div>

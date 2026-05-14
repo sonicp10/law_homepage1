@@ -113,7 +113,7 @@ export default function RequestSection() {
               <h2 className="text-3xl font-bold text-[var(--primary)]">실시간 상담신청</h2>
             </div>
             
-            <div className="relative h-[560px] bg-[var(--background)] rounded-[var(--radius-card)] p-6 overflow-hidden border border-[var(--border)]">
+            <div className="relative h-[400px] md:h-[560px] bg-[var(--background)] rounded-[var(--radius-card)] p-6 overflow-hidden border border-[var(--border)]">
               <div className="space-y-4 animate-scroll-vertical">
                 {repeatedTickers.map((item, idx) => (
                   <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-[var(--border)] flex justify-between items-center transition-all hover:scale-[1.02]">
@@ -173,7 +173,7 @@ export default function RequestSection() {
                     </motion.div>
                   ) : (
                     <motion.div key="form" className="space-y-5">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">이름</label>
                           <input 
@@ -197,7 +197,7 @@ export default function RequestSection() {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-xs font-bold text-[var(--primary)]/70 mb-2 ml-1">지역</label>
                           <input 

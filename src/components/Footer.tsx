@@ -43,37 +43,37 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
             
             {/* Left Content (상세 사업자 정보) */}
-            <div className="md:col-span-8 flex flex-col items-start text-left text-black/70 font-bold text-[15px]">
-              <div className="flex flex-col gap-4">
+            <div className="md:col-span-8 flex flex-col items-center md:items-start text-center md:text-left text-black/70 font-bold text-[14px] md:text-[15px]">
+              <div className="flex flex-col gap-3 md:gap-4">
                 {/* Biz Row 1 */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div className="flex flex-col md:flex-row items-center gap-x-4 gap-y-1">
                   <span><b>상호명 :</b> 법무사 김형근 사무소</span>
-                  <span className="w-[1px] h-3 bg-black/10"></span>
+                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
                   <span><b>대표 :</b> 법무사 김형근</span>
-                  <span className="w-[1px] h-3 bg-black/10"></span>
+                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
                   <span><b>사업자등록번호 :</b> 000-00-00000</span>
                 </div>
                 {/* Biz Row 2 */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div className="flex flex-col md:flex-row items-center gap-x-4 gap-y-1">
                   <span><b>주소 :</b> 서울 구로구 경인로 579, 502호(신도림동, 안성빌딩 A동)</span>
                 </div>
                 {/* Biz Row 3 */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div className="flex flex-col md:flex-row items-center gap-x-4 gap-y-1">
                   <span><b>대표전화 :</b> 02-6405-6363</span>
-                  <span className="w-[1px] h-3 bg-black/10"></span>
+                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
                   <span><b>팩스 :</b> 0505-070-9170</span>
-                  <span className="w-[1px] h-3 bg-black/10"></span>
+                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
                   <span><b>이메일 :</b> sonicp@naver.com</span>
                 </div>
               </div>
             </div>
 
             {/* Right Content (연락처 및 정책) */}
-            <div className="md:col-span-4 flex flex-col items-center md:items-end gap-3">
-              <Link href="/privacy" className="text-[18px] text-[#2C3E50]/40 font-bold hover:text-[#A67C52] transition-colors">
+            <div className="md:col-span-4 flex flex-col items-center md:items-end gap-4 mt-4 md:mt-0">
+              <Link href="/privacy" className="text-[16px] md:text-[18px] text-[#2C3E50]/40 font-bold hover:text-[#A67C52] transition-colors">
                 개인정보처리방침
               </Link>
-              <div className="text-[28px] font-black text-black leading-none mt-1">
+              <div className="text-[24px] md:text-[28px] font-black text-black leading-none">
                 02-6405-6363
               </div>
             </div>
@@ -82,9 +82,9 @@ export default function Footer() {
       </div>
       
       {/* Lower Section: Copyright (Warm Beige Background) */}
-      <div className="bg-[#D4CEC1] py-8 border-t border-[#C4BCB1]">
-        <div className="max-w-7xl mx-auto px-6 text-left">
-          <p className="text-[13px] text-[#2C3E50]/60 font-bold tracking-widest uppercase">
+      <div className="bg-[#D4CEC1] py-6 md:py-8 border-t border-[#C4BCB1]">
+        <div className="max-w-7xl mx-auto px-6 text-center md:text-left">
+          <p className="text-[11px] md:text-[13px] text-[#2C3E50]/60 font-bold tracking-widest uppercase leading-relaxed">
             Ⓒ2012 법무사 김형근 사무소. 모든 권리 저작권 보호 및 무단 전재 및 재배포 금지.
           </p>
         </div>

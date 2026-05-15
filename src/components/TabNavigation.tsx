@@ -19,20 +19,23 @@ export default function TabNavigation({ tabs }: TabNavigationProps) {
   return (
     <div className="w-full bg-white border-b border-[var(--border)] sticky top-20 z-40">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="flex justify-start md:justify-center overflow-x-auto whitespace-nowrap scrollbar-hide -mb-px">
+        <div className="flex justify-start md:justify-center overflow-x-auto hide-scrollbar -mb-px" style={{ overflowX: 'auto', whiteSpace: 'nowrap', flexWrap: 'nowrap' }}>
           {tabs.map((tab) => {
             const isActive = pathname === tab.href;
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`min-w-max break-keep whitespace-nowrap flex-shrink-0 px-6 md:px-16 py-5 text-[15px] md:text-base font-bold transition-all relative group ${
+                className={`relative group transition-all ${
                   isActive 
                     ? 'text-[var(--primary)]' 
                     : 'text-[var(--primary)]/40 hover:text-[var(--primary)]/70'
                 }`}
+                style={{ flexShrink: 0, padding: '1.25rem 1.5rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}
               >
-                {tab.label}
+                <span style={{ whiteSpace: 'nowrap', wordBreak: 'keep-all', minWidth: 'max-content' }} className="text-[15px] md:text-base font-bold">
+                  {tab.label}
+                </span>
                 {/* Active Indicator Bar */}
                 {isActive && (
                   <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[var(--primary)] animate-in fade-in slide-in-from-bottom-1 duration-300"></div>

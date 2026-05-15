@@ -124,13 +124,11 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
         </div>
       )}
 
-      {/* 본문 */}
+      {/* 본문 — Tiptap HTML 렌더링 */}
       <div
-        className="prose prose-lg max-w-none text-[var(--primary)]/80 leading-loose"
-        style={{ whiteSpace: 'pre-wrap', lineHeight: '2', wordBreak: 'keep-all' }}
-      >
-        {post.content}
-      </div>
+        className="prose-content"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
 
       {/* 하단 CTA */}
       <div className="mt-16 p-8 bg-gradient-to-r from-[#A67C52]/8 to-[#A67C52]/4 rounded-2xl border border-[#A67C52]/15 text-center">

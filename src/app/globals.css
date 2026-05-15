@@ -150,6 +150,178 @@ body {
   animation: marquee 40s linear infinite;
 }
 
+
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* ── Tiptap ProseMirror 에디터 내부 스타일 ─────────────────── */
+.prose-editor {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 16px;
+  color: #2C3E50;
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
+.prose-editor h1 { font-size: 2em; font-weight: 800; margin: 1.2em 0 0.6em; color: #1a2e3f; line-height: 1.2; }
+.prose-editor h2 { font-size: 1.5em; font-weight: 700; margin: 1em 0 0.5em; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; }
+.prose-editor h3 { font-size: 1.2em; font-weight: 700; margin: 0.8em 0 0.4em; color: #2C3E50; }
+.prose-editor p { margin: 0.75em 0; }
+.prose-editor strong { font-weight: 800; color: #1a2e3f; }
+.prose-editor em { font-style: italic; }
+.prose-editor u { text-decoration: underline; text-underline-offset: 2px; }
+.prose-editor s { text-decoration: line-through; color: #999; }
+
+.prose-editor ul { list-style-type: disc; padding-left: 1.8em; margin: 0.75em 0; }
+.prose-editor ol { list-style-type: decimal; padding-left: 1.8em; margin: 0.75em 0; }
+.prose-editor li { margin: 0.3em 0; }
+
+.prose-editor blockquote {
+  border-left: 4px solid #A67C52;
+  padding: 0.8em 1.2em;
+  margin: 1.2em 0;
+  background: #FDF8F3;
+  border-radius: 0 12px 12px 0;
+  color: #5a6a7a;
+  font-style: italic;
+}
+
+.prose-editor code {
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.875em;
+  color: #E53E3E;
+}
+
+.prose-editor pre {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 1.2em 1.5em;
+  overflow-x: auto;
+  margin: 1.2em 0;
+}
+.prose-editor pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #e2e8f0;
+  font-size: 0.9em;
+}
+
+.prose-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 1.2em 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.prose-editor a {
+  color: #A67C52;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+.prose-editor a:hover { color: #8B6840; }
+
+.prose-editor hr {
+  border: none;
+  border-top: 2px solid #E8E4D8;
+  margin: 2em 0;
+}
+
+/* Placeholder */
+.prose-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
+/* ── 글 상세 페이지 본문 렌더링 스타일 (prose-content) ─────── */
+.prose-content {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 17px;
+  color: rgba(44, 62, 80, 0.85);
+  line-height: 1.9;
+  word-break: keep-all;
+}
+
+.prose-content h1 { font-size: 2em; font-weight: 800; margin: 1.5em 0 0.7em; color: #1a2e3f; line-height: 1.2; }
+.prose-content h2 { font-size: 1.5em; font-weight: 700; margin: 1.3em 0 0.6em; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; }
+.prose-content h3 { font-size: 1.2em; font-weight: 700; margin: 1.1em 0 0.5em; color: #2C3E50; }
+.prose-content p { margin: 0.85em 0; }
+.prose-content strong { font-weight: 800; color: #1a2e3f; }
+.prose-content em { font-style: italic; }
+
+.prose-content ul { list-style-type: disc; padding-left: 2em; margin: 0.85em 0; }
+.prose-content ol { list-style-type: decimal; padding-left: 2em; margin: 0.85em 0; }
+.prose-content li { margin: 0.4em 0; }
+
+.prose-content blockquote {
+  border-left: 4px solid #A67C52;
+  padding: 1em 1.5em;
+  margin: 1.5em 0;
+  background: #FDF8F3;
+  border-radius: 0 16px 16px 0;
+  color: #5a6a7a;
+  font-style: italic;
+}
+
+.prose-content code {
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: monospace;
+  font-size: 0.875em;
+  color: #E53E3E;
+}
+
+.prose-content pre {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 1.5em 2em;
+  overflow-x: auto;
+  margin: 1.5em 0;
+}
+.prose-content pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #e2e8f0;
+}
+
+.prose-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+  margin: 1.5em 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+}
+
+.prose-content a {
+  color: #A67C52;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.prose-content a:hover { color: #8B6840; }
+
+.prose-content hr {
+  border: none;
+  border-top: 2px solid #E8E4D8;
+  margin: 2.5em 0;
+}
+
+.prose-content mark {
+  border-radius: 3px;
+  padding: 0.1em 0.2em;
+}
+

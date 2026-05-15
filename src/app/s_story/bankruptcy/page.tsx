@@ -42,7 +42,7 @@ export default function BankruptcyStoryPage() {
         <div className="text-center md:text-left">
           <h2 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-4">개인파산 성공사례</h2>
           <div className="w-12 h-1 bg-[#A67C52] mb-6 md:mx-0 mx-auto"></div>
-          <p className="text-lg text-[var(--primary)]/60 font-medium flex items-center gap-x-1 flex-wrap">
+          <p className="text-lg text-[var(--primary)]/60 font-medium flex items-center justify-center md:justify-start gap-x-1 flex-wrap break-keep leading-relaxed">
             <span>여러분도 다시</span>
             <span className="flex items-center mx-1">
               <span className="text-[#A67C52] font-black text-xl self-start translate-y-1">“</span>

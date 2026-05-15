@@ -113,6 +113,11 @@ body {
     opacity: 1 !important;
   }
 
+  /* iOS Safe Area Helper */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   /* Hide scrollbar for TabNavigation on mobile */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;

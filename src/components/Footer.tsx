@@ -40,42 +40,25 @@ export default function Footer() {
           <div className="w-full h-[1px] bg-black/10 mb-10"></div>
 
           {/* Bottom Row: Detailed Info & Call Info */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-8">
             
             {/* Left Content (상세 사업자 정보) */}
-            <div className="md:col-span-8 flex flex-col items-center md:items-start text-center md:text-left text-black/70 font-bold text-[14px] md:text-[15px]">
-              <div className="flex flex-col gap-3 md:gap-4">
-                {/* Biz Row 1 */}
-                <div className="flex flex-col md:flex-row items-center gap-x-4 gap-y-1">
-                  <span><b>상호명 :</b> 법무사 김형근 사무소</span>
-                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
-                  <span><b>대표 :</b> 법무사 김형근</span>
-                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
-                  <span><b>사업자등록번호 :</b> 000-00-00000</span>
-                </div>
-                {/* Biz Row 2 */}
-                <div className="flex flex-col md:flex-row items-center gap-x-4 gap-y-1">
-                  <span><b>주소 :</b> 서울 구로구 경인로 579, 502호(신도림동, 안성빌딩 A동)</span>
-                </div>
-                {/* Biz Row 3 */}
-                <div className="flex flex-col md:flex-row items-center gap-x-4 gap-y-1">
-                  <span><b>대표전화 :</b> 02-6405-6363</span>
-                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
-                  <span><b>팩스 :</b> 0505-070-9170</span>
-                  <span className="hidden md:block w-[1px] h-3 bg-black/10"></span>
-                  <span><b>이메일 :</b> sonicp@naver.com</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Content (연락처 및 정책) */}
-            <div className="md:col-span-4 flex flex-col items-center md:items-end gap-4 mt-4 md:mt-0">
-              <Link href="/privacy" className="text-[16px] md:text-[18px] text-[#2C3E50]/40 font-bold hover:text-[#A67C52] transition-colors">
-                개인정보처리방침
+            <div className="flex flex-col items-start text-left text-[#2C3E50]/80 font-bold text-[13px] md:text-[14px] leading-[1.8]">
+              <p>
+                대표자: 법무사 김형근<br />
+                상담전화: 02-6405-6363<br />
+                팩스: 0505-070-9170<br />
+                사업자등록번호: 000-00-00000<br />
+                이메일: sonicp@naver.com<br />
+                주소: 서울시 구로구 경인로 579, 502호 (신도림동, 안성빌딩 A동)
+              </p>
+              
+              <Link href="/privacy" className="mt-6 text-[13px] text-[#2C3E50]/60 font-bold hover:text-[#A67C52] transition-colors flex items-center gap-1">
+                이용약관 및 개인정보처리방침
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                </svg>
               </Link>
-              <div className="text-[24px] md:text-[28px] font-black text-black leading-none">
-                02-6405-6363
-              </div>
             </div>
           </div>
         </div>

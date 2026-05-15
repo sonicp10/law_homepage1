@@ -31,13 +31,13 @@ export default function SubPageBanner({
       
       <div className="relative z-10 text-center text-white px-6 -translate-y-4 max-w-4xl">
         <h1 
-          className="text-5xl md:text-7xl font-black mb-8 animate-slide-up tracking-tight"
+          className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 animate-slide-up tracking-tight break-keep"
           style={{ textShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
         >
           {title}
         </h1>
         <p 
-          className="text-xl md:text-2xl text-white/90 font-bold animate-slide-up" 
+          className="text-lg sm:text-xl md:text-2xl text-white/90 font-bold animate-slide-up break-keep" 
           style={{ 
             animationDelay: '0.1s',
             textShadow: '0 2px 10px rgba(0,0,0,0.3)'

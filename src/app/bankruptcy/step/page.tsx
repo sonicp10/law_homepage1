@@ -266,10 +266,10 @@ export default function BankruptcyStepPage() {
             수많은 성공 사례를 보유한 김형근 사무소가 당신의 평범한 일상을 되찾아 드립니다.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/qna/phone" className="px-10 py-4 bg-[var(--secondary)] text-[var(--primary)] font-black rounded-full hover:scale-105 transition-all shadow-lg flex items-center justify-center">
+            <Link href="/qna/phone" className="w-full sm:w-auto px-10 py-4 bg-[var(--secondary)] text-[var(--primary)] font-black rounded-full hover:scale-105 transition-all shadow-lg flex items-center justify-center whitespace-nowrap">
               전화상담 신청하기
             </Link>
-            <Link href="/s_story/bankruptcy" className="px-10 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center">
+            <Link href="/s_story/bankruptcy" className="w-full sm:w-auto px-10 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap">
               성공 사례 보기
             </Link>
           </div>

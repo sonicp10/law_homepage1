@@ -136,8 +136,8 @@ export default function RehabStepPage() {
         <Card index="05" title="변제계획안의 수정 및 확정">
           <p>제출된 계획안은 채권자의 이의나 법원의 보정 권고에 따라 최종 확정 전까지 수정될 수 있습니다.</p>
           <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--border)]">
-            <table className="w-full min-w-[500px] text-left text-[14px]">
-              <thead className="bg-[var(--surface)] text-[var(--primary)] whitespace-nowrap">
+            <table className="w-full text-left text-[14px]">
+              <thead className="bg-[var(--surface)] text-[var(--primary)] break-keep">
                 <tr>
                   <th className="p-4 font-black">항목</th>
                   <th className="p-4 font-black">상세 내용</th>
@@ -221,11 +221,11 @@ export default function RehabStepPage() {
             법적 기준과 실무적 노하우를 결합하여 의뢰인에게 가장 유리한 변제 안을 도출해 드립니다. 
             지금 바로 무료 상담을 신청하세요.
           </p>
-          <div className="flex justify-center gap-4">
-            <Link href="/qna/phone" className="px-8 py-4 bg-[var(--secondary)] text-white font-black rounded-full hover:scale-105 transition-all shadow-lg text-center flex items-center justify-center">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/qna/phone" className="w-full sm:w-auto px-8 py-4 bg-[var(--secondary)] text-white font-black rounded-full hover:scale-105 transition-all shadow-lg text-center flex items-center justify-center whitespace-nowrap">
               1:1 맞춤 상담 신청
             </Link>
-            <Link href="/s_story/rehab" className="px-8 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all text-center flex items-center justify-center">
+            <Link href="/s_story/rehab" className="w-full sm:w-auto px-8 py-4 bg-white/10 text-white font-black rounded-full border border-white/20 hover:bg-white/20 transition-all text-center flex items-center justify-center whitespace-nowrap">
               성공 사례 보기
             </Link>
           </div>

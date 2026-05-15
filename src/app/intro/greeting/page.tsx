@@ -120,8 +120,8 @@ export default function GreetingPage() {
                     className="flex items-end gap-3 translate-y-2 text-[var(--primary)]" 
                     style={{ fontFamily: "'Nanum Brush Script', cursive" }}
                   >
-                    <p className="text-[44px] leading-none mb-3 opacity-90">법무사</p>
-                    <p className="text-[100px] leading-none origin-bottom-right translate-y-4 font-black" style={{ letterSpacing: '0.05em', textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.1)' }}>
+                    <p className="text-[28px] md:text-[44px] leading-none mb-2 md:mb-3 opacity-90">법무사</p>
+                    <p className="text-[60px] md:text-[100px] leading-none origin-bottom-right translate-y-2 md:translate-y-4 font-black" style={{ letterSpacing: '0.05em', textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.1)' }}>
                       김&nbsp;형&nbsp;근
                     </p>
                   </div>

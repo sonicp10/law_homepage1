@@ -39,10 +39,10 @@ export default function BoardQnaPage() {
         </Link>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-white border border-gray-100 rounded-3xl overflow-x-auto shadow-sm">
+        <table className="w-full text-left border-collapse min-w-[700px]">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
+            <tr className="bg-gray-50 border-b border-gray-100 whitespace-nowrap">
               <th className="px-10 py-6 text-sm font-bold text-gray-500 w-20">번호</th>
               <th className="px-6 py-6 text-sm font-bold text-gray-500">상담 제목</th>
               <th className="px-6 py-6 text-sm font-bold text-gray-500 w-32">작성자</th>
@@ -53,7 +53,7 @@ export default function BoardQnaPage() {
           <tbody className="divide-y divide-gray-50">
             {questions.length > 0 ? (
               questions.map((q, idx) => (
-                <tr key={q.id} className="hover:bg-gray-50 transition-colors cursor-pointer group">
+                <tr key={q.id} className="hover:bg-gray-50 transition-colors cursor-pointer group whitespace-nowrap">
                   <td className="px-10 py-6 text-sm text-gray-400 font-medium">{questions.length - idx}</td>
                   <td className="px-6 py-6">
                     <div className="flex items-center gap-3">

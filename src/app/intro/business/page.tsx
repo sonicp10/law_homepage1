@@ -175,30 +175,32 @@ export default function BusinessPage() {
       {/* Comparison Table */}
       <div className="bg-[var(--surface)] rounded-[var(--radius-card)] p-8 md:p-12 overflow-hidden animate-slide-up">
         <h3 className="text-3xl font-black text-center mb-12 text-[var(--primary)]">한눈에 비교하는 회생 vs 파산</h3>
-        <div className="grid grid-cols-3 gap-[1px] bg-[var(--border)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm bg-opacity-20">
-          <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm uppercase tracking-widest">구분</div>
-          <div className="bg-white p-6 font-black text-center text-[var(--secondary)] text-xl border-l-[var(--border)]">개인회생</div>
-          <div className="bg-white p-6 font-black text-center text-[#2E7D32] text-xl border-l-[var(--border)]">개인파산</div>
-          
-          <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">신청 자격</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">급여/영업 소득이 있는 자</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">무소득/저소득자 (지급불능)</div>
-          
-          <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">채무 한도</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium font-bold">무담보 10억, 담보 15억 이하</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium font-bold">제한 없음 (무제한)</div>
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-3 gap-[1px] min-w-[600px] bg-[var(--border)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm bg-opacity-20">
+            <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm uppercase tracking-widest">구분</div>
+            <div className="bg-white p-6 font-black text-center text-[var(--secondary)] text-xl border-l-[var(--border)]">개인회생</div>
+            <div className="bg-white p-6 font-black text-center text-[#2E7D32] text-xl border-l-[var(--border)]">개인파산</div>
+            
+            <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">신청 자격</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">급여/영업 소득이 있는 자</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">무소득/저소득자 (지급불능)</div>
+            
+            <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">채무 한도</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium font-bold">무담보 10억, 담보 15억 이하</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium font-bold">제한 없음 (무제한)</div>
 
-          <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">변제 기간</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">3년 ~ 5년 (분할 변제)</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">단기 (청산 및 즉시 처분)</div>
-          
-          <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">채무 감면</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">원금 최대 90% (이자 100%)</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium font-bold text-[#2E7D32]">원금 100% (전액 면책)</div>
-          
-          <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">최대의 장점</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium leading-relaxed">재산 유지 가능, 신분 유지</div>
-          <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium leading-relaxed">빠른 경제적 재기, 전액 탕감</div>
+            <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">변제 기간</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">3년 ~ 5년 (분할 변제)</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">단기 (청산 및 즉시 처분)</div>
+            
+            <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">채무 감면</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium">원금 최대 90% (이자 100%)</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium font-bold text-[#2E7D32]">원금 100% (전액 면책)</div>
+            
+            <div className="bg-[var(--background)] p-6 font-bold text-center text-[var(--primary)]/60 text-sm flex items-center justify-center">최대의 장점</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium leading-relaxed">재산 유지 가능, 신분 유지</div>
+            <div className="bg-white p-8 text-base text-[var(--primary)]/80 font-medium leading-relaxed">빠른 경제적 재기, 전액 탕감</div>
+          </div>
         </div>
       </div>
     </div>

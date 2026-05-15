@@ -378,9 +378,9 @@ export default function StatisticsPage() {
       <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
         <h3 className="text-xl font-bold text-[var(--primary)] mb-6">페이지별 성과 분석</h3>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[500px]">
             <thead>
-              <tr className="border-b border-[var(--border)]">
+              <tr className="border-b border-[var(--border)] whitespace-nowrap">
                 <th className="text-left px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">페이지</th>
                 <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">조회수</th>
                 <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">상담 신청</th>
@@ -389,7 +389,7 @@ export default function StatisticsPage() {
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
               {data?.pageWithLeads?.map((page: any, idx: number) => (
-                <tr key={page.path} className="hover:bg-gray-50 transition-colors">
+                <tr key={page.path} className="hover:bg-gray-50 transition-colors whitespace-nowrap">
                   <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm">{page.path}</td>
                   <td className="text-right px-4 py-4 text-[var(--primary)]/70 font-medium text-sm">{page.views.toLocaleString()}</td>
                   <td className="text-right px-4 py-4">
@@ -417,9 +417,9 @@ export default function StatisticsPage() {
       <div className="bg-white rounded-3xl p-8 border border-[var(--border)] shadow-sm">
         <h3 className="text-xl font-bold text-[var(--primary)] mb-6">유입 채널별 상담 신청 분석</h3>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[500px]">
             <thead>
-              <tr className="border-b border-[var(--border)]">
+              <tr className="border-b border-[var(--border)] whitespace-nowrap">
                 <th className="text-left px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">유입 채널</th>
                 <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">방문수</th>
                 <th className="text-right px-4 py-4 font-bold text-[var(--primary)]/50 text-xs uppercase">신청건수</th>
@@ -428,7 +428,7 @@ export default function StatisticsPage() {
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
               {data?.leadsByReferrer?.map((ref: any) => (
-                <tr key={ref.referrer} className="hover:bg-gray-50 transition-colors">
+                <tr key={ref.referrer} className="hover:bg-gray-50 transition-colors whitespace-nowrap">
                   <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm truncate max-w-[200px]">
                     {ref.referrer === 'Direct' ? '📌 직접 방문' : ref.referrer}
                   </td>

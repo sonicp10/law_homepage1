@@ -135,9 +135,9 @@ export default function RehabStepPage() {
         {/* Step 5 */}
         <Card index="05" title="변제계획안의 수정 및 확정">
           <p>제출된 계획안은 채권자의 이의나 법원의 보정 권고에 따라 최종 확정 전까지 수정될 수 있습니다.</p>
-          <div className="mt-6 overflow-hidden rounded-2xl border border-[var(--border)]">
-            <table className="w-full text-left text-[14px]">
-              <thead className="bg-[var(--surface)] text-[var(--primary)]">
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--border)]">
+            <table className="w-full min-w-[500px] text-left text-[14px]">
+              <thead className="bg-[var(--surface)] text-[var(--primary)] whitespace-nowrap">
                 <tr>
                   <th className="p-4 font-black">항목</th>
                   <th className="p-4 font-black">상세 내용</th>

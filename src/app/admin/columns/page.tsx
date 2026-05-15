@@ -130,64 +130,66 @@ export default function AdminColumnsPage() {
             <Link href="/admin/columns/write" className="text-[#A67C52] underline text-sm font-bold">첫 글 작성하기</Link>
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[var(--border)] bg-gray-50">
-                <th className="text-left px-6 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider">제목</th>
-                <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-24">저자</th>
-                <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-16">조회</th>
-                <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-24">상태</th>
-                <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-28">작성일</th>
-                <th className="text-right px-6 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-32">작업</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {posts.map((post) => (
-                <tr key={post.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <p className="font-semibold text-[var(--primary)] text-sm line-clamp-1">{post.title}</p>
-                    {post.tags && (
-                      <p className="text-xs text-[var(--primary)]/40 mt-0.5 line-clamp-1">
-                        {post.tags.split(',').map(t => `#${t.trim()}`).join(' ')}
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-4 py-4 text-sm text-[var(--primary)]/60 font-medium">{post.author || '법무사 김형근'}</td>
-                  <td className="px-4 py-4 text-sm text-[var(--primary)]/60 font-medium">{post.viewCount.toLocaleString()}</td>
-                  <td className="px-4 py-4">
-                    <button
-                      onClick={() => togglePublish(post.id, post.published)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
-                        post.published
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      }`}
-                    >
-                      {post.published ? '발행중' : '미발행'}
-                    </button>
-                  </td>
-                  <td className="px-4 py-4 text-sm text-[var(--primary)]/50 font-medium">{formatDate(post.createdAt)}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/admin/columns/edit/${post.id}`}
-                        className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
-                      >
-                        수정
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(post.id)}
-                        disabled={deleting === post.id}
-                        className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors disabled:opacity-50"
-                      >
-                        {deleting === post.id ? '...' : '삭제'}
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+              <thead>
+                <tr className="border-b border-[var(--border)] bg-gray-50">
+                  <th className="text-left px-6 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider">제목</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-24">저자</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-16">조회</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-24">상태</th>
+                  <th className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-28">작성일</th>
+                  <th className="text-right px-6 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider w-32">작업</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]">
+                {posts.map((post) => (
+                  <tr key={post.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-[var(--primary)] text-sm line-clamp-1">{post.title}</p>
+                      {post.tags && (
+                        <p className="text-xs text-[var(--primary)]/40 mt-0.5 line-clamp-1">
+                          {post.tags.split(',').map(t => `#${t.trim()}`).join(' ')}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 font-medium whitespace-nowrap">{post.author || '법무사 김형근'}</td>
+                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 font-medium">{post.viewCount.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => togglePublish(post.id, post.published)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                          post.published
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        }`}
+                      >
+                        {post.published ? '발행중' : '미발행'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-[var(--primary)]/50 font-medium whitespace-nowrap">{formatDate(post.createdAt)}</td>
+                    <td className="px-6 py-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/columns/edit/${post.id}`}
+                          className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                        >
+                          수정
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          disabled={deleting === post.id}
+                          className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors disabled:opacity-50"
+                        >
+                          {deleting === post.id ? '...' : '삭제'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* 페이지네이션 */}

@@ -1,49 +1,124 @@
-datasource db {
-  provider  = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+}
+
 model User {
-  id                     String    @id @default(cuid())
+  id                     String   @id @default(cuid())
   name                   String?
-  email                  String?   @unique
-  password               String?
+  email                  String?  @unique
+  role                   Role     @default(USER)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  canManageAdmins        Boolean  @default(false)
+  canManageConsultations Boolean  @default(false)
+  canManagePosts         Boolean  @default(false)
+  isActive               Boolean  @default(true)
   memo                   String?
-  role                   Role      @default(USER)
-  isActive               Boolean   @default(true)
-  
-  // 개별 권한 제어 플래그
-  canManagePosts         Boolean   @default(false)
-  canManageConsultations Boolean   @default(false)
-  canManageAdmins        Boolean   @default(false)
-  
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  password               String?
+}
+
+model Lead {
+  id            String     @id @default(cuid())
+  name          String
+  phone         String
+  debtAmount    String?
+  preferredType String?
+  content       String?
+  status        LeadStatus @default(PENDING)
+  source        String?
+  extraInfo     Json?
+  isEncrypted   Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  location      String?
+}
+
+model CaseStatus {
+  id         String   @id @default(cuid())
+  region     String
+  clientName String
+  caseType   String
+  milestone  String
+  isPublic   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model Consultation {
+  id        String    @id @default(cuid())
+  type      String
+  name      String
+  phone     String
+  location  String?
+  category  String?
+  visitDate DateTime?
+  visitTime String?
+  content   String?
+  status    String    @default("PENDING")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model BoardQna {
+  id           String   @id @default(cuid())
+  author       String
+  password     String
+  phone        String
+  email        String?
+  location     String?
+  title        String
+  content      String
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+  isSecret     Boolean  @default(true)
+  replyContent String?
+  updatedAt    DateTime @updatedAt
+}
+
+model Post {
+  id        String       @id @default(cuid())
+  title     String
+  content   String
+  excerpt   String?
+  thumbnail String?
+  published Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  author    String?      @default("법무사 김형근")
+  readTime  Int?         @default(5)
+  tags      String?
+  updatedAt DateTime     @updatedAt
+  viewCount Int          @default(0)
+  category  PostCategory
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  rating    Int      @default(5)
+  author    String
+  password  String?
+  createdAt DateTime @default(now())
+  isPublic  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
 }
 
 enum Role {
   USER
   ADMIN
   SUPERADMIN
-}
-
-model Lead {
-  id              String   @id @default(cuid())
-  name            String
-  phone           String
-  location        String?  // 거주지역
-  debtAmount      String?  // 채무액 (선택)
-  preferredType   String?  // 선호 제도 (회생/파산 등)
-  content         String?  // 상세 상담 내용
-  status          LeadStatus @default(PENDING)
-  source          String?  // 유입 경로 (메인폼, 자가진단 등)
-  extraInfo       Json?    // 상세 자가진단 데이터 (생년월일, 주거형태, 가족관계 등)
-  isEncrypted     Boolean  @default(true) // 데이터 보안 강조용
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
 }
 
 enum LeadStatus {
@@ -54,88 +129,9 @@ enum LeadStatus {
   CANCELLED
 }
 
-model CaseStatus {
-  id        String   @id @default(cuid())
-  region    String   // 지역 (예: 서울 서초구)
-  clientName String  // 이름 (예: 김○○)
-  caseType  String   // 사건 종류 (예: 개인회생)
-  milestone String   // 단계 (예: 개시 결정)
-  isPublic  Boolean  @default(true)
-  createdAt DateTime @default(now())
-}
-
-model Consultation {
-  id            String   @id @default(cuid())
-  type          String   // PHONE or VISIT
-  name          String
-  phone         String
-  location      String?  // 거주지역
-  category      String?  // 업무분야 (회생/파산 등)
-  visitDate     DateTime? // 방문 예약 날짜
-  visitTime     String?   // 방문 예약 시간
-  content       String?  @db.Text
-  status        String   @default("PENDING")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model BoardQna {
-  id            String   @id @default(cuid())
-  author        String
-  password      String   // 게시글 보호용
-  phone         String
-  email         String?
-  location      String?
-  title         String
-  content       String   @db.Text
-  isSecret      Boolean  @default(true)
-  replyContent  String?  @db.Text // 법무사 답변
-  status        String   @default("PENDING") // PENDING, ANSWERED
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model Post {
-  id          String       @id @default(cuid())
-  title       String
-  content     String       @db.Text
-  excerpt     String?      // 요약글
-  thumbnail   String?      // 썸네일 이미지 URL
-  category    PostCategory
-  tags        String?      // 쉼표 구분 태그 (예: "신청자격,채무조정")
-  author      String?      @default("법무사 김형근") // 작성자명
-  readTime    Int?         @default(5) // 예상 읽기 시간 (분)
-  published   Boolean      @default(true)
-  viewCount   Int          @default(0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-}
-
 enum PostCategory {
-  REHAB         // 개인회생
-  BANKRUPTCY    // 개인파산
-  SUCCESS_STORY // 성공사례
-  COLUMN        // 법률컬럼/정보
+  REHAB
+  BANKRUPTCY
+  SUCCESS_STORY
+  COLUMN
 }
-
-model Review {
-  id        String   @id @default(cuid())
-  author    String   // 작성자 이름 (예: 김*현)
-  title     String
-  content   String   @db.Text
-  rating    Int      @default(5) // 별점 (기본 5점)
-  password  String?  // 수정/삭제를 위한 비밀번호 (비회원용 선택)
-  isPublic  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Analytics {
-  id        String   @id @default(cuid())
-  path      String   // 방문 경로
-  referrer  String?  // 유입 경로
-  ip        String?  // 방문자 IP
-  userAgent String?  // 브라우저 정보
-  createdAt DateTime @default(now())
-}
-

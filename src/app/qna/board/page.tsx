@@ -83,6 +83,7 @@ export default function BoardQnaPage() {
             </tbody>
           </table>
         </div>
+      </div>
     </div>
   );
 }

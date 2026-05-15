@@ -84,45 +84,47 @@ export default function AdminConsultationsPage() {
         ) : items.length === 0 ? (
           <div className="p-12 text-center text-[var(--primary)]/30 font-semibold">상담 신청 내역이 없습니다.</div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[var(--border)] bg-gray-50">
-                {['이름', '연락처', '유형', '업무분야', '지역', '상태', '신청일', '상태변경'].map((h) => (
-                  <th key={h} className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {items.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm">{item.name}</td>
-                  <td className="px-4 py-4 text-sm text-[var(--primary)]/70 font-medium">{item.phone}</td>
-                  <td className="px-4 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${item.type === 'PHONE' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
-                      {item.type === 'PHONE' ? '전화' : '방문'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-sm text-[var(--primary)]/60">{item.category || '-'}</td>
-                  <td className="px-4 py-4 text-sm text-[var(--primary)]/60">{item.location || '-'}</td>
-                  <td className="px-4 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${statusColors[item.status] || 'bg-gray-100 text-gray-500'}`}>
-                      {statusLabel[item.status] || item.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-xs text-[var(--primary)]/50 whitespace-nowrap">{formatDate(item.createdAt)}</td>
-                  <td className="px-4 py-4">
-                    <select
-                      value={item.status}
-                      onChange={(e) => changeStatus(item.id, e.target.value)}
-                      className="text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#A67C52] font-medium appearance-none"
-                    >
-                      {Object.entries(statusLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </select>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px]">
+              <thead>
+                <tr className="border-b border-[var(--border)] bg-gray-50">
+                  {['이름', '연락처', '유형', '업무분야', '지역', '상태', '신청일', '상태변경'].map((h) => (
+                    <th key={h} className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]">
+                {items.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm whitespace-nowrap">{item.name}</td>
+                    <td className="px-4 py-4 text-sm text-[var(--primary)]/70 font-medium whitespace-nowrap">{item.phone}</td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${item.type === 'PHONE' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                        {item.type === 'PHONE' ? '전화' : '방문'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">{item.category || '-'}</td>
+                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">{item.location || '-'}</td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${statusColors[item.status] || 'bg-gray-100 text-gray-500'}`}>
+                        {statusLabel[item.status] || item.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-xs text-[var(--primary)]/50 whitespace-nowrap">{formatDate(item.createdAt)}</td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <select
+                        value={item.status}
+                        onChange={(e) => changeStatus(item.id, e.target.value)}
+                        className="text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#A67C52] font-medium appearance-none"
+                      >
+                        {Object.entries(statusLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

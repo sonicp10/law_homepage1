@@ -75,37 +75,39 @@ export default function AdminBoardPage() {
         ) : items.length === 0 ? (
           <div className="p-12 text-center text-[var(--primary)]/30 font-semibold">게시판 문의가 없습니다.</div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[var(--border)] bg-gray-50">
-                {['작성자', '제목', '상태', '작성일', '관리'].map((h) => (
-                  <th key={h} className="text-left px-5 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {items.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-4 font-bold text-[var(--primary)] text-sm">{item.author}</td>
-                  <td className="px-5 py-4 text-sm text-[var(--primary)]/80 max-w-xs">
-                    <p className="line-clamp-1 font-medium">{item.title}</p>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${item.status === 'ANSWERED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                      {item.status === 'ANSWERED' ? '답변완료' : '미답변'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-xs text-[var(--primary)]/50">{formatDate(item.createdAt)}</td>
-                  <td className="px-5 py-4">
-                    <button onClick={() => openDetail(item)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${item.status === 'ANSWERED' ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-[#A67C52]/10 text-[#A67C52] hover:bg-[#A67C52]/20'}`}>
-                      {item.status === 'ANSWERED' ? '수정' : '답변'}
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+              <thead>
+                <tr className="border-b border-[var(--border)] bg-gray-50">
+                  {['작성자', '제목', '상태', '작성일', '관리'].map((h) => (
+                    <th key={h} className="text-left px-5 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase whitespace-nowrap">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]">
+                {items.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-4 font-bold text-[var(--primary)] text-sm whitespace-nowrap">{item.author}</td>
+                    <td className="px-5 py-4 text-sm text-[var(--primary)]/80 max-w-xs whitespace-nowrap">
+                      <p className="line-clamp-1 font-medium">{item.title}</p>
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${item.status === 'ANSWERED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        {item.status === 'ANSWERED' ? '답변완료' : '미답변'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-xs text-[var(--primary)]/50 whitespace-nowrap">{formatDate(item.createdAt)}</td>
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <button onClick={() => openDetail(item)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${item.status === 'ANSWERED' ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-[#A67C52]/10 text-[#A67C52] hover:bg-[#A67C52]/20'}`}>
+                        {item.status === 'ANSWERED' ? '수정' : '답변'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

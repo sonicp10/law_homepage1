@@ -19,14 +19,14 @@ export default function TabNavigation({ tabs }: TabNavigationProps) {
   return (
     <div className="w-full bg-white border-b border-[var(--border)] sticky top-20 z-40">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="flex justify-center -mb-px">
+        <div className="flex justify-start md:justify-center overflow-x-auto whitespace-nowrap scrollbar-hide -mb-px">
           {tabs.map((tab) => {
             const isActive = pathname === tab.href;
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`px-10 md:px-16 py-5 text-sm md:text-base font-bold transition-all relative group ${
+                className={`whitespace-nowrap flex-shrink-0 px-6 md:px-16 py-5 text-[15px] md:text-base font-bold transition-all relative group ${
                   isActive 
                     ? 'text-[var(--primary)]' 
                     : 'text-[var(--primary)]/40 hover:text-[var(--primary)]/70'

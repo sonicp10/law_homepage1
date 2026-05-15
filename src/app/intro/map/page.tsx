@@ -47,29 +47,29 @@ export default function MapPage() {
         {/* Info Column */}
         <div className="space-y-8 animate-slide-up">
           <div className="bg-white p-10 rounded-[var(--radius-card)] border border-[var(--border)] shadow-sm">
-            <h2 className="text-2xl font-bold text-[var(--primary)] mb-8 flex items-center gap-3">
-              <span className="w-10 h-10 bg-[var(--secondary)] text-white rounded-full flex items-center justify-center shadow-lg">📍</span>
+            <h2 className="text-2xl font-bold text-[var(--primary)] mb-8 flex items-center gap-3 break-keep">
+              <span className="w-10 h-10 bg-[var(--secondary)] text-white rounded-full flex items-center justify-center shadow-lg flex-shrink-0">📍</span>
               찾아오시는 주소
             </h2>
             
             <div className="space-y-8">
               <div>
-                <p className="text-[var(--primary)] text-2xl md:text-3xl font-black leading-tight mb-4">
+                <p className="text-[var(--primary)] text-2xl md:text-3xl font-black leading-tight mb-4 break-keep">
                   서울 구로구 경인로 579, <br />
                   502호 <br />
                   <span className="text-[var(--secondary)]">(구로역 2번 출구, 안성빌딩 A동)</span>
                 </p>
                 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button 
                     onClick={() => handleCopy('서울 구로구 경인로 579, 502호(신도림동, 안성빌딩 A동)')}
-                    className="px-6 py-3 bg-[var(--secondary)] text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
+                    className="w-full sm:w-auto px-6 py-3 bg-[var(--secondary)] text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 break-keep"
                   >
                     <span>📋</span> 주소 복사하기
                   </button>
                   <a 
                     href="tel:02-6405-6363" 
-                    className="px-6 py-3 bg-white border-2 border-[var(--secondary)] text-[var(--secondary)] rounded-full font-bold hover:bg-[var(--secondary)] hover:text-white transition-all active:scale-95 flex items-center gap-2"
+                    className="w-full sm:w-auto px-6 py-3 bg-white border-2 border-[var(--secondary)] text-[var(--secondary)] rounded-full font-bold hover:bg-[var(--secondary)] hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2 break-keep"
                   >
                     <span>📞</span> 실시간 전화 상담
                   </a>

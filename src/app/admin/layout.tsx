@@ -134,6 +134,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // 메뉴 필터링 로직 (SUPERADMIN은 모두 통과)
   const filteredNavItems = navItems.filter(item => {
     if (!item.requiredPermission) return true; // 대시보드
@@ -142,11 +144,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+      {/* 모바일 상단 바 */}
+      <div className="md:hidden bg-white border-b border-[var(--border)] p-4 flex items-center justify-between sticky top-0 z-30">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-[#A67C52] rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-white">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c1.052 0 2.062.18 3 .512v-14.25A8.987 8.987 0 0112 6.042m0 12.084a8.967 8.967 0 006-3.75c1.052 0 2.062.18 3 .512v-14.25A8.987 8.987 0 0018 3.75c-1.052 0-2.062.18-3 .512v14.25z" />
+            </svg>
+          </div>
+          <span className="font-bold text-[var(--primary)] text-lg">관리자 대시보드</span>
+        </div>
+        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -mr-2 text-[var(--primary)]">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+      </div>
+
+      {/* 모바일 배경 오버레이 */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* 사이드바 */}
-      <aside className="w-64 bg-[#2C3E50] text-white flex flex-col fixed inset-y-0 left-0 z-40">
+      <aside className={`w-64 bg-[#2C3E50] text-white flex flex-col fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* 모바일 닫기 버튼 */}
+        <button 
+          className="md:hidden absolute top-4 right-4 text-white/70 hover:text-white"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
         {/* 로고 */}
-        <div className="p-6 border-b border-white/10">
+        <div className="p-6 border-b border-white/10 mt-8 md:mt-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-[#A67C52] rounded-xl flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-white">
@@ -161,8 +198,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* 네비게이션 */}
-        <nav className="flex-1 p-4 space-y-1">
-          {/* 상단 로그아웃 버튼 (모바일/작은 화면 대응) */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {/* 상단 로그아웃 버튼 */}
           <button 
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all mb-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
@@ -179,6 +216,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                   isActive
                     ? 'bg-[#A67C52] text-white'
@@ -204,7 +242,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* 메인 콘텐츠 */}
-      <main className="ml-64 flex-1 p-8">
+      <main className="md:ml-64 flex-1 p-4 md:p-8 w-full max-w-[100vw]">
         {children}
       </main>
     </div>

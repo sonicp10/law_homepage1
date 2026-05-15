@@ -109,66 +109,68 @@ export default function AdminAccountsPage() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="py-4 px-6 text-left text-sm font-bold text-gray-500">계정 (이메일)</th>
-              <th className="py-4 px-6 text-left text-sm font-bold text-gray-500">이름 / 메모</th>
-              <th className="py-4 px-6 text-left text-sm font-bold text-gray-500">역할</th>
-              <th className="py-4 px-6 text-left text-sm font-bold text-gray-500">부여된 권한</th>
-              <th className="py-4 px-6 text-left text-sm font-bold text-gray-500">상태</th>
-              <th className="py-4 px-6 text-center text-sm font-bold text-gray-500">관리</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {admins.map((admin) => (
-              <tr key={admin.id} className="hover:bg-gray-50 transition-colors">
-                <td className="py-4 px-6 text-left">
-                  <div className="font-semibold text-gray-900">{admin.email}</div>
-                  <div className="text-xs text-gray-500 mt-1">{new Date(admin.createdAt).toLocaleDateString()} 생성됨</div>
-                </td>
-                <td className="py-4 px-6 text-left">
-                  <div className="font-medium text-gray-900">{admin.name || '-'}</div>
-                  <div className="text-xs text-gray-500 mt-1">{admin.memo || '-'}</div>
-                </td>
-                <td className="py-4 px-6 text-left">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${admin.role === 'SUPERADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                    {admin.role}
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-left">
-                  {admin.role === 'SUPERADMIN' ? (
-                    <span className="text-xs text-gray-400">모든 권한 허용됨</span>
-                  ) : (
-                    <div className="flex gap-2">
-                      {admin.canManagePosts && <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">콘텐츠 발행</span>}
-                      {admin.canManageConsultations && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">상담 관리</span>}
-                    </div>
-                  )}
-                </td>
-                <td className="py-4 px-6 text-left">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${admin.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {admin.isActive ? '로그인 허용' : '로그인 차단됨'}
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-center">
-                  <button 
-                    onClick={() => handleToggleActive(admin.id, admin.isActive)}
-                    className="text-xs px-3 py-1 border rounded mr-2 hover:bg-gray-100"
-                  >
-                    상태전환
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(admin.id)}
-                    className="text-xs px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100"
-                  >
-                    삭제
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px]">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="py-4 px-6 text-left text-sm font-bold text-gray-500 whitespace-nowrap">계정 (이메일)</th>
+                <th className="py-4 px-6 text-left text-sm font-bold text-gray-500 whitespace-nowrap">이름 / 메모</th>
+                <th className="py-4 px-6 text-left text-sm font-bold text-gray-500 whitespace-nowrap">역할</th>
+                <th className="py-4 px-6 text-left text-sm font-bold text-gray-500 whitespace-nowrap">부여된 권한</th>
+                <th className="py-4 px-6 text-left text-sm font-bold text-gray-500 whitespace-nowrap">상태</th>
+                <th className="py-4 px-6 text-center text-sm font-bold text-gray-500 whitespace-nowrap">관리</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {admins.map((admin) => (
+                <tr key={admin.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-6 text-left whitespace-nowrap">
+                    <div className="font-semibold text-gray-900">{admin.email}</div>
+                    <div className="text-xs text-gray-500 mt-1">{new Date(admin.createdAt).toLocaleDateString()} 생성됨</div>
+                  </td>
+                  <td className="py-4 px-6 text-left whitespace-nowrap">
+                    <div className="font-medium text-gray-900">{admin.name || '-'}</div>
+                    <div className="text-xs text-gray-500 mt-1">{admin.memo || '-'}</div>
+                  </td>
+                  <td className="py-4 px-6 text-left whitespace-nowrap">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${admin.role === 'SUPERADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {admin.role}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6 text-left whitespace-nowrap">
+                    {admin.role === 'SUPERADMIN' ? (
+                      <span className="text-xs text-gray-400">모든 권한 허용됨</span>
+                    ) : (
+                      <div className="flex gap-2">
+                        {admin.canManagePosts && <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">콘텐츠 발행</span>}
+                        {admin.canManageConsultations && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">상담 관리</span>}
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-4 px-6 text-left whitespace-nowrap">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${admin.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {admin.isActive ? '로그인 허용' : '로그인 차단됨'}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6 text-center whitespace-nowrap">
+                    <button 
+                      onClick={() => handleToggleActive(admin.id, admin.isActive)}
+                      className="text-xs px-3 py-1 border rounded mr-2 hover:bg-gray-100"
+                    >
+                      상태전환
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(admin.id)}
+                      className="text-xs px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100"
+                    >
+                      삭제
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showAddModal && (

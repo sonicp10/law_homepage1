@@ -99,12 +99,12 @@ export default function BusinessPage() {
               
               {/* Tabs within card */}
               <div className="space-y-8">
-                <div className="flex border-b border-[var(--border)] text-[14px] sm:text-[15px] overflow-x-auto scrollbar-hide">
+                <div className="grid grid-cols-3 border-b border-[var(--border)] text-[14px] sm:text-[15px]">
                   {['qual', 'process', 'benefits'].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTabs(prev => ({ ...prev, [key]: tab }))}
-                      className={`pb-4 px-4 sm:px-6 font-bold transition-colors relative whitespace-nowrap flex-shrink-0 ${
+                      className={`pb-4 px-1 sm:px-6 font-bold transition-colors relative whitespace-nowrap text-center flex items-center justify-center ${
                         activeTabs[key] === tab ? 'text-[var(--primary)]' : 'text-[var(--primary)]/40 hover:text-[var(--primary)]/60'
                       }`}
                     >

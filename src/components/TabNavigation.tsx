@@ -26,7 +26,7 @@ export default function TabNavigation({ tabs }: TabNavigationProps) {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`whitespace-nowrap flex-shrink-0 px-6 md:px-16 py-5 text-[15px] md:text-base font-bold transition-all relative group ${
+                className={`min-w-max break-keep whitespace-nowrap flex-shrink-0 px-6 md:px-16 py-5 text-[15px] md:text-base font-bold transition-all relative group ${
                   isActive 
                     ? 'text-[var(--primary)]' 
                     : 'text-[var(--primary)]/40 hover:text-[var(--primary)]/70'

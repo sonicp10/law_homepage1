@@ -30,6 +30,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [error, setError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     checkSession();
   }, [pathname]); // pathname 변경 시마다 세션 확인
@@ -133,8 +135,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     );
   }
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // 메뉴 필터링 로직 (SUPERADMIN은 모두 통과)
   const filteredNavItems = navItems.filter(item => {

@@ -46,8 +46,8 @@ export default function MapPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         {/* Info Column */}
         <div className="space-y-8 animate-slide-up">
-          <div className="bg-white p-10 rounded-[var(--radius-card)] border border-[var(--border)] shadow-sm">
-            <h2 className="text-2xl font-bold text-[var(--primary)] mb-8 flex items-center gap-3 break-keep">
+          <div className="bg-white p-6 sm:p-10 rounded-[var(--radius-card)] border border-[var(--border)] shadow-sm">
+            <h2 className="text-2xl font-bold text-[var(--primary)] mb-8 flex items-center gap-3 whitespace-nowrap">
               <span className="w-10 h-10 bg-[var(--secondary)] text-white rounded-full flex items-center justify-center shadow-lg flex-shrink-0">📍</span>
               찾아오시는 주소
             </h2>
@@ -63,13 +63,13 @@ export default function MapPage() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button 
                     onClick={() => handleCopy('서울 구로구 경인로 579, 502호(신도림동, 안성빌딩 A동)')}
-                    className="w-full sm:w-auto px-6 py-3 bg-[var(--secondary)] text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 break-keep"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-[var(--secondary)] text-white rounded-full font-bold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                   >
                     <span>📋</span> 주소 복사하기
                   </button>
                   <a 
                     href="tel:02-6405-6363" 
-                    className="w-full sm:w-auto px-6 py-3 bg-white border-2 border-[var(--secondary)] text-[var(--secondary)] rounded-full font-bold hover:bg-[var(--secondary)] hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2 break-keep"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-white border-2 border-[var(--secondary)] text-[var(--secondary)] rounded-full font-bold hover:bg-[var(--secondary)] hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                   >
                     <span>📞</span> 실시간 전화 상담
                   </a>
@@ -95,7 +95,7 @@ export default function MapPage() {
             </div>
           </div>
 
-          <div className="bg-[var(--primary)] p-10 rounded-[var(--radius-card)] text-white shadow-xl">
+          <div className="bg-[var(--primary)] p-6 sm:p-10 rounded-[var(--radius-card)] text-white shadow-xl">
             <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
               <span className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">⏰</span>
               업무 시간 안내

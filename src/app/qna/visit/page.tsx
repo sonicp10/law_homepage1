@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatPhone } from '@/lib/utils';
 
 export default function VisitConsultPage() {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -15,6 +18,18 @@ export default function VisitConsultPage() {
     location: '',
     content: '',
   });
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.custom-dropdown-container')) {
+        setIsTimeDropdownOpen(false);
+        setIsLocationDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -35,6 +50,14 @@ export default function VisitConsultPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.visitTime) {
+      alert('예약시간을 선택해주세요.');
+      return;
+    }
+    if (!formData.location) {
+      alert('거주지역을 선택해주세요.');
+      return;
+    }
     try {
       const res = await fetch('/api/consultations', {
         method: 'POST',
@@ -157,47 +180,88 @@ export default function VisitConsultPage() {
                   <label className="flex items-center gap-2 text-lg font-bold text-[#2C3E50]">
                     <span className="w-1.5 h-1.5 bg-[#A67C52] rounded-full"></span> 예약시간
                   </label>
-                  <div className="relative">
-                    <select 
-                      required
-                      className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] appearance-none pr-12 cursor-pointer"
-                      value={formData.visitTime}
-                      onChange={(e) => setFormData({...formData, visitTime: e.target.value})}
+                  <div className="relative custom-dropdown-container">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTimeDropdownOpen(!isTimeDropdownOpen);
+                        setIsLocationDropdownOpen(false);
+                      }}
+                      className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] text-left flex items-center justify-between cursor-pointer"
                     >
-                      <option value="">예약시간 선택</option>
-                      <option value="10:00">10:00</option>
-                      <option value="11:00">11:00</option>
-                      <option value="14:00">14:00</option>
-                      <option value="16:00">16:00</option>
-                    </select>
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 text-[#2C3E50]">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                       </svg>
-                    </div>
+                      <span className={formData.visitTime ? "text-gray-900 font-bold" : "text-gray-400"}>
+                        {formData.visitTime || "예약시간 선택"}
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`w-5 h-5 transition-transform text-[#2C3E50]/50 ${isTimeDropdownOpen ? 'rotate-180' : ''}`}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </button>
+                    
+                    {isTimeDropdownOpen && (
+                      <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                        {['10:00', '11:00', '14:00', '16:00'].map((time) => (
+                          <button
+                            key={time}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, visitTime: time });
+                              setIsTimeDropdownOpen(false);
+                            }}
+                            className={`w-full px-6 py-3.5 text-left text-sm font-bold transition-colors ${
+                              formData.visitTime === time 
+                                ? 'bg-[#A67C52] text-white' 
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                </div>
                <div className="space-y-4">
                   <label className="flex items-center gap-2 text-lg font-bold text-[#2C3E50]">
                     <span className="w-1.5 h-1.5 bg-[#A67C52] rounded-full"></span> 거주지역
                   </label>
-                  <div className="relative">
-                    <select 
-                      required
-                      className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] appearance-none pr-12 cursor-pointer"
-                      value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  <div className="relative custom-dropdown-container">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsLocationDropdownOpen(!isLocationDropdownOpen);
+                        setIsTimeDropdownOpen(false);
+                      }}
+                      className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] text-left flex items-center justify-between cursor-pointer"
                     >
-                      <option value="">거주지역 선택</option>
-                      <option value="서울">서울</option>
-                      <option value="경기">경기</option>
-                      <option value="인천">인천</option>
-                    </select>
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 text-[#2C3E50]">
-                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                       </svg>
-                    </div>
+                      <span className={formData.location ? "text-gray-900 font-bold" : "text-gray-400"}>
+                        {formData.location || "거주지역 선택"}
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`w-5 h-5 transition-transform text-[#2C3E50]/50 ${isLocationDropdownOpen ? 'rotate-180' : ''}`}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </button>
+                    
+                    {isLocationDropdownOpen && (
+                      <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                        {['서울', '경기', '인천'].map((loc) => (
+                          <button
+                            key={loc}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, location: loc });
+                              setIsLocationDropdownOpen(false);
+                            }}
+                            className={`w-full px-6 py-3.5 text-left text-sm font-bold transition-colors ${
+                              formData.location === loc 
+                                ? 'bg-[#A67C52] text-white' 
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {loc}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                </div>
             </div>

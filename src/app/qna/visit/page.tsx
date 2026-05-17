@@ -198,8 +198,8 @@ export default function VisitConsultPage() {
                     </button>
                     
                     {isTimeDropdownOpen && (
-                      <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
-                        {['10:00', '11:00', '14:00', '16:00'].map((time) => (
+                      <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-y-auto max-h-60 scrollbar-thin">
+                        {['10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'].map((time) => (
                           <button
                             key={time}
                             type="button"
@@ -242,8 +242,8 @@ export default function VisitConsultPage() {
                     </button>
                     
                     {isLocationDropdownOpen && (
-                      <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
-                        {['서울', '경기', '인천'].map((loc) => (
+                      <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-y-auto max-h-60 scrollbar-thin">
+                        {['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '세종', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'].map((loc) => (
                           <button
                             key={loc}
                             type="button"

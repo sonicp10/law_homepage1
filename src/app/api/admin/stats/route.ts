@@ -38,17 +38,17 @@ export async function GET(request: Request) {
       prisma.lead.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, name: true, phone: true, preferredType: true, status: true, createdAt: true },
+        select: { id: true, name: true, phone: true, debtAmount: true, preferredType: true, content: true, status: true, createdAt: true, location: true },
       }),
       prisma.consultation.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, name: true, phone: true, type: true, category: true, visitDate: true, visitTime: true, status: true, createdAt: true },
+        select: { id: true, name: true, phone: true, type: true, category: true, visitDate: true, visitTime: true, content: true, status: true, createdAt: true, location: true },
       }),
       prisma.boardQna.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, author: true, title: true, status: true, createdAt: true },
+        select: { id: true, author: true, title: true, content: true, status: true, createdAt: true },
       }),
     ]);
 

@@ -122,6 +122,7 @@ export default function Header() {
                   <div key={menu.title} className="w-[100px] xl:w-[120px] flex justify-center relative group/link">
                     <Link 
                       href={menu.href} 
+                      prefetch={false}
                       className="text-[16px] xl:text-[17px] font-bold text-[var(--primary)]/70 hover:text-[#A67C52] transition-colors h-24 flex items-center whitespace-nowrap"
                     >
                       {menu.title}
@@ -178,6 +179,7 @@ export default function Header() {
                       <Link 
                         key={sub.name}
                         href={sub.href}
+                        prefetch={false}
                         className="text-[15px] font-medium text-[var(--primary)]/85 hover:text-[#A67C52] hover:translate-x-1 transition-all"
                       >
                         {sub.name}
@@ -231,6 +233,7 @@ export default function Header() {
                       <Link 
                         key={sub.name}
                         href={sub.href}
+                        prefetch={false}
                         className="text-[15px] font-semibold text-[var(--primary)]/80 py-1"
                       >
                         {sub.name}

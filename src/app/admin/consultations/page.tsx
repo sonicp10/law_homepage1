@@ -88,7 +88,7 @@ export default function AdminConsultationsPage() {
             <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-[var(--border)] bg-gray-50">
-                  {['이름', '연락처', '유형', '업무분야', '지역', '상태', '신청일', '상태변경'].map((h) => (
+                  {['이름', '연락처', '유형', '업무분야 / 예약일시', '지역', '상태', '신청일', '상태변경'].map((h) => (
                     <th key={h} className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -103,7 +103,17 @@ export default function AdminConsultationsPage() {
                         {item.type === 'PHONE' ? '전화' : '방문'}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">{item.category || '-'}</td>
+                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">
+                      {item.type === 'VISIT' ? (
+                        item.visitDate ? (
+                          <span className="font-semibold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg inline-flex items-center gap-1">
+                            📅 {item.visitDate.split('T')[0]} {item.visitTime || ''}
+                          </span>
+                        ) : '-'
+                      ) : (
+                        item.category || '-'
+                      )}
+                    </td>
                     <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">{item.location || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${statusColors[item.status] || 'bg-gray-100 text-gray-500'}`}>

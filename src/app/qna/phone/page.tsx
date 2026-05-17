@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { formatPhone } from '@/lib/utils';
 
 export default function PhoneConsultPage() {
   const [formData, setFormData] = useState({
@@ -52,10 +53,11 @@ export default function PhoneConsultPage() {
                <input 
                  required
                  type="tel" 
+                 maxLength={13}
                  placeholder="연락처를 입력하세요"
                  className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] transition-colors"
                  value={formData.phone}
-                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                 onChange={(e) => setFormData({...formData, phone: formatPhone(e.target.value)})}
                />
             </div>
 

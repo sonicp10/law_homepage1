@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       prisma.consultation.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, name: true, phone: true, type: true, category: true, status: true, createdAt: true },
+        select: { id: true, name: true, phone: true, type: true, category: true, visitDate: true, visitTime: true, status: true, createdAt: true },
       }),
       prisma.boardQna.findMany({
         orderBy: { createdAt: 'desc' },

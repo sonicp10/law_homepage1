@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { formatPhone } from '@/lib/utils';
 
 export default function VisitConsultPage() {
   const today = new Date();
@@ -142,10 +143,11 @@ export default function VisitConsultPage() {
                   <input 
                     required
                     type="tel" 
+                    maxLength={13}
                     placeholder="연락처를 입력하세요"
                     className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52]"
                     value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    onChange={(e) => setFormData({...formData, phone: formatPhone(e.target.value)})}
                   />
                </div>
             </div>
@@ -155,34 +157,48 @@ export default function VisitConsultPage() {
                   <label className="flex items-center gap-2 text-lg font-bold text-[#2C3E50]">
                     <span className="w-1.5 h-1.5 bg-[#A67C52] rounded-full"></span> 예약시간
                   </label>
-                  <select 
-                    required
-                    className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] appearance-none"
-                    value={formData.visitTime}
-                    onChange={(e) => setFormData({...formData, visitTime: e.target.value})}
-                  >
-                    <option value="">예약시간 선택</option>
-                    <option value="10:00">10:00</option>
-                    <option value="11:00">11:00</option>
-                    <option value="14:00">14:00</option>
-                    <option value="16:00">16:00</option>
-                  </select>
+                  <div className="relative">
+                    <select 
+                      required
+                      className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] appearance-none pr-12 cursor-pointer"
+                      value={formData.visitTime}
+                      onChange={(e) => setFormData({...formData, visitTime: e.target.value})}
+                    >
+                      <option value="">예약시간 선택</option>
+                      <option value="10:00">10:00</option>
+                      <option value="11:00">11:00</option>
+                      <option value="14:00">14:00</option>
+                      <option value="16:00">16:00</option>
+                    </select>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 text-[#2C3E50]">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                       </svg>
+                    </div>
+                  </div>
                </div>
                <div className="space-y-4">
                   <label className="flex items-center gap-2 text-lg font-bold text-[#2C3E50]">
                     <span className="w-1.5 h-1.5 bg-[#A67C52] rounded-full"></span> 거주지역
                   </label>
-                  <select 
-                    required
-                    className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] appearance-none"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  >
-                    <option value="">거주지역 선택</option>
-                    <option value="서울">서울</option>
-                    <option value="경기">경기</option>
-                    <option value="인천">인천</option>
-                  </select>
+                  <div className="relative">
+                    <select 
+                      required
+                      className="w-full px-6 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] appearance-none pr-12 cursor-pointer"
+                      value={formData.location}
+                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    >
+                      <option value="">거주지역 선택</option>
+                      <option value="서울">서울</option>
+                      <option value="경기">경기</option>
+                      <option value="인천">인천</option>
+                    </select>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 text-[#2C3E50]">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                       </svg>
+                    </div>
+                  </div>
                </div>
             </div>
 

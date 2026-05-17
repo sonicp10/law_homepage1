@@ -172,7 +172,9 @@ export default function AdminDashboard() {
                       {item.type === 'PHONE' ? '전화' : '방문'}
                     </span>
                   </div>
-                  <p className="text-[var(--primary)]/50 text-xs">{item.phone} · {item.category || '미분류'} · {formatDate(item.createdAt)}</p>
+                  <p className="text-[var(--primary)]/50 text-xs">
+                    {item.phone} · {item.type === 'VISIT' ? (item.visitDate ? `📅 ${item.visitDate.split('T')[0]} ${item.visitTime || ''}` : '방문 예약') : (item.category || '미분류')} · {formatDate(item.createdAt)}
+                  </p>
                 </div>
               ))}
             </div>

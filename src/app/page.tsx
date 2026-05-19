@@ -48,8 +48,8 @@ export default function HomePage() {
             <div className="relative">
               <div className="relative z-10 rounded-[60px] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
                 <img 
-                  src="/hero-consultation.png" 
-                  alt="김형근 법무사 상담 현장"
+                  src="/hero-pastel.png" 
+                  alt="법무사 김형근 사무소"
                   className="w-full h-[650px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/60 via-transparent to-transparent"></div>

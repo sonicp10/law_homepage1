@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
 
 const analyticsSchema = z.object({
   path: z.string().min(1),
@@ -10,6 +12,17 @@ const analyticsSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // 관리자 세션 체크 (관리자의 방문은 통계에 포함하지 않음)
+    const cookieStore = await cookies();
+    const token = cookieStore.get('admin_session_v1')?.value;
+    
+    if (token) {
+      const payload = await verifyToken(token);
+      if (payload) {
+        return NextResponse.json({ success: true, message: 'Admin visit ignored' });
+      }
+    }
+
     const body = await request.json();
     const validation = analyticsSchema.safeParse(body);
     if (!validation.success) {

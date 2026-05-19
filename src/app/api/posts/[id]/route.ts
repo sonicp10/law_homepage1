@@ -1,15 +1,39 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
 
-// GET /api/posts/[id] - 단건 조회 + 조회수 증가
+// GET /api/posts/[id] - 단건 조회 + 조회수 증가 (관리자는 제외)
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const post = await prisma.post.update({
-      where: { id },
-      data: { viewCount: { increment: 1 } },
-    });
+    let isAdmin = false;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('admin_session_v1')?.value;
+    if (token) {
+      const payload = await verifyToken(token);
+      if (payload) isAdmin = true;
+    }
+
+    let post;
+    if (isAdmin) {
+      // 관리자는 조회수 증가 없이 조회만 수행
+      post = await prisma.post.findUnique({
+        where: { id }
+      });
+    } else {
+      // 일반 사용자는 조회수 증가
+      post = await prisma.post.update({
+        where: { id },
+        data: { viewCount: { increment: 1 } },
+      });
+    }
+    
+    if (!post) {
+      return NextResponse.json({ error: '글을 찾을 수 없습니다.' }, { status: 404 });
+    }
+    
     return NextResponse.json(post);
   } catch (error) {
     console.error('Post GET Error:', error);

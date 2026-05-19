@@ -12,13 +12,13 @@ export default function HomePage() {
       <section className="relative min-h-[90vh] flex items-center pt-0 pb-32 overflow-hidden">
         {/* Full Background Image */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-30 opacity-30"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-30 opacity-50 transition-opacity duration-1000"
           style={{ backgroundImage: "url('/hero-pastel.png')" }}
         ></div>
         
         {/* Soft Overlays for Text Readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/80 to-transparent -z-20"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-transparent to-transparent -z-20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/60 to-transparent -z-20"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)]/80 via-transparent to-transparent -z-20"></div>
         
         {/* Background Decorative Elements */}
         <div className="absolute top-0 right-0 w-2/3 h-full bg-[var(--secondary)]/5 -skew-x-12 translate-x-1/4 -z-10"></div>
@@ -38,7 +38,7 @@ export default function HomePage() {
               </div>
             </h1>
             
-            <p className="text-lg md:text-2xl text-[var(--primary)]/80 mb-10 md:mb-14 leading-relaxed max-w-2xl mx-auto lg:mx-0 px-2 md:px-0 font-medium">
+            <p className="text-lg md:text-2xl text-[var(--primary)]/90 mb-10 md:mb-14 leading-relaxed max-w-2xl mx-auto lg:mx-0 px-2 md:px-0 font-medium">
               포기하고 싶었던 순간이 있으셨나요? 그 마음 충분히<br className="hidden md:block" />
               이해합니다. 이제 내려 놓으세요! 저희가 하겠습니다.
             </p>
@@ -50,25 +50,6 @@ export default function HomePage() {
               <Link href="#Request" className="px-6 md:px-10 py-4 md:py-5 bg-white/80 backdrop-blur-sm border-2 border-[var(--primary)] text-[var(--primary)] rounded-2xl font-bold text-base md:text-lg hover:bg-[var(--primary)] hover:text-white transition-all text-center">
                 빠른 상담 신청
               </Link>
-            </div>
-          </div>
-          
-          <div className="hidden lg:flex lg:col-span-4 animate-slide-up justify-end" style={{ animationDelay: '0.2s' }}>
-            <div className="glass-card p-8 rounded-[40px] max-w-[320px] shadow-2xl border border-white/50 bg-white/40 backdrop-blur-xl">
-              <div className="flex flex-col gap-4 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-[var(--accent)] to-[#D4A574] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[var(--accent)]/30">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6.119c0 3.868 1.579 7.371 4.125 9.873A12.007 12.007 0 0012 21.75a12.007 12.007 0 004.277-5.758 12.007 12.007 0 004.125-9.873A11.959 11.959 0 0112 2.714z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-extrabold text-2xl text-[var(--primary)] tracking-tight">1:1 밀착 관리</div>
-                  <div className="text-sm text-[var(--secondary)] font-bold tracking-widest uppercase mt-1">전문가 직접 배정</div>
-                </div>
-              </div>
-              <p className="text-[15px] text-[var(--primary)]/80 leading-relaxed font-medium">
-                모든 사건은 <strong>법무사가 직접 검토</strong>하며 실시간으로 진행 상황을 투명하게 공유해 드립니다. 안심하고 맡겨주세요.
-              </p>
             </div>
           </div>
         </div>

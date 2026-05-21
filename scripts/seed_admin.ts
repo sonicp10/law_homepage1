@@ -4,11 +4,18 @@ import bcrypt from 'bcryptjs';
 
 async function main() {
   const email = 'sonicp@naver.com';
-  const passwordText = 'zms!7ghkdth';
+  const passwordText = 'zms!@7ghkdth';
   
   const existing = await prisma.user.findUnique({ where: { email } });
+  const hashedPassword = await bcrypt.hash(passwordText, 10);
+  
   if (existing) {
-    console.log(`User ${email} already exists.`);
+    console.log(`User ${email} already exists. Updating password...`);
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword }
+    });
+    console.log('Password updated successfully.');
     return;
   }
 

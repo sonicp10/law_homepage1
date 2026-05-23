@@ -17,7 +17,16 @@ export default function BoardQnaPage() {
   useEffect(() => {
     fetch('/api/board-qna')
       .then(res => res.json())
-      .then(data => setQuestions(data));
+      .then(data => {
+        if (data && Array.isArray(data.items)) {
+          setQuestions(data.items);
+        } else if (Array.isArray(data)) {
+          setQuestions(data);
+        } else {
+          setQuestions([]);
+        }
+      })
+      .catch(() => setQuestions([]));
   }, []);
 
   return (

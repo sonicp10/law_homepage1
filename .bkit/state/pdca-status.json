@@ -2,6 +2,6 @@
   "version": "1.0",
   "status": "Success",
   "phase": "Act",
-  "task": "상담 폼 기능 고도화 및 UX 개선",
-  "remarks": "단계별 UI 도입, Zod 검증, 전역 전화번호 포맷팅을 통해 위젯 및 상담 페이지 안정화 완료"
+  "task": "QnA 게시판 API 연동 수정 및 설정 오류 해결",
+  "remarks": "QnA 게시판의 API 파싱 런타임 버그 수정 및 next.config.ts의 eslint 경고 해결 완료"
 }

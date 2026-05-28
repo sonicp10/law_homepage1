@@ -5,13 +5,6 @@ import { requireAdminAuth } from '@/lib/auth';
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const SAFE_NAME_REGEX = /[^a-zA-Z0-9._-]/g;
-
-// Supabase Admin 클라이언트 (Storage 업로드용)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
-
 const BUCKET_NAME = 'post-images';
 
 export async function POST(request: Request) {
@@ -47,6 +40,12 @@ export async function POST(request: Request) {
       );
     }
 
+    // ✅ 요청 시점에 Supabase 클라이언트 생성 (빌드 타임 환경변수 오류 방지)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+    );
+
     // 안전한 파일명 생성
     const ext = uploadFile.name.split('.').pop() || 'jpg';
     const safeName = uploadFile.name.replace(/\.[^.]+$/, '').replace(SAFE_NAME_REGEX, '_');
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
     const fileBuffer = new Uint8Array(arrayBuffer);
 
     // Supabase Storage 버킷에 업로드
-    const { data, error } = await supabaseAdmin.storage
+    const { error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filename, fileBuffer, {
         contentType: uploadFile.type,
@@ -65,49 +64,15 @@ export async function POST(request: Request) {
       });
 
     if (error) {
-      // 버킷이 없는 경우 자동 생성 시도
-      if (error.message?.includes('Bucket not found') || error.message?.includes('bucket')) {
-        // 버킷 생성 시도
-        const { error: createError } = await supabaseAdmin.storage.createBucket(BUCKET_NAME, {
-          public: true,
-          allowedMimeTypes: ALLOWED_MIME_TYPES,
-          fileSizeLimit: MAX_UPLOAD_SIZE,
-        });
-
-        if (createError) {
-          console.error('Bucket 생성 실패:', createError);
-          return NextResponse.json(
-            { error: `스토리지 버킷을 생성하지 못했습니다: ${createError.message}` },
-            { status: 500 }
-          );
-        }
-
-        // 버킷 생성 후 재업로드
-        const { data: retryData, error: retryError } = await supabaseAdmin.storage
-          .from(BUCKET_NAME)
-          .upload(filename, fileBuffer, {
-            contentType: uploadFile.type,
-            upsert: false,
-          });
-
-        if (retryError) {
-          console.error('재업로드 실패:', retryError);
-          return NextResponse.json(
-            { error: `이미지 업로드에 실패했습니다: ${retryError.message}` },
-            { status: 500 }
-          );
-        }
-      } else {
-        console.error('Supabase Storage 업로드 오류:', error);
-        return NextResponse.json(
-          { error: `이미지 업로드에 실패했습니다: ${error.message}` },
-          { status: 500 }
-        );
-      }
+      console.error('Supabase Storage 업로드 오류:', error);
+      return NextResponse.json(
+        { error: `이미지 업로드에 실패했습니다: ${error.message}` },
+        { status: 500 }
+      );
     }
 
     // Public URL 생성
-    const { data: urlData } = supabaseAdmin.storage
+    const { data: urlData } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(filename);
 

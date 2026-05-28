@@ -245,7 +245,7 @@ export default function AdminDashboard() {
     { label: '상담 신청', value: stats.consultations.total, sub: `대기 ${stats.consultations.pending}건`, color: 'from-[#A67C52] to-[#8B6840]', icon: '📞', link: '/admin/consultations' },
     { label: '빠른 상담 (리드)', value: stats.leads.total, sub: `대기 ${stats.leads.pending}건`, color: 'from-orange-500 to-orange-600', icon: '📌', link: '/admin/leads' },
     { label: '게시판 문의', value: stats.boardQna.total, sub: `미답변 ${stats.boardQna.pending}건`, color: 'from-green-500 to-green-600', icon: '💬', link: '/admin/board' },
-    { label: '의뢰인 후기', value: stats.reviews.total, sub: '공개 후기', color: 'from-pink-500 to-pink-600', icon: '⭐', link: '/' },
+    { label: '의뢰인 후기', value: stats.reviews.total, sub: '공개 후기', color: 'from-pink-500 to-pink-600', icon: '⭐', link: '/s_story/review' },
   ] : [];
 
   if (loading) return (

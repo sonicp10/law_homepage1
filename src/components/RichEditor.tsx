@@ -69,7 +69,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose-editor min-h-[500px] p-6 focus:outline-none',
+        class: 'prose-editor min-h-[500px] pt-8 px-6 pb-6 focus:outline-none',
       },
     },
     onUpdate({ editor }) {
@@ -151,7 +151,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   return (
     <div className="border border-[var(--border)] rounded-2xl overflow-hidden bg-white shadow-sm">
       {/* ── 툴바 ─────────────────────────────── */}
-      <div className="sticky top-[72px] z-30 bg-white border-b border-[var(--border)] px-3 py-2 flex flex-wrap items-center gap-1">
+      <div className="sticky top-[60px] md:top-0 z-30 bg-white border-b border-[var(--border)] px-3 py-2 flex flex-wrap items-center gap-1">
 
         {/* 헤딩 드롭다운 */}
         <select

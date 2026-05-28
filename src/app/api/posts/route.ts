@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '6');
   const skip = (page - 1) * limit;
-
+  try {
     let isAdmin = false;
     const cookieStore = await cookies();
     const token = cookieStore.get('admin_session_v1')?.value;

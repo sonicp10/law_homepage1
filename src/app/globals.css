@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Nanum+Brush+Script&display=swap');
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Nanum+Brush+Script&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css");
 @import "tailwindcss";
 
 @font-face {
@@ -58,7 +58,7 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-family: "Pretendard Variable", Pretendard, 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -145,7 +145,7 @@ body {
 
 /* ── Tiptap ProseMirror 에디터 내부 스타일 ─────────────────── */
 .prose-editor {
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family: "Pretendard Variable", Pretendard, 'Noto Sans KR', -apple-system, sans-serif;
   font-size: 16px;
   color: #2C3E50;
   line-height: 1.8;
@@ -155,7 +155,7 @@ body {
 .prose-editor h1 { font-size: 2em; font-weight: 800; margin: 1.5em 0 0.8em; color: #1a2e3f; line-height: 1.2; }
 .prose-editor h2 { font-size: 1.5em; font-weight: 700; margin: 1.3em 0 0.7em; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; }
 .prose-editor h3 { font-size: 1.2em; font-weight: 700; margin: 1.1em 0 0.6em; color: #2C3E50; }
-.prose-editor p { margin: 0.85em 0; }
+.prose-editor p { margin: 0.85em 0; font-weight: 400 !important; }
 .prose-editor h1:first-child, .prose-editor h2:first-child, .prose-editor h3:first-child, .prose-editor p:first-child { margin-top: 0.5em !important; }
 .prose-editor strong, .prose-editor b { font-weight: 700 !important; color: #1a2e3f; }
 .prose-editor em { font-style: italic; }
@@ -236,17 +236,20 @@ body {
 
 /* ── 글 상세 페이지 본문 렌더링 스타일 (prose-content) ─────── */
 .prose-content {
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family: "Pretendard Variable", Pretendard, 'Noto Sans KR', -apple-system, sans-serif;
   font-size: 17px;
   color: rgba(44, 62, 80, 0.85);
   line-height: 1.9;
   word-break: keep-all;
 }
+strong, b {
+  font-weight: 700 !important;
+}
 
 .prose-content h1 { font-size: 2em; font-weight: 800; margin: 1.5em 0 0.7em; color: #1a2e3f; line-height: 1.2; }
 .prose-content h2 { font-size: 1.5em; font-weight: 700; margin: 1.3em 0 0.6em; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; }
 .prose-content h3 { font-size: 1.2em; font-weight: 700; margin: 1.1em 0 0.5em; color: #2C3E50; }
-.prose-content p { margin: 0.85em 0; }
+.prose-content p { margin: 0.85em 0; font-weight: 400 !important; }
 .prose-content strong, .prose-content b { font-weight: 700 !important; color: #1a2e3f; }
 .prose-content em { font-style: italic; }
 
@@ -317,27 +320,32 @@ body {
 
 /* ── 프리미엄 에디터 구분선 디자인 ────────────────────────── */
 .prose-editor hr.hr-solid, .prose-content hr.hr-solid {
-  border: none;
-  border-top: 2px solid #E8E4D8;
-  margin: 2em 0;
+  border: none !important;
+  border-top: 2px solid #E8E4D8 !important;
+  margin: 2em 0 !important;
+  height: auto !important;
 }
 .prose-editor hr.hr-dashed, .prose-content hr.hr-dashed {
-  border: none;
-  border-top: 2px dashed #A67C52;
-  margin: 2em 0;
+  border: none !important;
+  border-top: 2px dashed #A67C52 !important;
+  margin: 2em 0 !important;
+  height: auto !important;
 }
 .prose-editor hr.hr-gradient, .prose-content hr.hr-gradient {
-  border: none;
-  height: 3px;
-  background: linear-gradient(to right, transparent, #A67C52 50%, transparent);
-  margin: 2em 0;
+  border: none !important;
+  height: 3px !important;
+  background: linear-gradient(to right, transparent, #A67C52 50%, transparent) !important;
+  margin: 2em 0 !important;
 }
 .prose-editor hr.hr-wavy, .prose-content hr.hr-wavy {
-  border: none;
-  height: 10px;
-  background-image: radial-gradient(circle at 50% 120%, transparent 4px, #A67C52 4px, #A67C52 6px, transparent 6px);
-  background-size: 16px 20px;
-  background-repeat: repeat-x;
-  margin: 2em 0;
+  border: none !important;
+  display: block !important;
+  width: 100% !important;
+  height: 12px !important;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyMCA0JyB3aWR0aD0nMjAnIGhlaWdodD0nNCc+PHBhdGggZD0nTTAgMiBRNSAwLCAxMCAyIFQyMCAyJyBmaWxsPSdub25lJyBzdHJva2U9JyNBNjdDNTInIHN0cm9rZS13aWR0aD0nMS41Jy8+PC9zdmc+ ") !important;
+  background-repeat: repeat-x !important;
+  background-size: 20px 4px !important;
+  background-position: center !important;
+  margin: 2em 0 !important;
 }
 

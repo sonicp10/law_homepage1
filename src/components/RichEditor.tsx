@@ -125,6 +125,8 @@ const Divider = () => <div className="w-px h-6 bg-gray-200 mx-0.5" />;
 // ── 메인 에디터 컴포넌트 ────────────────────────────────────
 export default function RichEditor({ value, onChange, placeholder = '내용을 입력하세요...' }: RichEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textColorInputRef = useRef<HTMLInputElement>(null);
+  const highlightColorInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -237,7 +239,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   }, [editor]);
 
   // 프리미엄 서식 템플릿 삽입
-  const handleInsertTemplate = useCallback((type: 'success' | 'guide' | 'cta') => {
+  const handleInsertTemplate = useCallback((type: 'success' | 'guide' | 'cta' | 'profile' | 'procedure' | 'qa' | 'compare') => {
     if (!editor) return;
     let html = '';
     if (type === 'success') {
@@ -268,6 +270,87 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
       👉 30초 간편 자격진단 신청하기
     </a>
   </div>
+</div><p></p>`;
+    } else if (type === 'profile') {
+      html = `<div class="template-profile-card" style="border: 1px solid #E8E4D8; padding: 2em; border-radius: 20px; background: #FFFFFF; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin: 1.5em 0; display: flex; gap: 1.5em; flex-wrap: wrap; align-items: center;">
+  <div style="flex: 1; min-width: 250px;">
+    <span style="background: #A67C52; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.8em; font-weight: bold; display: inline-block; margin-bottom: 0.8em;">대표 법무사</span>
+    <h3 style="margin: 0 0 0.5em; color: #2C3E50; font-size: 1.4em; font-weight: bold;">김형근 법무사</h3>
+    <p style="margin: 0 0 1.2em; color: #718096; font-size: 0.95em; line-height: 1.7;">
+      "실패는 끝이 아니라 새로운 시작입니다. 15년 이상의 풍부한 실무 경험과 법원 보정 노하우로 의뢰인의 무거운 짐을 확실하게 덜어드리겠습니다."
+    </p>
+    <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.85em; color: #2C3E50; line-height: 1.8;">
+      <li style="margin: 0.4em 0; display: flex; align-items: center; gap: 6px;">✔️ 대한법무사협회 정회원</li>
+      <li style="margin: 0.4em 0; display: flex; align-items: center; gap: 6px;">✔️ 서울회생법원 개인회생·파산 실무 연수 수료</li>
+      <li style="margin: 0.4em 0; display: flex; align-items: center; gap: 6px;">✔️ 前 법원 연계 무료법률상담 위원</li>
+    </ul>
+  </div>
+</div><p></p>`;
+    } else if (type === 'procedure') {
+      html = `<div class="template-timeline" style="background: #FAF9F6; border: 1px solid #E8E4D8; padding: 2em; border-radius: 20px; margin: 1.5em 0;">
+  <h3 style="margin-top: 0; color: #2C3E50; font-size: 1.25em; margin-bottom: 1.5em; text-align: center; font-weight: bold;">📋 개인회생 진행 절차 핵심 요약</h3>
+  <div style="display: flex; flex-direction: column; gap: 1.2em;">
+    <div style="display: flex; gap: 1em; align-items: flex-start;">
+      <div style="background: #2C3E50; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.85em;">1</div>
+      <div>
+        <h4 style="margin: 0 0 0.2em; color: #2C3E50; font-size: 0.95em; font-weight: bold;">신청서 접수 및 금지명령 (1~2주)</h4>
+        <p style="margin: 0; color: #718096; font-size: 0.85em; line-height: 1.5;">법원에 신청서를 제출하면 1~2주 내에 채권추심과 독촉을 차단하는 금지명령이 내려집니다.</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 1em; align-items: flex-start;">
+      <div style="background: #A67C52; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.85em;">2</div>
+      <div>
+        <h4 style="margin: 0 0 0.2em; color: #2C3E50; font-size: 0.95em; font-weight: bold;">개시결정 및 채권자집회 (2~3개월)</h4>
+        <p style="margin: 0; color: #718096; font-size: 0.85em; line-height: 1.5;">회생위원의 보정 권고를 거쳐 개시결정이 내려지며, 법원에 출석하여 채권자집회에 참석합니다.</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 1em; align-items: flex-start;">
+      <div style="background: #38A169; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.85em;">3</div>
+      <div>
+        <h4 style="margin: 0 0 0.2em; color: #2C3E50; font-size: 0.95em; font-weight: bold;">인가결정 및 면책 (36~60개월 변제)</h4>
+        <p style="margin: 0; color: #718096; font-size: 0.85em; line-height: 1.5;">변제계획안대로 매월 법원에 변제금을 납부하고, 납부가 완료되면 남은 채무를 면책받아 소멸시킵니다.</p>
+      </div>
+    </div>
+  </div>
+</div><p></p>`;
+    } else if (type === 'qa') {
+      html = `<div class="template-faq-box" style="border: 1px dashed #A67C52; padding: 1.5em; border-radius: 16px; background: #FFFDF9; margin: 1.5em 0;">
+  <h4 style="margin-top: 0; color: #8B6840; font-size: 1.1em; display: flex; align-items: center; gap: 8px; font-weight: bold;">❓ 최근에 받은 대출이 많은데 기각될까요?</h4>
+  <p style="margin: 0.5em 0 0; color: #5A6A7A; font-size: 0.95em; line-height: 1.7; padding-left: 20px;">
+    <strong>답변:</strong> 최근 채무 비율이 높아도 기각 사유가 되지는 않습니다. 다만, 최근 대출금의 구체적인 사용처(생활비, 타 채무 대환, 사업자금 등)에 대한 소명 자료를 철저히 준비하고 보정 계획에 반영한다면, 기각 없이 원활하게 법원 인가를 받으실 수 있습니다.
+  </p>
+</div><p></p>`;
+    } else if (type === 'compare') {
+      html = `<div class="template-comparison-box" style="border: 1px solid #E8E4D8; border-radius: 20px; overflow: hidden; margin: 2em 0; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+  <div style="background: #2C3E50; color: white; padding: 1em; text-align: center; font-weight: bold; font-size: 1.1em;">
+    ⚖️ 개인회생 신청 전 vs 후 변화 비교
+  </div>
+  <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; text-align: center;">
+    <thead>
+      <tr style="background: #FAF9F6; border-bottom: 1px solid #E8E4D8;">
+        <th style="padding: 12px; font-weight: bold; color: #2C3E50; width: 33%;">구분</th>
+        <th style="padding: 12px; font-weight: bold; color: #E53E3E; width: 33%;">제도 신청 전</th>
+        <th style="padding: 12px; font-weight: bold; color: #38A169; width: 33%;">인가 결정 후</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #E8E4D8;">
+        <td style="padding: 12px; font-weight: bold; color: #2C3E50;">월 채무 변제액</td>
+        <td style="padding: 12px; color: #E53E3E; text-decoration: line-through;">월 [250만 원]</td>
+        <td style="padding: 12px; color: #38A169; font-weight: bold;">월 [45만 원] (82% 절감)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #E8E4D8;">
+        <td style="padding: 12px; font-weight: bold; color: #2C3E50;">채권 추심 / 독촉</td>
+        <td style="padding: 12px; color: #E53E3E;">빗발치는 전화 & 압류 위협</td>
+        <td style="padding: 12px; color: #38A169; font-weight: bold;">법적 전면 금지 (추심 제로)</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; font-weight: bold; color: #2C3E50;">이자 및 원금 탕감</td>
+        <td style="padding: 12px; color: #E53E3E;">이자 누적으로 채무 증식</td>
+        <td style="padding: 12px; color: #38A169; font-weight: bold;">이자 100% 면제 + 원금 최대 90% 탕감</td>
+      </tr>
+    </tbody>
+  </table>
 </div><p></p>`;
     }
     editor.chain().focus().insertContent(html).run();
@@ -347,6 +430,10 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
           <option value="success">성공사례 브리핑</option>
           <option value="guide">법률 정보 가이드</option>
           <option value="cta">상담 유도 CTA</option>
+          <option value="profile">대표 법무사 프로필</option>
+          <option value="procedure">개인회생 진행 절차</option>
+          <option value="qa">자주 묻는 질문 FAQ</option>
+          <option value="compare">신청 전후 비교표</option>
         </select>
 
         <Divider />
@@ -377,18 +464,43 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
             <span className="text-xs font-black text-[#2C3E50]">A</span>
             <div className="w-5 h-1 rounded-full bg-[#E53E3E]" />
           </button>
-          <div className="absolute top-full left-0 mt-1 p-2 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 flex flex-wrap gap-1.5 w-40">
-            {['#2C3E50','#E53E3E','#38A169','#3182CE','#D69E2E','#805AD5','#DD6B20','#718096'].map(c => (
+          <div className="absolute top-full left-0 mt-1 p-2.5 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-7 gap-1 w-[215px]">
+            {[
+              '#000000', '#2C3E50', '#5A6A7A', '#718096', 
+              '#E53E3E', '#C53030', '#FEB2B2', '#ED8936', 
+              '#D69E2E', '#C5A059', '#F6AD55', '#38A169', 
+              '#48BB78', '#9AE6B4', '#3182CE', '#4299E1', 
+              '#90CAF9', '#805AD5', '#9F7AEA', '#E9D8FD'
+            ].map(c => (
               <button
                 key={c}
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); handleColor(c); }}
-                className="w-6 h-6 rounded-full border-2 border-white shadow hover:scale-110 transition-transform"
+                className="w-6 h-6 rounded-full border border-gray-200 shadow-sm hover:scale-110 transition-transform"
                 style={{ backgroundColor: c }}
                 title={c}
               />
             ))}
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetColor().run(); }} className="w-6 h-6 rounded-full border-2 border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50">✕</button>
+            {/* 커스텀 컬러 피커 버튼 */}
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                textColorInputRef.current?.click();
+              }}
+              className="w-6 h-6 rounded-full border border-gray-300 bg-gradient-to-tr from-red-400 via-green-400 to-blue-500 hover:scale-110 transition-transform flex items-center justify-center"
+              title="사용자 지정 색상 선택"
+            >
+              <span className="text-[10px] text-white font-bold drop-shadow-sm">+</span>
+            </button>
+            <button 
+              type="button" 
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetColor().run(); }} 
+              className="w-6 h-6 rounded-full border border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50 flex items-center justify-center"
+              title="색상 초기화"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
@@ -400,18 +512,41 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
           >
             <span className="text-xs font-black text-[#2C3E50] px-0.5" style={{ backgroundColor: '#FFF176' }}>HL</span>
           </button>
-          <div className="absolute top-full left-0 mt-1 p-2 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 flex flex-wrap gap-1.5 w-40">
-            {['#FFF176','#B9F6CA','#B3E5FC','#FFCCBC','#E1BEE7','#FFEEBA'].map(c => (
+          <div className="absolute top-full left-0 mt-1 p-2 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-5 gap-1.5 w-[160px]">
+            {[
+              '#FFF176', '#FFEEBA', '#FEEBC8', '#B9F6CA', 
+              '#E6FFFA', '#C6F6D5', '#B3E5FC', '#EBF4FF', 
+              '#E2E8F0', '#FFCCBC', '#E1BEE7', '#FDE8E8'
+            ].map(c => (
               <button
                 key={c}
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); handleHighlight(c); }}
-                className="w-6 h-6 rounded-full border-2 border-white shadow hover:scale-110 transition-transform"
+                className="w-6 h-6 rounded-full border border-gray-200 shadow-sm hover:scale-110 transition-transform"
                 style={{ backgroundColor: c }}
                 title={c}
               />
             ))}
-            <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetHighlight().run(); }} className="w-6 h-6 rounded-full border-2 border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50">✕</button>
+            {/* 커스텀 하이라이트 피커 버튼 */}
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                highlightColorInputRef.current?.click();
+              }}
+              className="w-6 h-6 rounded-full border border-gray-300 bg-gradient-to-tr from-red-400 via-green-400 to-blue-500 hover:scale-110 transition-transform flex items-center justify-center"
+              title="사용자 지정 하이라이트 선택"
+            >
+              <span className="text-[10px] text-white font-bold drop-shadow-md">+</span>
+            </button>
+            <button 
+              type="button" 
+              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetHighlight().run(); }} 
+              className="w-6 h-6 rounded-full border border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50 flex items-center justify-center"
+              title="하이라이트 초기화"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
@@ -499,6 +634,19 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
         accept="image/*"
         className="hidden"
         onChange={handleImageUpload}
+      />
+      {/* ── 숨겨진 컬러 피커 입력 ─────────────────── */}
+      <input
+        ref={textColorInputRef}
+        type="color"
+        className="hidden"
+        onChange={(e) => handleColor(e.target.value)}
+      />
+      <input
+        ref={highlightColorInputRef}
+        type="color"
+        className="hidden"
+        onChange={(e) => handleHighlight(e.target.value)}
       />
 
       {/* ── 에디터 본문 ──────────────────────── */}

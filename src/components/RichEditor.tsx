@@ -87,14 +87,24 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     formData.append('file', file);
     try {
       const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      if (!res.ok) {
+        let errMsg = `업로드 실패 (${res.status})`;
+        try {
+          const errData = await res.json();
+          if (errData.error) errMsg = errData.error;
+        } catch {}
+        alert(errMsg);
+        e.target.value = '';
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         editor.chain().focus().setImage({ src: data.url, alt: file.name }).run();
       } else {
-        alert('이미지 업로드에 실패했습니다.');
+        alert(data.error || '이미지 업로드에 실패했습니다.');
       }
-    } catch {
-      alert('서버 연결 오류가 발생했습니다.');
+    } catch (err: any) {
+      alert(`서버 연결 오류: ${err?.message || '알 수 없는 오류'}`);
     }
     e.target.value = '';
   }, [editor]);

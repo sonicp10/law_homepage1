@@ -43,9 +43,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (data.authenticated) {
         setAuthed(true);
         setSession(data.user);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('is_admin_session', 'true');
+        }
       } else {
         setAuthed(false);
         setSession(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('is_admin_session');
+        }
       }
     } catch (err) {
       setAuthed(false);
@@ -83,6 +89,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     await fetch('/api/admin/auth/logout', { method: 'POST' });
     setAuthed(false);
     setSession(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('is_admin_session');
+    }
     router.push('/admin');
   };
 

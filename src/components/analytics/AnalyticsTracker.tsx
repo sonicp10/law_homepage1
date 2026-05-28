@@ -10,6 +10,11 @@ export default function AnalyticsTracker() {
     // 관리자 페이지(/admin)는 통계에서 제외
     if (pathname.startsWith('/admin')) return;
 
+    // 로컬스토리지의 관리자 세션 플래그가 있는 경우 통계에서 제외
+    if (typeof window !== 'undefined' && localStorage.getItem('is_admin_session') === 'true') {
+      return;
+    }
+
     const trackView = async () => {
 
       try {

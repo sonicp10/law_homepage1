@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requireAdminAuth } from '@/lib/auth';
+import { requireAdminAuth, verifyToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 // GET /api/posts - 법률 칼럼 목록 조회
 export async function GET(request: Request) {
@@ -11,8 +12,18 @@ export async function GET(request: Request) {
   const limit = parseInt(searchParams.get('limit') || '6');
   const skip = (page - 1) * limit;
 
-  try {
-    const where: any = { published: true };
+    let isAdmin = false;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('admin_session_v1')?.value;
+    if (token) {
+      const payload = await verifyToken(token);
+      if (payload) isAdmin = true;
+    }
+
+    const where: any = {};
+    if (!isAdmin) {
+      where.published = true;
+    }
     if (category) where.category = category;
     if (search) {
       where.OR = [
@@ -38,6 +49,7 @@ export async function GET(request: Request) {
           author: true,
           readTime: true,
           viewCount: true,
+          published: true,
           createdAt: true,
         },
       }),

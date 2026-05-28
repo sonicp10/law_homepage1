@@ -33,14 +33,20 @@ const ToolBtn = ({
   <button
     type="button"
     title={title}
-    onMouseDown={(e) => { e.preventDefault(); onClick(); }}
-    className={`flex items-center justify-center w-8 h-8 rounded-md text-sm font-bold transition-all
+    onMouseDown={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    }}
+    className={`flex items-center justify-center w-8 h-8 rounded-md text-sm font-bold transition-all select-none
       ${active
         ? 'bg-[#A67C52] text-white shadow-sm'
         : 'text-[#2C3E50]/70 hover:bg-gray-100 hover:text-[#2C3E50]'
       }`}
   >
-    {children}
+    <span className="pointer-events-none flex items-center justify-center w-full h-full">
+      {children}
+    </span>
   </button>
 );
 

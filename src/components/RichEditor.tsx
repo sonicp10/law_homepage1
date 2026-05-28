@@ -11,6 +11,44 @@ import Underline from '@tiptap/extension-underline';
 import Color from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Highlight from '@tiptap/extension-highlight';
+import { Extension } from '@tiptap/core';
+
+// ── 폰트 크기 조절 커스텀 Tiptap 확장 ─────────────────────────
+const FontSize = Extension.create({
+  name: 'fontSize',
+  addOptions() {
+    return {
+      types: ['textStyle'],
+    };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: element => element.style.fontSize.replace(/['"]+/g, ''),
+            renderHTML: attributes => {
+              if (!attributes.fontSize) return {};
+              return { style: `font-size: ${attributes.fontSize}` };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setFontSize: (fontSize: string) => ({ chain }) => {
+        return chain().setMark('textStyle', { fontSize }).run();
+      },
+      unsetFontSize: () => ({ chain }) => {
+        return chain().setMark('textStyle', { fontSize: null }).run();
+      },
+    } as any;
+  },
+});
 
 interface RichEditorProps {
   value: string;
@@ -65,6 +103,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
       }),
       Underline,
       TextStyle,
+      FontSize,
       Color,
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -75,7 +114,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose-editor min-h-[500px] pt-8 px-6 pb-6 focus:outline-none',
+        class: 'prose-editor min-h-[550px] pt-8 px-6 pb-6 focus:outline-none',
       },
     },
     onUpdate({ editor }) {
@@ -149,15 +188,64 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     editor.chain().focus().toggleHighlight({ color }).run();
   }, [editor]);
 
+  // 프리미엄 구분선 삽입
+  const handleInsertDivider = useCallback((type: 'solid' | 'dashed' | 'gradient' | 'wavy') => {
+    if (!editor) return;
+    let html = '';
+    if (type === 'solid') html = '<hr class="hr-solid" />';
+    else if (type === 'dashed') html = '<hr class="hr-dashed" />';
+    else if (type === 'gradient') html = '<hr class="hr-gradient" />';
+    else if (type === 'wavy') html = '<hr class="hr-wavy" />';
+    editor.chain().focus().insertContent(html).run();
+  }, [editor]);
+
+  // 프리미엄 서식 템플릿 삽입
+  const handleInsertTemplate = useCallback((type: 'success' | 'guide' | 'cta') => {
+    if (!editor) return;
+    let html = '';
+    if (type === 'success') {
+      html = `<blockquote class="template-success-story" style="border-left: 4px solid #A67C52; padding: 1.5em; background: #FDF8F3; border-radius: 12px; margin: 1.5em 0;">
+  <h3 style="margin-top: 0; color: #8B6840; font-size: 1.3em;">🏆 법원 인가 성공사례 브리핑</h3>
+  <table style="width:100%; border-collapse:collapse; margin-top:1em; font-size:0.95em;">
+    <tr style="border-bottom:1px solid #E8E4D8;"><td style="padding:8px 0; font-weight:bold; color:#2C3E50; width:30%;">총 채무액</td><td style="padding:8px 0; color:#5a6a7a;">[8,500만 원]</td></tr>
+    <tr style="border-bottom:1px solid #E8E4D8;"><td style="padding:8px 0; font-weight:bold; color:#2C3E50;">총 탕감액</td><td style="padding:8px 0; color:#E53E3E; font-weight:bold;">[7,200만 원 (탕감률 84%)]</td></tr>
+    <tr style="border-bottom:1px solid #E8E4D8;"><td style="padding:8px 0; font-weight:bold; color:#2C3E50;">월 변제금</td><td style="padding:8px 0; color:#5a6a7a;">[월 36만 원 (36개월)]</td></tr>
+    <tr><td style="padding:8px 0; font-weight:bold; color:#2C3E50;">사건 특징</td><td style="padding:8px 0; color:#5a6a7a;">최근 대출 비율이 높아 기각 우려가 컸으나 변제 계획안 보정을 거쳐 법원의 빠른 인가 결정을 받아낸 사례입니다.</td></tr>
+  </table>
+</blockquote><p></p>`;
+    } else if (type === 'guide') {
+      html = `<div class="template-guide-box" style="border: 1px solid #E8E4D8; padding: 1.5em; border-radius: 16px; background: #FAF9F6; margin: 1.5em 0;">
+  <h3 style="margin-top: 0; color: #2C3E50; font-size: 1.25em;">📌 핵심 체크리스트</h3>
+  <ol style="margin-bottom:0; padding-left: 1.5em;">
+    <li style="margin: 0.5em 0;"><strong>자격 요건 분석:</strong> 재산보다 채무가 많아야 하며, 소득 증빙이 최우선입니다.</li>
+    <li style="margin: 0.5em 0;"><strong>최근 채무 소명:</strong> 사용처를 투명하게 입증하는 소명 자료를 보정 단계에서 철저히 대비해야 합니다.</li>
+    <li style="margin: 0.5em 0;"><strong>생계비 공제 극대화:</strong> 추가 생계비를 최대한 인정받아 월 변제금을 낮춰야 완주할 수 있습니다.</li>
+  </ol>
+</div><p></p>`;
+    } else if (type === 'cta') {
+      html = `<div class="template-cta-box" style="background: linear-gradient(135deg, #2C3E50, #1a2634); color: white; padding: 2em; border-radius: 20px; text-align: center; margin: 2.5em 0; box-shadow: 0 8px 30px rgba(44,62,80,0.15);">
+  <h4 style="margin: 0 0 0.5em; font-size: 1.4em; font-weight: bold; color: #FFF176;">⚖️ 나도 개인회생/파산 자격이 될까?</h4>
+  <p style="margin: 0 0 1.2em; font-size: 0.95em; opacity: 0.85; line-height: 1.6;">복잡한 서류 없이, 30초면 자격 요건 및 월 예상 변제금을 확인하실 수 있습니다.</p>
+  <div style="display: inline-block;">
+    <a href="/qna/board" style="display: inline-block; padding: 0.8em 2em; background: #A67C52; color: white !important; font-weight: bold; border-radius: 12px; text-decoration: none !important; transition: all 0.2s; font-size: 0.95em;">
+      👉 30초 간편 자격진단 신청하기
+    </a>
+  </div>
+</div><p></p>`;
+    }
+    editor.chain().focus().insertContent(html).run();
+  }, [editor]);
+
   if (!editor) return null;
 
   const wordCount = editor.getText().trim().split(/\s+/).filter(Boolean).length;
   const charCount = editor.getText().length;
+  const charCountWithoutSpaces = editor.getText().replace(/\s/g, '').length;
 
   return (
-    <div className="border border-[var(--border)] rounded-2xl overflow-hidden bg-white shadow-sm">
+    <div className="border border-[var(--border)] rounded-2xl overflow-hidden bg-white shadow-sm relative">
       {/* ── 툴바 ─────────────────────────────── */}
-      <div className="sticky top-[60px] md:top-0 z-30 bg-white border-b border-[var(--border)] px-3 py-2 flex flex-wrap items-center gap-1">
+      <div className="sticky top-[60px] md:top-0 z-30 bg-white border-b border-[var(--border)] px-3 py-2 flex flex-wrap items-center gap-1.5">
 
         {/* 헤딩 드롭다운 */}
         <select
@@ -173,11 +261,55 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
             else editor.chain().focus().toggleHeading({ level: level as 1|2|3 }).run();
           }}
           className="h-8 px-2 text-sm font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+          title="문단 스타일"
         >
           <option value="0">본문</option>
           <option value="1">제목 1</option>
           <option value="2">제목 2</option>
           <option value="3">제목 3</option>
+        </select>
+
+        {/* 글자 크기 드롭다운 */}
+        <select
+          onChange={(e) => {
+            const size = e.target.value;
+            if (size === 'default') {
+              (editor.commands as any).unsetFontSize();
+            } else {
+              (editor.commands as any).setFontSize(size);
+            }
+          }}
+          className="h-8 px-2 text-sm font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+          defaultValue="default"
+          title="글자 크기"
+        >
+          <option value="default">크기</option>
+          <option value="12px">12px</option>
+          <option value="14px">14px</option>
+          <option value="16px">16px</option>
+          <option value="18px">18px</option>
+          <option value="20px">20px</option>
+          <option value="24px">24px</option>
+          <option value="32px">32px</option>
+        </select>
+
+        {/* 프리미엄 서식 템플릿 */}
+        <select
+          onChange={(e) => {
+            const template = e.target.value;
+            if (template !== 'none') {
+              handleInsertTemplate(template as any);
+              e.target.value = 'none';
+            }
+          }}
+          className="h-8 px-2.5 text-sm font-bold border border-[#A67C52]/30 rounded-md text-white bg-[#A67C52] cursor-pointer focus:outline-none hover:bg-[#8B6840] transition-colors shadow-sm ml-auto sm:ml-0"
+          defaultValue="none"
+          title="서식 템플릿 불러오기"
+        >
+          <option value="none">⭐ 서식 템플릿</option>
+          <option value="success">성공사례 브리핑</option>
+          <option value="guide">법률 정보 가이드</option>
+          <option value="cta">상담 유도 CTA</option>
         </select>
 
         <Divider />
@@ -271,16 +403,33 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
 
         <Divider />
 
-        {/* 인용구 & 코드 */}
+        {/* 인용구 & 구분선 */}
         <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="인용구">
           <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/></svg>
         </ToolBtn>
         <ToolBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="코드 블록">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} active={false} title="구분선">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </ToolBtn>
+
+        {/* 프리미엄 구분선 선택 */}
+        <select
+          onChange={(e) => {
+            const type = e.target.value;
+            if (type !== 'none') {
+              handleInsertDivider(type as any);
+              e.target.value = 'none';
+            }
+          }}
+          className="h-8 px-2 text-sm font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+          defaultValue="none"
+          title="구분선 스타일 삽입"
+        >
+          <option value="none">구분선</option>
+          <option value="solid">실선</option>
+          <option value="dashed">점선</option>
+          <option value="gradient">그라데이션</option>
+          <option value="wavy">물결선</option>
+        </select>
 
         <Divider />
 
@@ -317,6 +466,16 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
 
       {/* ── 에디터 본문 ──────────────────────── */}
       <EditorContent editor={editor} />
+
+      {/* 네이버 블로그 스타일 글자수 세기 플로팅 박스 */}
+      <div className="absolute bottom-16 left-6 z-20 bg-black/80 text-white rounded-xl px-3 py-2 text-xs font-semibold select-none flex flex-col shadow-lg backdrop-blur-sm pointer-events-none transition-all duration-300">
+        <span className="text-[9px] text-white/50 uppercase tracking-wider mb-0.5 font-bold">실시간 자수 계산기</span>
+        <div className="flex gap-2.5 items-center font-bold">
+          <span>공백 포함 <strong className="text-[#FFF176]">{charCount.toLocaleString()}</strong>자</span>
+          <span className="text-white/20">|</span>
+          <span>공백 제외 <strong className="text-[#B9F6CA]">{charCountWithoutSpaces.toLocaleString()}</strong>자</span>
+        </div>
+      </div>
 
       {/* ── 상태바 ───────────────────────────── */}
       <div className="border-t border-[var(--border)] px-4 py-2 flex items-center justify-between bg-gray-50/60">

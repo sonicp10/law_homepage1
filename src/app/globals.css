@@ -315,3 +315,29 @@ body {
   padding: 0.1em 0.2em;
 }
 
+/* ── 프리미엄 에디터 구분선 디자인 ────────────────────────── */
+.prose-editor hr.hr-solid, .prose-content hr.hr-solid {
+  border: none;
+  border-top: 2px solid #E8E4D8;
+  margin: 2em 0;
+}
+.prose-editor hr.hr-dashed, .prose-content hr.hr-dashed {
+  border: none;
+  border-top: 2px dashed #A67C52;
+  margin: 2em 0;
+}
+.prose-editor hr.hr-gradient, .prose-content hr.hr-gradient {
+  border: none;
+  height: 3px;
+  background: linear-gradient(to right, transparent, #A67C52 50%, transparent);
+  margin: 2em 0;
+}
+.prose-editor hr.hr-wavy, .prose-content hr.hr-wavy {
+  border: none;
+  height: 10px;
+  background-image: radial-gradient(circle at 50% 120%, transparent 4px, #A67C52 4px, #A67C52 6px, transparent 6px);
+  background-size: 16px 20px;
+  background-repeat: repeat-x;
+  margin: 2em 0;
+}
+

@@ -45,15 +45,25 @@ function WriteColumnContent() {
       const formData = new FormData();
       formData.append('file', file);
       const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      if (!res.ok) {
+        let errMsg = `업로드 실패 (${res.status})`;
+        try {
+          const errData = await res.json();
+          if (errData.error) errMsg = errData.error;
+        } catch {}
+        setError(errMsg);
+        return;
+      }
       const data = await res.json();
       if (data.success) setForm(prev => ({ ...prev, thumbnail: data.url }));
       else setError(data.error || '업로드에 실패했습니다.');
-    } catch {
-      setError('서버 연결 오류가 발생했습니다.');
+    } catch (err: any) {
+      setError(`서버 연결 오류: ${err?.message || '알 수 없는 오류'}`);
     } finally {
       setUploading(false);
     }
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

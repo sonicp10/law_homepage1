@@ -1,3 +1,4 @@
+import nodemailer from 'nodemailer';
 
 
 type NotifyType = 'CONSULTATION' | 'BOARD_QNA' | 'DIAGNOSIS';
@@ -113,7 +114,7 @@ export async function sendAdminNotification(payload: NotifyPayload): Promise<voi
   const { subject, html } = getSubjectAndBody(payload);
 
   try {
-    const nodemailer = require('nodemailer');
+    
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {

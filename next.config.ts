@@ -3,10 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   allowedDevOrigins: ['172.30.1.153'],
-  serverExternalPackages: ['nodemailer'],
-  outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/nodemailer/**/*'],
-  },
+
   images: {
     remotePatterns: [
       {

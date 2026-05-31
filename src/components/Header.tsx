@@ -110,7 +110,7 @@ export default function Header() {
                   <span className="text-lg md:text-2xl font-bold tracking-tight text-[var(--primary)] leading-none mb-0.5 md:mb-1">
                     법무사 <span className="text-[#A67C52] font-extrabold">김형근</span> <span className="hidden xs:inline">사무소</span>
                   </span>
-                  <span className="text-[9px] md:text-[11px] text-[var(--primary)]/60 font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">Private Rehabilitation</span>
+                  <span className="text-[9px] md:text-[11px] text-[var(--primary)]/60 font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">ALL ABOUT 회생파산</span>
                 </div>
               </Link>
             </div>

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import prisma from '@/lib/prisma';
 import * as z from 'zod';
 import { sendAdminNotification } from '@/lib/mailer';
@@ -45,14 +45,16 @@ export async function POST(request: Request) {
 
     console.log('API LEAD CREATED SUCCESS:', lead.id);
 
-    // 관리자 이메일 알림 (Vercel 서버리스 종료 방지를 위해 await 필수)
-    await sendAdminNotification({
-      type: 'DIAGNOSIS',
-      name,
-      phone,
-      debtAmount: debtAmount || undefined,
-      content: content || undefined,
-      source: source || undefined,
+    // 관리자 이메일 알림 (after를 사용하여 응답 지연 없이 백그라운드에서 전송)
+    after(() => {
+      sendAdminNotification({
+        type: 'DIAGNOSIS',
+        name,
+        phone,
+        debtAmount: debtAmount || undefined,
+        content: content || undefined,
+        source: source || undefined,
+      }).catch(console.error);
     });
 
     return NextResponse.json({ success: true, lead });

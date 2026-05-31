@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatPhone } from '@/lib/utils';
 
 export default function BoardWritePage() {
   const router = useRouter();
@@ -81,10 +82,11 @@ export default function BoardWritePage() {
                   <input 
                     required
                     type="tel" 
+                    maxLength={13}
                     placeholder="연락처를 입력하세요"
                     className="w-full px-6 py-3 border border-gray-100 rounded-lg focus:outline-none focus:border-[#A67C52]"
                     value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    onChange={(e) => setFormData({...formData, phone: formatPhone(e.target.value)})}
                   />
                 </div>
              </div>

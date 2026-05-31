@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import prisma from '@/lib/prisma';
 import { sendAdminNotification } from '@/lib/mailer';
 
@@ -45,13 +45,15 @@ export async function POST(request: Request) {
       },
     });
 
-    // 관리자 이메일 알림 (Vercel 서버리스 종료 방지를 위해 await 필수)
-    await sendAdminNotification({
-      type: 'BOARD_QNA',
-      name: author,
-      phone,
-      title: title || undefined,
-      content: content || undefined,
+    // 관리자 이메일 알림 (after를 사용하여 응답 지연 없이 백그라운드에서 전송)
+    after(() => {
+      sendAdminNotification({
+        type: 'BOARD_QNA',
+        name: author,
+        phone,
+        title: title || undefined,
+        content: content || undefined,
+      }).catch(console.error);
     });
 
     return NextResponse.json(newQuestion);

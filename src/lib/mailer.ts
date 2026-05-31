@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+const nodemailer = require('nodemailer');
 
 type NotifyType = 'CONSULTATION' | 'BOARD_QNA' | 'DIAGNOSIS';
 

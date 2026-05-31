@@ -1,35 +1,18 @@
-import nodemailer from 'nodemailer';
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
-
 type NotifyType = 'CONSULTATION' | 'BOARD_QNA' | 'DIAGNOSIS';
 
 interface NotifyPayload {
   type: NotifyType;
   name: string;
   phone: string;
-  subType?: string;   // 전화상담 / 방문상담 등
-  title?: string;     // 게시판 제목
-  content?: string;   // 내용 요약
-  debtAmount?: string; // 채무액
-  source?: string;    // 유입 경로
+  subType?: string;
+  title?: string;
+  content?: string;
+  debtAmount?: string;
+  source?: string;
 }
 
 function getSubjectAndBody(payload: NotifyPayload): { subject: string; html: string } {
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-
-  const baseInfo = `
-    <table style="width:100%;border-collapse:collapse;font-size:15px;">
-      <tr><td style="padding:8px;border:1px solid #ddd;background:#f9f9f9;font-weight:bold;width:120px;">신청 시각</td><td style="padding:8px;border:1px solid #ddd;">${now}</td></tr>
-      <tr><td style="padding:8px;border:1px solid #ddd;background:#f9f9f9;font-weight:bold;">성함</td><td style="padding:8px;border:1px solid #ddd;">${payload.name}</td></tr>
-      <tr><td style="padding:8px;border:1px solid #ddd;background:#f9f9f9;font-weight:bold;">연락처</td><td style="padding:8px;border:1px solid #ddd;">${payload.phone}</td></tr>
-  `;
 
   if (payload.type === 'CONSULTATION') {
     const subject = `[상담신청 알림] ${payload.subType === 'VISIT' ? '방문상담' : '전화상담'} - ${payload.name} 고객`;
@@ -55,8 +38,7 @@ function getSubjectAndBody(payload: NotifyPayload): { subject: string; html: str
         <div style="padding:16px;background:#0F172A;text-align:center;">
           <p style="color:#C5A059;font-size:12px;margin:0;">법무사 김형근 사무소 | 02-6405-6363</p>
         </div>
-      </div>
-    `;
+      </div>`;
     return { subject, html };
   }
 
@@ -78,14 +60,13 @@ function getSubjectAndBody(payload: NotifyPayload): { subject: string; html: str
             ${payload.content ? `<tr><td style="padding:8px;border:1px solid #ddd;background:#f9f9f9;font-weight:bold;">내용 요약</td><td style="padding:8px;border:1px solid #ddd;">${payload.content.substring(0, 200)}${payload.content.length > 200 ? '...' : ''}</td></tr>` : ''}
           </table>
           <div style="margin-top:20px;padding:16px;background:#FFF8EE;border-left:4px solid #C5A059;border-radius:4px;">
-            <p style="margin:0;font-size:14px;color:#7a6040;">📌 관리자 페이지 > 게시판 상담에서 전체 내용을 확인하고 답글을 달아주세요.</p>
+            <p style="margin:0;font-size:14px;color:#7a6040;">📌 관리자 페이지 &gt; 게시판 상담에서 전체 내용을 확인하고 답글을 달아주세요.</p>
           </div>
         </div>
         <div style="padding:16px;background:#0F172A;text-align:center;">
           <p style="color:#C5A059;font-size:12px;margin:0;">법무사 김형근 사무소 | 02-6405-6363</p>
         </div>
-      </div>
-    `;
+      </div>`;
     return { subject, html };
   }
 
@@ -108,14 +89,13 @@ function getSubjectAndBody(payload: NotifyPayload): { subject: string; html: str
           ${payload.source ? `<tr><td style="padding:8px;border:1px solid #ddd;background:#f9f9f9;font-weight:bold;">유입 경로</td><td style="padding:8px;border:1px solid #ddd;">${payload.source}</td></tr>` : ''}
         </table>
         <div style="margin-top:20px;padding:16px;background:#FFF8EE;border-left:4px solid #C5A059;border-radius:4px;">
-          <p style="margin:0;font-size:14px;color:#7a6040;">📌 관리자 페이지 > 리드 관리에서 상세 진단 내용을 확인하세요.</p>
+          <p style="margin:0;font-size:14px;color:#7a6040;">📌 관리자 페이지 &gt; 리드 관리에서 상세 진단 내용을 확인하세요.</p>
         </div>
       </div>
       <div style="padding:16px;background:#0F172A;text-align:center;">
         <p style="color:#C5A059;font-size:12px;margin:0;">법무사 김형근 사무소 | 02-6405-6363</p>
       </div>
-    </div>
-  `;
+    </div>`;
   return { subject, html };
 }
 
@@ -129,6 +109,16 @@ export async function sendAdminNotification(payload: NotifyPayload): Promise<voi
   const { subject, html } = getSubjectAndBody(payload);
 
   try {
+    // 동적 import로 Turbopack 번들링 오류 방지
+    const nodemailer = (await import('nodemailer')).default;
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+
     await transporter.sendMail({
       from: `"법무사 김형근 사무소" <${process.env.GMAIL_USER}>`,
       to: adminEmail,

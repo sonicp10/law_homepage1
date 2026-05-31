@@ -99,6 +99,8 @@ function getSubjectAndBody(payload: NotifyPayload): { subject: string; html: str
   return { subject, html };
 }
 
+import nodemailer from 'nodemailer';
+
 export async function sendAdminNotification(payload: NotifyPayload): Promise<void> {
   const adminEmail = process.env.ADMIN_NOTIFY_EMAIL;
   if (!adminEmail || !process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
@@ -109,8 +111,6 @@ export async function sendAdminNotification(payload: NotifyPayload): Promise<voi
   const { subject, html } = getSubjectAndBody(payload);
 
   try {
-    // 동적 import로 Turbopack 번들링 오류 방지
-    const nodemailer = (await import('nodemailer')).default;
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {

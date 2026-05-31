@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function FloatingMenu() {
   const menus = [
     { icon: '📊', label: '1분 자가진단', color: 'var(--primary)', textColor: '#fff', pulse: true, href: '/qna/diagnosis' },
-    { icon: '💬', label: '카톡상담', color: '#FEE500', textColor: '#000', href: '#' },
+    { icon: '💬', label: '카톡상담', color: '#FEE500', textColor: '#000', href: 'http://pf.kakao.com/_kRxdGX/chat' },
     { icon: '📞', label: '전화상담', color: 'var(--secondary)', textColor: '#fff', href: '/qna/phone' },
     { icon: '📅', label: '방문예약', color: 'var(--success)', textColor: '#fff', href: '/qna/visit' },
     { icon: '📝', label: '게시판 상담', color: 'var(--accent)', textColor: 'var(--primary)', href: '/qna/board' },
@@ -20,6 +20,8 @@ export default function FloatingMenu() {
             key={idx}
             href={menu.href}
             prefetch={false}
+            target={menu.href.startsWith('http') ? '_blank' : undefined}
+            rel={menu.href.startsWith('http') ? 'noopener noreferrer' : undefined}
             className={`group relative flex items-center justify-center w-14 h-14 rounded-2xl shadow-xl transition-all hover:scale-110 hover:-translate-x-1 ${menu.pulse ? 'animate-bounce' : ''}`}
             style={{ backgroundColor: menu.color, color: menu.textColor }}
           >

@@ -113,7 +113,7 @@ export async function sendAdminNotification(payload: NotifyPayload): Promise<voi
   const { subject, html } = getSubjectAndBody(payload);
 
   try {
-    const nodemailer = eval('require')('nodemailer');
+    const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {

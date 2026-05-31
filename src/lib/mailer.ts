@@ -1,3 +1,5 @@
+import nodemailer from 'nodemailer';
+
 type NotifyType = 'CONSULTATION' | 'BOARD_QNA' | 'DIAGNOSIS';
 
 interface NotifyPayload {
@@ -99,7 +101,7 @@ function getSubjectAndBody(payload: NotifyPayload): { subject: string; html: str
   return { subject, html };
 }
 
-import nodemailer from 'nodemailer';
+
 
 export async function sendAdminNotification(payload: NotifyPayload): Promise<void> {
   const adminEmail = process.env.ADMIN_NOTIFY_EMAIL;

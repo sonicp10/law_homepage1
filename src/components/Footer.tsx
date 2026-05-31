@@ -62,7 +62,7 @@ export default function Footer() {
       {/* Lower Section: Copyright (Warm Beige Background) */}
       <div className="bg-[#D4CEC1] py-6 md:py-8 border-t border-[#C4BCB1]">
         <div className="max-w-7xl mx-auto px-6 text-center md:text-left">
-          <p className="text-[11px] md:text-[13px] text-[#2C3E50]/60 font-bold tracking-widest uppercase leading-relaxed">
+          <p className="text-[11px] md:text-[13px] text-[#2C3E50]/60 font-bold tracking-widest leading-relaxed">
             Copyrihgt©2012 법무사 김형근 사무소 All right reserved.
           </p>
         </div>

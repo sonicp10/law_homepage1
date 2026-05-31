@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
+import { sendAdminNotification } from '@/lib/mailer';
 
 const consultationSchema = z.object({
   type: z.enum(['PHONE', 'VISIT']),
@@ -41,6 +42,15 @@ export async function POST(request: Request) {
         visitTime: visitTime || null,
         content: content || null,
       },
+    });
+
+    // 관리자 이메일 알림 (비동기, 실패해도 응답 영향 없음)
+    sendAdminNotification({
+      type: 'CONSULTATION',
+      name,
+      phone,
+      subType: type,
+      content: content || undefined,
     });
 
     return NextResponse.json({ success: true, consultation: newConsultation });

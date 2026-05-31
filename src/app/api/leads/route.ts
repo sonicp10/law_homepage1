@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import * as z from 'zod';
+import { sendAdminNotification } from '@/lib/mailer';
 
 const leadSchema = z.object({
   name: z.string().min(1),
@@ -43,6 +44,17 @@ export async function POST(request: Request) {
     });
 
     console.log('API LEAD CREATED SUCCESS:', lead.id);
+
+    // 관리자 이메일 알림 (비동기, 실패해도 응답 영향 없음)
+    sendAdminNotification({
+      type: 'DIAGNOSIS',
+      name,
+      phone,
+      debtAmount: debtAmount || undefined,
+      content: content || undefined,
+      source: source || undefined,
+    });
+
     return NextResponse.json({ success: true, lead });
   } catch (error: any) {
     console.error('CRITICAL Lead creation error:', error);

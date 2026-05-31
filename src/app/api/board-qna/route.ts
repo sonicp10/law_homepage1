@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { sendAdminNotification } from '@/lib/mailer';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -42,6 +43,15 @@ export async function POST(request: Request) {
         title,
         content,
       },
+    });
+
+    // 관리자 이메일 알림 (비동기, 실패해도 응답 영향 없음)
+    sendAdminNotification({
+      type: 'BOARD_QNA',
+      name: author,
+      phone,
+      title: title || undefined,
+      content: content || undefined,
     });
 
     return NextResponse.json(newQuestion);

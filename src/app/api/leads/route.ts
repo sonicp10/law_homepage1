@@ -45,8 +45,8 @@ export async function POST(request: Request) {
 
     console.log('API LEAD CREATED SUCCESS:', lead.id);
 
-    // 관리자 이메일 알림 (비동기, 실패해도 응답 영향 없음)
-    sendAdminNotification({
+    // 관리자 이메일 알림 (Vercel 서버리스 종료 방지를 위해 await 필수)
+    await sendAdminNotification({
       type: 'DIAGNOSIS',
       name,
       phone,

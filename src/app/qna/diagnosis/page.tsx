@@ -110,7 +110,7 @@ export default function DiagnosisPage() {
       {step === 1 && (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-[var(--primary)] mb-3">1분 자가진단</h2>
+            <h2 className="text-3xl font-bold text-[var(--primary)] mb-3">자가진단</h2>
             <p className="text-[var(--primary)]/60">1분이면 충분합니다. 핵심 정보만 입력해 주세요.</p>
           </div>
 

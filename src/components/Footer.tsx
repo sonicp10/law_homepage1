@@ -53,12 +53,7 @@ export default function Footer() {
                 주소: 서울시 구로구 경인로 579, 502호 (신도림동, 안성빌딩 A동)
               </p>
               
-              <Link href="/privacy" className="mt-6 text-[13px] text-[#2C3E50]/60 font-bold hover:text-[#A67C52] transition-colors flex items-center gap-1">
-                이용약관 및 개인정보처리방침
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
-              </Link>
+
             </div>
           </div>
         </div>
@@ -68,7 +63,7 @@ export default function Footer() {
       <div className="bg-[#D4CEC1] py-6 md:py-8 border-t border-[#C4BCB1]">
         <div className="max-w-7xl mx-auto px-6 text-center md:text-left">
           <p className="text-[11px] md:text-[13px] text-[#2C3E50]/60 font-bold tracking-widest uppercase leading-relaxed">
-            Ⓒ2012 법무사 김형근 사무소. 모든 권리 저작권 보호 및 무단 전재 및 재배포 금지.
+            Copyrihgt©2012 법무사 김형근 사무소 All right reserved.
           </p>
         </div>
       </div>

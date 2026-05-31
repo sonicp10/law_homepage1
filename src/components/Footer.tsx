@@ -24,7 +24,7 @@ export default function Footer() {
 
             {/* SNS Icons */}
             <div className="flex items-center gap-4">
-              <a href="https://blog.naver.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-[#2C3E50] rounded-full flex items-center justify-center hover:bg-[#A67C52] transition-all shadow-md group/sns" title="Naver Blog">
+              <a href="https://blog.naver.com/sonicp" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-[#2C3E50] rounded-full flex items-center justify-center hover:bg-[#A67C52] transition-all shadow-md group/sns" title="Naver Blog">
                 <span className="text-white font-black pointer-events-none text-xs">N</span>
               </a>
               <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-[#2C3E50] rounded-full flex items-center justify-center hover:bg-[#A67C52] transition-all shadow-md group/sns" title="YouTube">

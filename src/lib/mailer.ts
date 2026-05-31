@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const nodemailer = eval('require')('nodemailer');
 
 type NotifyType = 'CONSULTATION' | 'BOARD_QNA' | 'DIAGNOSIS';
 

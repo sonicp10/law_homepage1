@@ -6,7 +6,8 @@ import {
 } from 'recharts';
 import { 
   Users, Eye, MousePointer2, MapPin, ArrowUpRight, Calendar, ChevronDown, 
-  RefreshCcw, Search, Globe, Link2, ExternalLink
+  RefreshCcw, Search, Globe, Link2, ExternalLink,
+  Sparkles, Lightbulb, TrendingUp
 } from 'lucide-react';
 
 export default function StatisticsPage() {
@@ -453,6 +454,8 @@ export default function StatisticsPage() {
           </table>
         </div>
       </div>
+
+      <AIInsightReportPanel data={data} userId="sonicp" />
     </div>
   );
 }
@@ -482,6 +485,125 @@ function StatCard({ title, value, icon, trend, color }: any) {
       <div>
         <p className="text-sm font-medium text-[var(--primary)]/50 mb-1">{title}</p>
         <p className="text-3xl font-extrabold text-[var(--primary)]">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function AIInsightReportPanel({ data, userId }: { data: any, userId: string }) {
+  if (!data) return null;
+
+  const { summary, leadsByReferrer, pageWithLeads } = data;
+  
+  // 1. 유입 채널 (Referrer) 분석
+  let bestReferrer = null;
+  let worstReferrer = null;
+  
+  if (leadsByReferrer && leadsByReferrer.length > 0) {
+    const validRefs = leadsByReferrer.filter((r: any) => r.views >= 5);
+    if (validRefs.length > 0) {
+      bestReferrer = validRefs.reduce((prev: any, curr: any) => (prev.conversionRate > curr.conversionRate) ? prev : curr);
+      worstReferrer = validRefs.reduce((prev: any, curr: any) => (prev.conversionRate < curr.conversionRate) ? prev : curr);
+    } else {
+      bestReferrer = leadsByReferrer[0];
+    }
+  }
+
+  // 2. 인기 페이지 (Page) 분석
+  let bestPage = null;
+  if (pageWithLeads && pageWithLeads.length > 0) {
+    bestPage = pageWithLeads.reduce((prev: any, curr: any) => (prev.conversionRate > curr.conversionRate) ? prev : curr);
+  }
+
+  // 3. 종합 상태 평가
+  const conversionRate = summary?.conversionRate || 0;
+  const isGoodConversion = conversionRate >= 3.0;
+  const isLowTraffic = (summary?.totalViews || 0) < 100;
+
+  return (
+    <div className="bg-gradient-to-br from-[#1a1f2c] to-[#0F172A] rounded-3xl p-8 border border-[#A67C52]/30 shadow-xl mt-12 relative overflow-hidden">
+      {/* 장식용 배경 */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#A67C52]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+      
+      <div className="flex items-center gap-3 mb-8 relative z-10">
+        <div className="p-3 bg-[#A67C52]/20 rounded-xl">
+          <Sparkles className="w-6 h-6 text-[#A67C52]" />
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold text-white">{userId} 대표님을 위한 수임 증대 맞춤 전략</h3>
+          <p className="text-gray-400 mt-1 text-sm font-medium">현재 통계 데이터를 기반으로 AI가 분석한 종합 액션 플랜입니다.</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+        
+        {/* 1. 종합 진단 및 방향성 */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm shadow-inner hover:bg-white/10 transition-colors">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-5 h-5 text-emerald-400" />
+            <h4 className="text-lg font-bold text-white">종합 진단</h4>
+          </div>
+          <p className="text-gray-300 text-sm leading-relaxed mb-4">
+            {isLowTraffic ? (
+              "현재 전체 트래픽이 다소 부족한 상태입니다. 초기 유입을 늘리기 위한 적극적인 검색 광고(SA)나 블로그 배포 등 매체 예산 확보가 우선되어야 합니다."
+            ) : isGoodConversion ? (
+              "현재 사이트 전환율이 평균 이상을 기록하고 있습니다. 랜딩 페이지의 설득력이 충분하므로, 방문자 수(트래픽)만 늘려준다면 비례하여 수임이 크게 증가할 수 있는 최적의 상태입니다."
+            ) : (
+              "트래픽 대비 전환율이 아쉬운 상태입니다. 방문자는 꽤 있으나 상담 신청으로 이어지지 않고 있으므로, 히어로 섹션의 신뢰성 높은 성공 사례 배치나 자가진단 유도 배너 추가 등 UI/UX 개선이 필요합니다."
+            )}
+          </p>
+          <div className="bg-[#A67C52]/20 text-[#D4A574] px-4 py-3 rounded-xl text-sm font-bold flex items-start gap-2">
+            <Lightbulb className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>핵심 요약: {isLowTraffic ? '마케팅 예산 확대 필요' : isGoodConversion ? '공격적인 트래픽 증대(광고 집행)' : '홈페이지 내부 전환율(UX) 개선'}</span>
+          </div>
+        </div>
+
+        {/* 2. 매체/광고 최적화 제안 */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm shadow-inner hover:bg-white/10 transition-colors">
+          <div className="flex items-center gap-2 mb-4">
+            <Globe className="w-5 h-5 text-blue-400" />
+            <h4 className="text-lg font-bold text-white">광고/유입 채널 최적화</h4>
+          </div>
+          {bestReferrer ? (
+            <div className="space-y-4 text-sm text-gray-300">
+              <p>
+                가장 효율이 좋은 유입 채널은 <strong className="text-white bg-blue-500/20 px-2 py-0.5 rounded">{bestReferrer.referrer === 'Direct' ? '직접 유입' : bestReferrer.referrer}</strong> (전환율 {bestReferrer.conversionRate.toFixed(1)}%) 입니다.
+              </p>
+              <ul className="list-disc pl-5 space-y-2 text-gray-400 font-medium">
+                <li>해당 채널의 광고 예산을 현재 대비 <span className="text-emerald-400 font-bold">20~30% 증액</span>하여 수임을 극대화하세요.</li>
+                {worstReferrer && worstReferrer.referrer !== bestReferrer.referrer && (
+                  <li>반면, <strong className="text-gray-200">{worstReferrer.referrer === 'Direct' ? '직접 유입' : worstReferrer.referrer}</strong>의 경우 효율이 떨어지므로 타겟팅을 점검하거나 예산 축소를 고려하세요.</li>
+                )}
+              </ul>
+            </div>
+          ) : (
+             <p className="text-gray-400 text-sm">유의미한 유입 채널 데이터가 아직 부족합니다. 광고를 며칠 더 집행해 보세요.</p>
+          )}
+        </div>
+
+        {/* 3. 콘텐츠/랜딩 페이지 제안 */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm shadow-inner hover:bg-white/10 transition-colors">
+          <div className="flex items-center gap-2 mb-4">
+            <MapPin className="w-5 h-5 text-rose-400" />
+            <h4 className="text-lg font-bold text-white">콘텐츠 효자 페이지</h4>
+          </div>
+          {bestPage ? (
+            <div className="space-y-4 text-sm text-gray-300">
+              <p>
+                방문자 대비 상담 신청이 가장 활발한 페이지는 <strong className="text-white break-all bg-rose-500/20 px-2 py-0.5 rounded">{bestPage.path}</strong> 입니다.
+              </p>
+              <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 mt-4">
+                <p className="text-rose-200 font-bold flex items-center gap-1 mb-1">
+                  <Sparkles className="w-4 h-4" /> Action Item
+                </p>
+                <p className="text-gray-300 font-medium leading-relaxed">이 페이지를 메인 랜딩으로 삼는 <strong className="text-white">특화 광고 캠페인(검색광고 확장 등)</strong>을 신설해 보세요. 유입 대비 수임률이 크게 향상될 수 있습니다.</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm">상담 신청을 발생시킨 특정 페이지 데이터가 아직 충분하지 않습니다.</p>
+          )}
+        </div>
+
       </div>
     </div>
   );

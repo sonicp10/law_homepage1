@@ -14,6 +14,7 @@ export default function DiagnosisPage() {
     birth: '',
     occupation: '',
     monthlyIncome: '',
+    location: '', // 거주지역 추가
     
     // Step 2: 재산 및 채무
     totalDebt: '',
@@ -52,7 +53,7 @@ export default function DiagnosisPage() {
 
   const nextStep = () => {
     // Validation for Step 1
-    if (step === 1 && (!formData.name || !formData.phone || !formData.occupation)) {
+    if (step === 1 && (!formData.name || !formData.phone || !formData.occupation || !formData.location)) {
       alert('필수 정보를 모두 입력해 주세요.');
       return;
     }
@@ -70,6 +71,7 @@ export default function DiagnosisPage() {
         body: JSON.stringify({
           name: formData.name,
           phone: formData.phone,
+          location: formData.location,
           debtAmount: formData.totalDebt,
           content: `사유: ${formData.debtReason}`,
           source: 'DIAGNOSIS_V2',
@@ -136,6 +138,28 @@ export default function DiagnosisPage() {
                   placeholder="010-1234-5678"
                   className="w-full px-5 py-4 bg-white border border-[var(--border)] rounded-2xl focus:ring-2 focus:ring-[var(--secondary)]/20 outline-none transition-all"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-[var(--primary)] mb-2">거주지역 *</label>
+              <div className="relative">
+                <select 
+                  required
+                  value={formData.location}
+                  onChange={(e) => updateField('location', e.target.value)}
+                  className="w-full px-5 py-4 bg-white border border-[var(--border)] rounded-2xl outline-none appearance-none font-bold text-gray-900"
+                >
+                  <option value="">거주지역 선택</option>
+                  {['서울', '경기', '인천', '부산', '대구', '대전', '광주', '울산', '세종', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'].map((loc) => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50 text-[var(--primary)]">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </div>
               </div>
             </div>
 

@@ -8,6 +8,7 @@ export default function PhoneConsultPage() {
     name: '',
     phone: '',
     location: '',
+    category: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,6 +77,29 @@ export default function PhoneConsultPage() {
                    <option value="경기">경기</option>
                    <option value="인천">인천</option>
                    <option value="기타">기타</option>
+                 </select>
+                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                 </div>
+               </div>
+            </div>
+
+            <div className="space-y-4">
+               <label className="flex items-center gap-2 text-lg font-bold text-[#2C3E50]">
+                 <span className="w-1.5 h-1.5 bg-[#A67C52] rounded-full"></span> 업무분야
+               </label>
+               <div className="relative">
+                 <select 
+                   required
+                   className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] transition-colors appearance-none"
+                   value={formData.category}
+                   onChange={(e) => setFormData({...formData, category: e.target.value})}
+                 >
+                   <option value="">업무분야 선택</option>
+                   <option value="개인회생">개인회생</option>
+                   <option value="개인파산">개인파산</option>
                  </select>
                  <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">

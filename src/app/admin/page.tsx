@@ -585,27 +585,89 @@ export default function AdminDashboard() {
                 
                 {selectedItem.itemType === 'LEAD' && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedItem.item.debtAmount && (
-                        <div>
-                          <p className="text-[10px] text-gray-400 font-bold">부채 규모</p>
-                          <p className="text-sm font-bold text-gray-800">{selectedItem.item.debtAmount}</p>
+                    {selectedItem.item.extraInfo ? (
+                      <div className="space-y-4">
+                        <div className="border-b pb-2 border-gray-150">
+                          <p className="text-xs font-bold text-orange-600 flex items-center gap-1.5">
+                            <span>📋</span> 1분 자가진단 신청 내역
+                          </p>
                         </div>
-                      )}
-                      {selectedItem.item.location && (
-                        <div>
-                          <p className="text-[10px] text-gray-400 font-bold">거주지역</p>
-                          <p className="text-sm font-bold text-gray-800">{selectedItem.item.location}</p>
+                        
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">🎂 생년월일</span>
+                            <strong className="text-gray-800">{selectedItem.item.extraInfo.birth ? `${selectedItem.item.extraInfo.birth}` : '-'}</strong>
+                          </div>
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">💼 현재 직업</span>
+                            <strong className="text-gray-800">{selectedItem.item.extraInfo.occupation || '-'}</strong>
+                          </div>
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">💵 월 평균 소득</span>
+                            <strong className="text-orange-600 font-bold">{selectedItem.item.extraInfo.monthlyIncome || '-'}</strong>
+                          </div>
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">🏠 거주 형태</span>
+                            <strong className="text-gray-800">{selectedItem.item.extraInfo.housingType || '-'}</strong>
+                          </div>
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">💰 총 채무 원금</span>
+                            <strong className="text-red-600 font-bold">{selectedItem.item.extraInfo.totalDebt || selectedItem.item.debtAmount || '-'}</strong>
+                          </div>
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">🏦 채권자 수</span>
+                            <strong className="text-gray-800">{selectedItem.item.extraInfo.creditorCount ? `${selectedItem.item.extraInfo.creditorCount}곳` : '-'}</strong>
+                          </div>
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">💎 주요 자산 보유</span>
+                            <strong className="text-gray-800">{selectedItem.item.extraInfo.hasMajorAssets || '-'}</strong>
+                          </div>
+                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
+                            <span className="text-gray-400 block mb-0.5">🛡️ 최근 면책 이력</span>
+                            <strong className="text-gray-800">{selectedItem.item.extraInfo.reliefHistory || '-'}</strong>
+                          </div>
+                          <div className="col-span-2 bg-gray-50 p-2.5 rounded-xl border border-gray-150 flex justify-between items-center">
+                            <span className="text-gray-400 font-semibold">🚨 현재 압류 / 독촉 여부</span>
+                            <span className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] ${selectedItem.item.extraInfo.seizureHistory === '진행 중' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                              {selectedItem.item.extraInfo.seizureHistory || '-'}
+                            </span>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    {selectedItem.item.content && (
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold mb-1">상담 세부 고충</p>
-                        <div className="p-3 bg-amber-50/30 border border-amber-100 rounded-lg text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">
-                          {selectedItem.item.content}
-                        </div>
+
+                        {selectedItem.item.content && (
+                          <div className="pt-2">
+                            <p className="text-[10px] text-gray-400 font-bold mb-1">📝 상세 상담 희망 내용</p>
+                            <div className="p-3 bg-amber-50/30 border border-amber-100 rounded-lg text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">
+                              {selectedItem.item.content}
+                            </div>
+                          </div>
+                        )}
                       </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          {selectedItem.item.debtAmount && (
+                            <div>
+                              <p className="text-[10px] text-gray-400 font-bold">부채 규모</p>
+                              <p className="text-sm font-bold text-gray-800">{selectedItem.item.debtAmount}</p>
+                            </div>
+                          )}
+                          {selectedItem.item.location && (
+                            <div>
+                              <p className="text-[10px] text-gray-400 font-bold">거주지역</p>
+                              <p className="text-sm font-bold text-gray-800">{selectedItem.item.location}</p>
+                            </div>
+                          )}
+                        </div>
+                        {selectedItem.item.content && (
+                          <div>
+                            <p className="text-[10px] text-gray-400 font-bold mb-1">상담 세부 고충</p>
+                            <div className="p-3 bg-amber-50/30 border border-amber-100 rounded-lg text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">
+                              {selectedItem.item.content}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </>
                 )}

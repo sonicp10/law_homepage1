@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, User, Phone, MapPin, Calendar, HelpCircle, 
-  Briefcase, Wallet, Award, Scale, CheckCircle2, ShieldAlert
+  Briefcase, Wallet, Scale, ShieldAlert, FileText
 } from 'lucide-react';
 
 const statusLabel: Record<string, string> = {

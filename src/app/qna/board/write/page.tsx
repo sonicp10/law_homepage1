@@ -140,6 +140,7 @@ export default function BoardWritePage() {
              <label className="md:w-40 bg-gray-50 px-8 py-6 flex items-center justify-center text-sm font-black text-[#2C3E50]">거주지역</label>
              <div className="flex-1 p-4">
                <select 
+                 required
                  className="w-72 px-6 py-3 border border-gray-100 rounded-lg focus:outline-none focus:border-[#A67C52] appearance-none"
                  value={formData.location}
                  onChange={(e) => setFormData({...formData, location: e.target.value})}
@@ -147,7 +148,21 @@ export default function BoardWritePage() {
                  <option value="">선택하세요.</option>
                  <option value="서울">서울</option>
                  <option value="경기">경기</option>
-                 <option value="기타">기타</option>
+                 <option value="인천">인천</option>
+                 <option value="부산">부산</option>
+                 <option value="대구">대구</option>
+                 <option value="대전">대전</option>
+                 <option value="광주">광주</option>
+                 <option value="울산">울산</option>
+                 <option value="세종">세종</option>
+                 <option value="강원">강원</option>
+                 <option value="충북">충북</option>
+                 <option value="충남">충남</option>
+                 <option value="전북">전북</option>
+                 <option value="전남">전남</option>
+                 <option value="경북">경북</option>
+                 <option value="경남">경남</option>
+                 <option value="제주">제주</option>
                </select>
              </div>
           </div>

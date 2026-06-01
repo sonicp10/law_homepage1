@@ -46,8 +46,8 @@ export async function POST(request: Request) {
     });
 
     // 관리자 이메일 알림 (after를 사용하여 응답 지연 없이 백그라운드에서 전송)
-    after(() => {
-      sendAdminNotification({
+    after(async () => {
+      await sendAdminNotification({
         type: 'BOARD_QNA',
         name: author,
         phone,

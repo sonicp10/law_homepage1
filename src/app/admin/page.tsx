@@ -507,268 +507,265 @@ export default function AdminDashboard() {
 
       {/* 강화 기능 2: 대시보드 퀵 액션 상세 모달 시스템 */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100 transform scale-100 transition-all">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
             
-            {/* 모달 헤더 */}
-            <div className={`p-5 text-white flex items-center justify-between bg-gradient-to-r ${
-              selectedItem.itemType === 'LEAD' ? 'from-orange-500 to-orange-600' : 
-              selectedItem.itemType === 'CONSULTATION' ? 'from-[#A67C52] to-[#8B6840]' : 
-              'from-green-500 to-green-600'
-            }`}>
-              <div>
-                <span className="text-[10px] font-extrabold tracking-widest uppercase bg-white/20 px-2 py-0.5 rounded-full inline-block mb-1">
-                  {selectedItem.itemType === 'LEAD' ? '빠른 상담 (리드)' : 
-                   selectedItem.itemType === 'CONSULTATION' ? `${selectedItem.item.type === 'VISIT' ? '방문 상담 예약' : '전화 상담 신청'}` :
-                   '게시판 문의 내용'}
-                </span>
-                <h3 className="text-lg font-bold">
-                  {selectedItem.itemType === 'BOARD_QNA' ? selectedItem.item.author : selectedItem.item.name} 의뢰인 신청 건
-                </h3>
+            {/* 모달 헤더 (Deep Navy & Gold 테마로 통일) */}
+            <div className="bg-[#0F172A] text-white px-6 py-5 flex items-center justify-between border-b border-[#C5A059]/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#C5A059]/10 border border-[#C5A059]/30 flex items-center justify-center">
+                  <span className="text-xl">
+                    {selectedItem.itemType === 'LEAD' ? '📌' : selectedItem.itemType === 'CONSULTATION' ? '📞' : '💬'}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    {selectedItem.itemType === 'BOARD_QNA' ? selectedItem.item.author : selectedItem.item.name} 의뢰인 상세 정보
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    신청일시: {new Date(selectedItem.item.createdAt).toLocaleString('ko-KR')}
+                  </p>
+                </div>
               </div>
               <button 
-                onClick={() => setSelectedItem(null)} 
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white font-bold"
+                onClick={() => setSelectedItem(null)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
               >
                 ✕
               </button>
             </div>
 
-            {/* 모달 바디 */}
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            {/* 모달 바디 (스크롤 가능) */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50/50">
               
-              {/* 고객 기본 정보 */}
-              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-150">
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold">의뢰인 이름</p>
-                  <p className="text-sm font-extrabold text-[var(--primary)]">
-                    {selectedItem.itemType === 'BOARD_QNA' ? selectedItem.item.author : selectedItem.item.name}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold">신청일시</p>
-                  <p className="text-xs font-semibold text-[var(--primary)]">
-                    {new Date(selectedItem.item.createdAt).toLocaleString('ko-KR')}
-                  </p>
-                </div>
-                
-                {selectedItem.itemType !== 'BOARD_QNA' && (
-                  <div className="col-span-2 flex items-center justify-between border-t border-gray-200/50 pt-2 mt-1">
-                    <div>
-                      <p className="text-[10px] text-gray-400 font-bold">연락처</p>
-                      <p className="text-sm font-extrabold text-blue-700">{selectedItem.item.phone}</p>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => {
-                          navigator.clipboard.writeText(selectedItem.item.phone);
-                          alert('연락처가 클립보드에 복사되었습니다.');
-                        }}
-                        className="bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs px-2.5 py-1.5 rounded-lg border border-blue-200 font-bold transition-all"
-                      >
-                        📋 복사
-                      </button>
-                      <a 
-                        href={`tel:${selectedItem.item.phone}`}
-                        className="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-2.5 py-1.5 rounded-lg border border-green-200 font-bold transition-all"
-                      >
-                        📞 통화
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 세부 예약/신청 정보 */}
-              <div className="space-y-3">
-                
-                {selectedItem.itemType === 'LEAD' && (
-                  <>
-                    {selectedItem.item.extraInfo ? (
-                      <div className="space-y-4">
-                        <div className="border-b pb-2 border-gray-150">
-                          <p className="text-xs font-bold text-orange-600 flex items-center gap-1.5">
-                            <span>📋</span> 1분 자가진단 신청 내역
-                          </p>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3 text-xs">
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">🎂 생년월일</span>
-                            <strong className="text-gray-800">{selectedItem.item.extraInfo.birth ? `${selectedItem.item.extraInfo.birth}` : '-'}</strong>
-                          </div>
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">💼 현재 직업</span>
-                            <strong className="text-gray-800">{selectedItem.item.extraInfo.occupation || '-'}</strong>
-                          </div>
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">💵 월 평균 소득</span>
-                            <strong className="text-orange-600 font-bold">{selectedItem.item.extraInfo.monthlyIncome || '-'}</strong>
-                          </div>
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">🏠 거주 형태</span>
-                            <strong className="text-gray-800">{selectedItem.item.extraInfo.housingType || '-'}</strong>
-                          </div>
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">💰 총 채무 원금</span>
-                            <strong className="text-red-600 font-bold">{selectedItem.item.extraInfo.totalDebt || selectedItem.item.debtAmount || '-'}</strong>
-                          </div>
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">🏦 채권자 수</span>
-                            <strong className="text-gray-800">{selectedItem.item.extraInfo.creditorCount ? `${selectedItem.item.extraInfo.creditorCount}곳` : '-'}</strong>
-                          </div>
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">💎 주요 자산 보유</span>
-                            <strong className="text-gray-800">{selectedItem.item.extraInfo.hasMajorAssets || '-'}</strong>
-                          </div>
-                          <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-150">
-                            <span className="text-gray-400 block mb-0.5">🛡️ 최근 면책 이력</span>
-                            <strong className="text-gray-800">{selectedItem.item.extraInfo.reliefHistory || '-'}</strong>
-                          </div>
-                          <div className="col-span-2 bg-gray-50 p-2.5 rounded-xl border border-gray-150 flex justify-between items-center">
-                            <span className="text-gray-400 font-semibold">🚨 현재 압류 / 독촉 여부</span>
-                            <span className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] ${selectedItem.item.extraInfo.seizureHistory === '진행 중' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                              {selectedItem.item.extraInfo.seizureHistory || '-'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {selectedItem.item.content && (
-                          <div className="pt-2">
-                            <p className="text-[10px] text-gray-400 font-bold mb-1">📝 상세 상담 희망 내용</p>
-                            <div className="p-3 bg-amber-50/30 border border-amber-100 rounded-lg text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">
-                              {selectedItem.item.content}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          {selectedItem.item.debtAmount && (
-                            <div>
-                              <p className="text-[10px] text-gray-400 font-bold">부채 규모</p>
-                              <p className="text-sm font-bold text-gray-800">{selectedItem.item.debtAmount}</p>
-                            </div>
-                          )}
-                          {selectedItem.item.location && (
-                            <div>
-                              <p className="text-[10px] text-gray-400 font-bold">거주지역</p>
-                              <p className="text-sm font-bold text-gray-800">{selectedItem.item.location}</p>
-                            </div>
-                          )}
-                        </div>
-                        {selectedItem.item.content && (
-                          <div>
-                            <p className="text-[10px] text-gray-400 font-bold mb-1">상담 세부 고충</p>
-                            <div className="p-3 bg-amber-50/30 border border-amber-100 rounded-lg text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">
-                              {selectedItem.item.content}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </>
-                )}
-
-                {selectedItem.itemType === 'CONSULTATION' && (
-                  <>
-                    {selectedItem.item.type === 'VISIT' && (
-                      <div className="bg-purple-50/55 p-3 rounded-lg border border-purple-100 grid grid-cols-2 gap-3">
-                        <div className="col-span-2">
-                          <p className="text-[10px] text-purple-800 font-bold">📅 방문 예약 일시</p>
-                          <p className="text-sm font-extrabold text-purple-900 mt-0.5">
-                            {selectedItem.item.visitDate ? selectedItem.item.visitDate.split('T')[0] : '미지정'} {selectedItem.item.visitTime || ''}
-                          </p>
-                        </div>
-                        {selectedItem.item.location && (
-                          <div>
-                            <p className="text-[10px] text-purple-800 font-bold">📍 방문 예정 지역</p>
-                            <p className="text-xs font-bold text-purple-900 mt-0.5">{selectedItem.item.location}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {selectedItem.item.type === 'PHONE' && selectedItem.item.category && (
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold">관심 상담 업무분야</p>
-                        <p className="text-sm font-bold text-gray-800">{selectedItem.item.category}</p>
-                      </div>
-                    )}
-
-                    {selectedItem.item.content && (
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold mb-1">의뢰인 추가 상세 메모</p>
-                        <div className="p-3 bg-gray-50 border border-gray-150 rounded-lg text-xs text-gray-700 whitespace-pre-wrap leading-relaxed">
-                          {selectedItem.item.content}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {selectedItem.itemType === 'BOARD_QNA' && (
-                  <>
-                    <div>
-                      <p className="text-[10px] text-gray-400 font-bold mb-0.5">문의 제목</p>
-                      <p className="text-sm font-bold text-gray-800">{selectedItem.item.title}</p>
-                    </div>
-                    {selectedItem.item.content && (
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-bold mb-1">문의 본문 내용</p>
-                        <div className="p-3 bg-green-50/10 border border-green-100 rounded-lg text-xs text-gray-700 max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-                          {selectedItem.item.content}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-              </div>
-
-              {/* 강화된 상태 변경 기능 (모달 내부에서 direct 업데이트) */}
+              {/* 기본 연락 정보 (LEAD 및 CONSULTATION 공통) */}
               {selectedItem.itemType !== 'BOARD_QNA' && (
-                <div className="border-t border-gray-200/50 pt-4 mt-2">
-                  <p className="text-[10px] text-gray-400 font-bold mb-2">⚡ 진행 상태 변경 처리</p>
-                  
-                  {modalUpdating ? (
-                    <div className="text-center py-2 text-xs font-bold text-[#A67C52] animate-pulse">
-                      처리 중... 잠시만 기다려주세요.
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                  <h4 className="text-sm font-bold text-[#0F172A] border-b pb-2 flex items-center gap-2">
+                    <span>📞</span> 기본 신청 정보
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400 block text-xs">연락처</span>
+                      <strong className="text-[#0F172A] text-base">{selectedItem.item.phone}</strong>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 block text-xs">유입 경로</span>
+                      <span className="inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#0F172A]/5 text-[#0F172A] border border-[#0F172A]/10">
+                        {selectedItem.item.source || (selectedItem.itemType === 'LEAD' ? '일반 접수' : '전화/방문 상담')}
+                      </span>
+                    </div>
+                    {selectedItem.item.location && (
+                      <div>
+                        <span className="text-gray-400 block text-xs">지역</span>
+                        <strong className="text-gray-800">{selectedItem.item.location}</strong>
+                      </div>
+                    )}
+                    {selectedItem.itemType === 'CONSULTATION' && selectedItem.item.category && (
+                      <div>
+                        <span className="text-gray-400 block text-xs">상담 희망 분야</span>
+                        <strong className="text-gray-800">{selectedItem.item.category}</strong>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 리드(LEAD) 데이터 노출 - 자가진단 항목 포함 */}
+              {selectedItem.itemType === 'LEAD' && (
+                <>
+                  {selectedItem.item.extraInfo ? (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-bold text-[#0F172A] flex items-center gap-2 px-1">
+                        <span>⚖️</span> 1분 자가진단 작성 내역
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* 카테고리 1: 기초 자격 */}
+                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                          <div className="text-xs font-bold text-[#C5A059] flex items-center gap-1.5 uppercase tracking-wider">
+                            <span>💼</span> 01. 인적 및 소득 자격
+                          </div>
+                          <table className="w-full text-sm divide-y divide-gray-100">
+                            <tbody>
+                              <tr className="py-2 flex justify-between">
+                                <td className="text-gray-400">생년월일</td>
+                                <td className="font-semibold text-gray-800">{selectedItem.item.extraInfo.birth ? `${selectedItem.item.extraInfo.birth}` : '-'}</td>
+                              </tr>
+                              <tr className="py-2 flex justify-between">
+                                <td className="text-gray-400">현재 직업</td>
+                                <td className="font-semibold text-gray-800">{selectedItem.item.extraInfo.occupation || '-'}</td>
+                              </tr>
+                              <tr className="py-2 flex justify-between">
+                                <td className="text-gray-400">월 평균 소득</td>
+                                <td className="font-semibold text-[#C5A059]">{selectedItem.item.extraInfo.monthlyIncome || '-'}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* 카테고리 2: 재산 및 채무 */}
+                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                          <div className="text-xs font-bold text-[#C5A059] flex items-center gap-1.5 uppercase tracking-wider">
+                            <span>💳</span> 02. 재산 및 채무 상황
+                          </div>
+                          <table className="w-full text-sm divide-y divide-gray-100">
+                            <tbody>
+                              <tr className="py-2 flex justify-between">
+                                <td className="text-gray-400">총 채무 원금</td>
+                                <td className="font-bold text-[#e74c3c]">{selectedItem.item.extraInfo.totalDebt || selectedItem.item.debtAmount || '-'}</td>
+                              </tr>
+                              <tr className="py-2 flex justify-between">
+                                <td className="text-gray-400">채권자 수</td>
+                                <td className="font-semibold text-gray-800">{selectedItem.item.extraInfo.creditorCount ? `${selectedItem.item.extraInfo.creditorCount}곳` : '-'}</td>
+                              </tr>
+                              <tr className="py-2 flex justify-between">
+                                <td className="text-gray-400">거주 형태</td>
+                                <td className="font-semibold text-gray-800">{selectedItem.item.extraInfo.housingType || '-'}</td>
+                              </tr>
+                              <tr className="py-2 flex justify-between">
+                                <td className="text-gray-400">주요 자산 보유</td>
+                                <td className="font-semibold text-gray-800">{selectedItem.item.extraInfo.hasMajorAssets || '-'}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* 카테고리 3: 심층 상황 */}
+                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3 md:col-span-2">
+                          <div className="text-xs font-bold text-[#C5A059] flex items-center gap-1.5 uppercase tracking-wider">
+                            <span>🚨</span> 03. 면책 이력 및 강제집행 상황
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
+                            <div className="flex justify-between border-b pb-2 md:border-none md:pb-0">
+                              <span className="text-gray-400">주된 채무 사유</span>
+                              <strong className="text-gray-800">{selectedItem.item.extraInfo.debtReason || '-'}</strong>
+                            </div>
+                            <div className="flex justify-between border-b pb-2 md:border-none md:pb-0">
+                              <span className="text-gray-400">최근 면책 이력</span>
+                              <strong className="text-gray-800">{selectedItem.item.extraInfo.reliefHistory || '-'}</strong>
+                            </div>
+                            <div className="flex justify-between md:col-span-2 mt-1">
+                              <span className="text-gray-400 font-semibold">현재 압류 / 독촉 여부</span>
+                              <span className={`px-2 py-0.5 rounded font-bold text-xs ${selectedItem.item.extraInfo.seizureHistory === '진행 중' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                                {selectedItem.item.extraInfo.seizureHistory || '-'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-                      {Object.entries(statusLabel).map(([sKey, sLabel]) => (
-                        <button
-                          key={sKey}
-                          onClick={() => handleUpdateStatusInModal(sKey)}
-                          className={`px-2 py-2 rounded-lg text-xs font-extrabold transition-all border ${
-                            selectedItem.item.status === sKey
-                              ? 'bg-[#A67C52] text-white border-[#A67C52] shadow-sm'
-                              : 'bg-white text-gray-600 border-gray-200 hover:border-[#A67C52] hover:text-[#A67C52]'
-                          }`}
-                        >
-                          {sLabel}
-                        </button>
-                      ))}
+                    /* 자가진단 내역이 없는 리드 (퀵상담 등) */
+                    <div className="bg-[#FFF8EE] p-5 rounded-2xl border-l-4 border-[#C5A059] flex items-start gap-3">
+                      <span className="text-lg">❓</span>
+                      <div>
+                        <h5 className="font-bold text-sm text-[#7a6040]">자가진단 데이터 없음</h5>
+                        <p className="text-xs text-[#7a6040]/80 mt-1">
+                          이 신청은 메인 화면의 실시간 퀵 상담위젯 등을 통해 인적 사항과 간단한 상담 내용만을 남긴 리드입니다.
+                        </p>
+                      </div>
                     </div>
                   )}
+
+                  {/* 상세 상담 희망 내용 */}
+                  <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-2">
+                    <h4 className="text-sm font-bold text-[#0F172A] flex items-center gap-2 border-b pb-2">
+                      <span>📝</span> 상세 상담 희망 내용
+                    </h4>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed py-2">
+                      {selectedItem.item.content || '상세 입력된 상담 내용이 없습니다.'}
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {/* 방문/전화상담(CONSULTATION) 데이터 노출 */}
+              {selectedItem.itemType === 'CONSULTATION' && (
+                <>
+                  {selectedItem.item.type === 'VISIT' && (
+                    <div className="bg-purple-50 border border-purple-100 p-5 rounded-2xl shadow-sm space-y-3">
+                      <h5 className="font-bold text-sm text-purple-950 flex items-center gap-1.5">
+                        <span>📅</span> 방문 예약 일정 정보
+                      </h5>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-purple-700/60 block text-xs font-semibold">예약 일자</span>
+                          <strong className="text-purple-950 font-black">
+                            {selectedItem.item.visitDate ? selectedItem.item.visitDate.split('T')[0] : '미정'}
+                          </strong>
+                        </div>
+                        <div>
+                          <span className="text-purple-700/60 block text-xs font-semibold">예약 시간</span>
+                          <strong className="text-purple-950 font-black">{selectedItem.item.visitTime || '미정'}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-2">
+                    <h4 className="text-sm font-bold text-[#0F172A] flex items-center gap-2 border-b pb-2">
+                      <span>📝</span> 상담 문의 및 메모
+                    </h4>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed py-2">
+                      {selectedItem.item.content || '입력된 상담 내용이 없습니다.'}
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {/* 게시판 문의(BOARD_QNA) 데이터 노출 */}
+              {selectedItem.itemType === 'BOARD_QNA' && (
+                <div className="space-y-4">
+                  <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                    <h4 className="text-sm font-bold text-[#0F172A] border-b pb-2 flex items-center gap-2">
+                      <span>📝</span> 문의 내용
+                    </h4>
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-400">제목</p>
+                      <h5 className="font-bold text-[#0F172A] text-base">{selectedItem.item.title}</h5>
+                      <p className="text-xs text-gray-400 mt-4">내용 본문</p>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100 max-h-60 overflow-y-auto">
+                        {selectedItem.item.content}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
             </div>
 
-            {/* 모달 푸터 */}
-            <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t border-gray-150">
-              <span className="text-[10px] text-gray-400 font-semibold">
-                ※ 상태 변경 시 목록 데이터에 실시간 자동 반영됩니다.
-              </span>
+            {/* 모달 푸터 (상태 변경 및 닫기) */}
+            <div className="bg-gray-100 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+              <div className="flex items-center gap-3">
+                {selectedItem.itemType !== 'BOARD_QNA' ? (
+                  <>
+                    <span className="text-sm font-semibold text-[#0F172A]">처리 상태 변경</span>
+                    {modalUpdating ? (
+                      <span className="text-xs font-bold text-[#A67C52] animate-pulse">처리 중...</span>
+                    ) : (
+                      <select
+                        value={selectedItem.item.status}
+                        onChange={(e) => handleUpdateStatusInModal(e.target.value)}
+                        className="text-sm border border-gray-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-[#C5A059] font-medium"
+                      >
+                        {Object.entries(statusLabel)
+                          .filter(([k]) => k !== 'ANSWERED') // QNA 전용 제외
+                          .map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      </select>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-[10px] text-gray-400 font-semibold">
+                    ※ 게시판 답변은 게시판 상세 메뉴에서 진행해 주시기 바랍니다.
+                  </span>
+                )}
+              </div>
               <button 
                 onClick={() => setSelectedItem(null)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs px-4 py-2 rounded-xl font-bold transition-all"
+                className="px-5 py-2.5 bg-[#0F172A] text-white hover:bg-[#1E293B] rounded-xl text-sm font-bold transition-colors"
               >
-                닫기
+                확인 완료 / 닫기
               </button>
             </div>
 

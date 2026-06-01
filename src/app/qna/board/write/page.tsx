@@ -15,6 +15,7 @@ export default function BoardWritePage() {
     title: '',
     content: '',
   });
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,8 +26,7 @@ export default function BoardWritePage() {
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        alert('상담 글이 등록되었습니다.');
-        router.push('/qna/board');
+        setIsSubmitted(true);
       } else {
         alert('등록 중 오류가 발생했습니다.');
       }
@@ -34,6 +34,37 @@ export default function BoardWritePage() {
       alert('서버 연결 오류가 발생했습니다.');
     }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="max-w-2xl mx-auto bg-white border border-gray-100 shadow-2xl rounded-3xl p-10 md:p-16 text-center space-y-6 animate-in zoom-in-95 duration-300">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-10 h-10 text-green-600">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <h2 className="text-3xl font-bold text-[#2C3E50]">상담 글 등록 완료</h2>
+        <p className="text-gray-500 leading-relaxed max-w-sm mx-auto">
+          성공적으로 상담 질문이 등록되었습니다.<br />
+          작성하신 비밀번호를 통해 답변을 확인하실 수 있습니다.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <button 
+            onClick={() => router.push('/qna/board')}
+            className="px-6 py-4 bg-[#2C3E50] text-white rounded-xl font-bold text-base shadow-lg hover:bg-[#1A252F] transition-all inline-block"
+          >
+            목록으로 이동
+          </button>
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="px-6 py-4 bg-[#B89E6E] text-white rounded-xl font-bold text-base shadow-lg hover:bg-[#A67C52] transition-all inline-block"
+          >
+            홈으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto">

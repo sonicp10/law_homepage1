@@ -18,6 +18,7 @@ export default function VisitConsultPage() {
     location: '',
     content: '',
   });
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -64,12 +65,38 @@ export default function VisitConsultPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, type: 'VISIT' }),
       });
-      if (res.ok) alert('방문 상담 예약이 신청되었습니다.');
-      else alert('전송 중 오류가 발생했습니다.');
+      if (res.ok) {
+        setIsSubmitted(true);
+      } else {
+        alert('전송 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      }
     } catch (err) {
       alert('서버 연결 오류가 발생했습니다.');
     }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="max-w-2xl mx-auto bg-white border border-gray-100 shadow-2xl rounded-3xl p-10 md:p-16 text-center space-y-6 animate-in zoom-in-95 duration-300">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-10 h-10 text-green-600">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <h2 className="text-3xl font-bold text-[#2C3E50]">방문 예약 신청 완료</h2>
+        <p className="text-gray-500 leading-relaxed max-w-sm mx-auto">
+          방문 상담 예약이 성공적으로 신청되었습니다.<br />
+          예약 일정을 확인한 후 신속하게 연락드리겠습니다.
+        </p>
+        <button 
+          onClick={() => window.location.href = '/'}
+          className="px-8 py-4 bg-[#B89E6E] text-white rounded-xl font-bold text-base shadow-lg hover:bg-[#A67C52] transition-all inline-block mt-4"
+        >
+          홈으로 돌아가기
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto bg-[#F9F9F9] border border-gray-100 p-12 md:p-16 rounded-3xl shadow-sm">

@@ -38,7 +38,11 @@ export async function GET(request: Request) {
       prisma.lead.findMany({
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, name: true, phone: true, debtAmount: true, preferredType: true, content: true, status: true, createdAt: true, location: true },
+        select: { 
+          id: true, name: true, phone: true, debtAmount: true, 
+          preferredType: true, content: true, status: true, 
+          createdAt: true, location: true, extraInfo: true, source: true 
+        },
       }),
       prisma.consultation.findMany({
         orderBy: { createdAt: 'desc' },

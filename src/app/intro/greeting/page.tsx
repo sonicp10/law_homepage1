@@ -64,17 +64,13 @@ export default function GreetingPage() {
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-b-8 border-r-8 border-[#A67C52]/20">
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/40 to-transparent z-10"></div>
               {/* Replace the src with actual path - using placeholder for now */}
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
-                <p className="font-bold">법무사 김형근 프로필 사진</p>
-                {/* Note to User: please replace this div with:
-                <Image 
-                  src="/images/lawyer_profile.png" 
-                  alt="법무사 김형근" 
-                  fill 
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                */}
-              </div>
+              <Image 
+                src="/images/lawyer_profile.png" 
+                alt="법무사 김형근" 
+                fill 
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                priority
+              />
             </div>
             {/* Decoration */}
             <div className="absolute -z-10 -bottom-6 -left-6 w-full h-full bg-[#A67C52]/5 rounded-2xl"></div>

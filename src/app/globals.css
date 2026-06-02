@@ -37,6 +37,14 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Gungsuh';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Gungsuh.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 :root {
   /* Strategy Color Palette - Warm & Clear */
   --primary: #2C3E50;       /* Deep Navy Blue (Text) */

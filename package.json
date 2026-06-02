@@ -55,6 +55,6 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "tsx scripts/seed_diagnosis.ts"
+    "seed": "tsx scripts/seed_admin.ts"
   }
 }

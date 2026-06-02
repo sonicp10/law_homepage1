@@ -1,6 +1,10 @@
 import { jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is missing in production! Please configure it in your hosting platform (e.g. Vercel).');
+}
+
 const secret = new TextEncoder().encode(
   process.env.JWT_SECRET || 'lawoffice2024adminsecret'
 );

@@ -55,8 +55,7 @@ export default function MapPage() {
             <div className="space-y-8">
               <div>
                 <p className="text-[var(--primary)] text-2xl md:text-3xl font-black leading-tight mb-4 break-keep">
-                  서울 구로구 경인로 579, <br />
-                  502호 <br />
+                  서울 구로구 경인로 579, 502호 <br />
                   <span className="text-[var(--secondary)]">(구로역 2번 출구, 안성빌딩 A동)</span>
                 </p>
                 
@@ -103,7 +102,7 @@ export default function MapPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-white/80">
               <div className="space-y-1">
                 <p className="text-sm font-bold text-white/40">주중</p>
-                <p className="text-2xl font-black text-white">09:00 - 18:00</p>
+                <p className="text-2xl font-black text-white">10:00 - 18:00</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-bold text-white/40">토요일</p>

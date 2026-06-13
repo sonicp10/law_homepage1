@@ -62,17 +62,18 @@ export default function GreetingPage() {
             animate="animate"
           >
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-b-8 border-r-8 border-[#A67C52]/20">
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/40 to-transparent z-10"></div>
-              <div className="w-full h-full bg-gradient-to-br from-[#0F172A] to-[#1E293B] flex flex-col items-center justify-center text-[#C5A059] p-8 gap-4 border border-[#C5A059]/20">
-                <div className="w-20 h-20 bg-[#C5A059]/10 rounded-full flex items-center justify-center shadow-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-[#C5A059]">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c1.052 0 2.062.18 3 .512v-14.25A8.987 8.987 0 0112 6.042m0 12.084a8.967 8.967 0 006-3.75c1.052 0 2.062.18 3 .512v-14.25A8.987 8.987 0 0112 6.042m0 12.084a8.967 8.967 0 006-3.75c1.052 0 2.062.18 3 .512v-14.25A8.987 8.907 0 0018 3.75c-1.052 0-2.062.18-3 .512v14.25z" />
-                  </svg>
-                </div>
-                <div className="text-center select-none">
-                  <p className="text-xl font-bold tracking-wider mb-1">법무사 김형근 사무소</p>
-                  <p className="text-xs text-[#C5A059]/60 uppercase tracking-widest font-semibold">All About 회생파산</p>
-                </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/60 via-transparent to-transparent z-10 pointer-events-none"></div>
+              <Image 
+                src="/images/lawyer_profile_sketch.png" 
+                alt="법무사 김형근 프로필 스케치" 
+                fill 
+                className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                priority
+              />
+              <div className="absolute bottom-6 left-6 z-20 select-none">
+                <p className="text-white text-xl font-bold tracking-wider mb-1 drop-shadow-md">법무사 김형근</p>
+                <p className="text-white/80 text-xs uppercase tracking-widest font-semibold drop-shadow-md">대표 법무사</p>
               </div>
             </div>
             {/* Decoration */}

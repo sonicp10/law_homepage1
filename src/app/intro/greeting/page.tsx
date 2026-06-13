@@ -62,7 +62,7 @@ export default function GreetingPage() {
             animate="animate"
           >
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-b-8 border-r-8 border-[#A67C52]/20">
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/60 via-transparent to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/20 via-transparent to-transparent z-10 pointer-events-none"></div>
               <Image 
                 src="/images/lawyer_profile_sketch.png" 
                 alt="법무사 김형근 프로필 스케치" 
@@ -71,10 +71,6 @@ export default function GreetingPage() {
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 priority
               />
-              <div className="absolute bottom-6 left-6 z-20 select-none">
-                <p className="text-white text-xl font-bold tracking-wider mb-1 drop-shadow-md">법무사 김형근</p>
-                <p className="text-white/80 text-xs uppercase tracking-widest font-semibold drop-shadow-md">대표 법무사</p>
-              </div>
             </div>
             {/* Decoration */}
             <div className="absolute -z-10 -bottom-6 -left-6 w-full h-full bg-[#A67C52]/5 rounded-2xl"></div>

@@ -64,8 +64,8 @@ export default function GreetingPage() {
             <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-b-8 border-r-8 border-[#A67C52]/20">
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--primary)]/20 via-transparent to-transparent z-10 pointer-events-none"></div>
               <Image 
-                src="/images/lawyer_working_sketch.png" 
-                alt="업무에 집중하는 법무사 스케치" 
+                src="/images/lawyer_office_sketch.png" 
+                alt="법무사 사무실 스케치" 
                 fill 
                 className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 1024px) 100vw, 40vw"

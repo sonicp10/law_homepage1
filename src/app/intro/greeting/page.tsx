@@ -113,11 +113,11 @@ export default function GreetingPage() {
                   <span className="text-3xl text-[var(--primary)]/60 font-medium italic">진심을 다해,</span>
                   <div 
                     key="signature-v2" 
-                    className="flex items-end gap-3 translate-y-2 text-[var(--primary)]" 
+                    className="flex items-end gap-3 translate-y-2 text-[var(--primary)] whitespace-nowrap shrink-0" 
                     style={{ fontFamily: "'Gungsuh', '궁서체', '궁서', serif" }}
                   >
-                    <p className="text-[28px] md:text-[44px] leading-none mb-2 md:mb-3 opacity-90">법무사</p>
-                    <p className="text-[60px] md:text-[100px] leading-none origin-bottom-right translate-y-2 md:translate-y-4 font-black" style={{ letterSpacing: '0.05em', textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.1)' }}>
+                    <p className="text-[28px] md:text-[44px] leading-none mb-2 md:mb-3 opacity-90 whitespace-nowrap shrink-0">법무사</p>
+                    <p className="text-[60px] md:text-[100px] leading-none origin-bottom-right translate-y-2 md:translate-y-4 font-black whitespace-nowrap shrink-0" style={{ letterSpacing: '0.05em', textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.1)' }}>
                       김&nbsp;형&nbsp;근
                     </p>
                   </div>

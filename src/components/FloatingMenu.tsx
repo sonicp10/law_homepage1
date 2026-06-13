@@ -60,8 +60,17 @@ export default function FloatingMenu() {
         </Link>
       </div>
       
-      {/* Scroll to Top - Mobile */}
-      <div className="md:hidden fixed right-4 bottom-20 z-50">
+      {/* Floating Actions - Mobile */}
+      <div className="md:hidden fixed right-4 bottom-20 z-50 flex flex-col items-center gap-3">
+        <Link
+          href="http://pf.kakao.com/_kRxdGX/chat"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-xl active:scale-95 transition-transform"
+          style={{ backgroundColor: '#FEE500', color: '#000' }}
+        >
+          <span className="text-2xl">💬</span>
+        </Link>
         <button 
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="w-10 h-10 bg-white border border-[var(--border)] rounded-full shadow-lg flex items-center justify-center text-[var(--primary)] active:bg-gray-100"

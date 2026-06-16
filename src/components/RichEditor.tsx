@@ -264,11 +264,29 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
         }
         const data = await res.json();
         if (data.success && data.url) {
-          editor.chain().focus().setImage({ src: data.url, alt: file.name }).run();
-          // 여러 이미지 사이 줄바꿼 삽입
-          if (i < imageFiles.length - 1) {
-            editor.chain().focus().insertContent('<p></p>').run();
-          }
+          // ✅ 이미지 삽입 후 커서를 이미지 노드 바깥(아래)으로 명시적으로 이동
+          // focus() 후 setImage → selectNodeForward → createParagraphNear 순서로
+          // 커서가 항상 이미지 다음 단락에 위치하도록 보장
+          editor
+            .chain()
+            .focus()
+            .setImage({ src: data.url, alt: file.name })
+            .run();
+
+          // 이미지 노드 선택 상태를 해제하고 커서를 노드 끝으로 이동
+          const { state, dispatch } = editor.view;
+          const { tr, selection } = state;
+          // 현재 선택된 노드 끝 위치로 커서 이동
+          const resolvedPos = state.doc.resolve(selection.to);
+          const newTr = tr.setSelection(
+            state.selection.constructor.near
+              ? (state.selection.constructor as any).near(resolvedPos, 1)
+              : state.selection
+          );
+          dispatch(newTr);
+
+          // 이미지 다음에 빈 단락 삽입 (커서가 이미지 아래에 위치)
+          editor.chain().createParagraphNear().run();
         } else {
           alert(data.error || '이미지 업로드에 실패했습니다.');
         }

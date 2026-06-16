@@ -68,7 +68,11 @@ export default function LandingPostSection({ category, title, subtitle, href, li
             posts.map((post) => (
               <Link 
                 key={post.id} 
-                href={`${category === 'REHAB' ? '/rehab' : '/bankruptcy'}/posts/${post.id}`}
+                href={
+                  category === 'REHAB' ? `/rehab/posts/${post.id}` :
+                  category === 'BANKRUPTCY' ? `/bankruptcy/posts/${post.id}` :
+                  (post.tags?.includes('파산') ? `/bankruptcy/posts/${post.id}` : `/rehab/posts/${post.id}`)
+                }
                 className="group bg-white rounded-3xl overflow-hidden border border-[var(--border)] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
               >
                 <div className="relative h-52 overflow-hidden bg-gray-100">
@@ -87,7 +91,9 @@ export default function LandingPostSection({ category, title, subtitle, href, li
                   )}
                   <div className="absolute top-5 left-5">
                     <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[var(--secondary)] text-[10px] font-black rounded-lg border border-[var(--secondary)]/10 shadow-sm uppercase tracking-widest">
-                      {category === 'REHAB' ? '회생 정보' : '파산 정보'}
+                      {category === 'REHAB' ? '회생 정보' : 
+                       category === 'BANKRUPTCY' ? '파산 정보' : 
+                       (post.tags?.includes('파산') ? '파산 성공사례' : '회생 성공사례')}
                     </span>
                   </div>
                 </div>

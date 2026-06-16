@@ -77,7 +77,7 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
       <div className="mb-8">
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <span className="px-3 py-1 bg-[#A67C52]/10 text-[#A67C52] text-xs font-bold rounded-full">
-            {post.category === 'REHAB' ? 'About 개인회생' : post.category === 'BANKRUPTCY' ? 'About 개인파산' : post.category}
+            {post.category === 'REHAB' ? 'About 개인회생' : post.category === 'BANKRUPTCY' ? 'About 개인파산' : post.category === 'SUCCESS_STORY' ? '성공사례' : post.category}
           </span>
           {post.tags && post.tags.split(',').slice(0, 4).map((tag) => (
             <span key={tag} className="px-3 py-1 bg-gray-100 text-[var(--primary)]/50 text-xs font-semibold rounded-full">
@@ -119,8 +119,8 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
 
       {/* 썸네일 */}
       {post.thumbnail && (
-        <div className="mb-10 rounded-2xl overflow-hidden shadow-lg">
-          <img src={post.thumbnail} alt={post.title} className="w-full h-72 md:h-96 object-cover" />
+        <div className="mb-10 rounded-2xl overflow-hidden shadow-lg bg-gray-50 flex items-center justify-center">
+          <img src={post.thumbnail} alt={post.title} className="w-full h-auto max-h-[600px] object-contain" />
         </div>
       )}
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -122,11 +122,19 @@ const ToolBtn = ({
 
 const Divider = () => <div className="w-px h-6 bg-gray-200 mx-0.5" />;
 
-// ── 메인 에디터 컴포넌트 ────────────────────────────────────
+// ── 메인 에디터 컴포넌트 ─────────────────────────────
+interface UploadProgress {
+  uploading: boolean;
+  current: number;
+  total: number;
+}
+
 export default function RichEditor({ value, onChange, placeholder = '내용을 입력하세요...' }: RichEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textColorInputRef = useRef<HTMLInputElement>(null);
   const highlightColorInputRef = useRef<HTMLInputElement>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({ uploading: false, current: 0, total: 0 });
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -159,36 +167,78 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     immediatelyRender: false,
   });
 
-  // 이미지 업로드 핸들러
-  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !editor) return;
+  // ✅ 통합 이미지 업로드 함수 (다중 파일 지원)
+  const uploadFiles = useCallback(async (files: File[]) => {
+    if (!editor || files.length === 0) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
-      if (!res.ok) {
-        let errMsg = `업로드 실패 (${res.status})`;
-        try {
-          const errData = await res.json();
-          if (errData.error) errMsg = errData.error;
-        } catch {}
-        alert(errMsg);
-        e.target.value = '';
-        return;
+    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+
+    setUploadProgress({ uploading: true, current: 0, total: imageFiles.length });
+
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i];
+      setUploadProgress(prev => ({ ...prev, current: i + 1 }));
+
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+        if (!res.ok) {
+          let errMsg = `업로드 실패 (${res.status})`;
+          try {
+            const errData = await res.json();
+            if (errData.error) errMsg = errData.error;
+          } catch {}
+          alert(`[${file.name}] ${errMsg}`);
+          continue;
+        }
+        const data = await res.json();
+        if (data.success && data.url) {
+          editor.chain().focus().setImage({ src: data.url, alt: file.name }).run();
+          // 여러 이미지 사이 줄바꿼 삽입
+          if (i < imageFiles.length - 1) {
+            editor.chain().focus().insertContent('<p></p>').run();
+          }
+        } else {
+          alert(data.error || '이미지 업로드에 실패했습니다.');
+        }
+      } catch (err: any) {
+        alert(`[${file.name}] 서버 연결 오류: ${err?.message || '알 수 없는 오류'}`);
       }
-      const data = await res.json();
-      if (data.success) {
-        editor.chain().focus().setImage({ src: data.url, alt: file.name }).run();
-      } else {
-        alert(data.error || '이미지 업로드에 실패했습니다.');
-      }
-    } catch (err: any) {
-      alert(`서버 연결 오류: ${err?.message || '알 수 없는 오류'}`);
     }
-    e.target.value = '';
+
+    setUploadProgress({ uploading: false, current: 0, total: 0 });
   }, [editor]);
+
+  // 파일 input change 핸들러
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    await uploadFiles(files);
+    e.target.value = '';
+  }, [uploadFiles]);
+
+  // ✅ 드래그 앤 드롭 핸들러들
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    await uploadFiles(files);
+  }, [uploadFiles]);
 
   // 링크 삽입
   const handleLink = useCallback(() => {
@@ -363,7 +413,42 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   const charCountWithoutSpaces = editor.getText().replace(/\s/g, '').length;
 
   return (
-    <div className="border border-[var(--border)] rounded-2xl overflow-hidden bg-white shadow-sm relative">
+    <div
+      className={`border rounded-2xl overflow-hidden bg-white shadow-sm relative transition-all duration-200
+        ${
+          isDragOver
+            ? 'border-[#A67C52] border-2 shadow-[0_0_0_4px_rgba(166,124,82,0.15)] ring-0'
+            : 'border-[var(--border)]'
+        }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* ── 드래그 오버레이 ──────────────────────── */}
+      {isDragOver && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#FDF8F3]/95 backdrop-blur-sm rounded-2xl pointer-events-none">
+          <div className="text-6xl mb-4">🖼️</div>
+          <p className="text-2xl font-black text-[#A67C52]">이미지를 여기에 놓으세요</p>
+          <p className="text-sm text-[#A67C52]/70 mt-2 font-medium">JPG, PNG, WEBP, GIF · 파일당 최대 10MB</p>
+        </div>
+      )}
+
+      {/* ── 업로드 진행 오버레이 ───────────────── */}
+      {uploadProgress.uploading && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm rounded-2xl">
+          <div className="w-16 h-16 rounded-full border-4 border-[#A67C52]/20 border-t-[#A67C52] animate-spin mb-5" />
+          <p className="text-lg font-bold text-[#2C3E50]">
+            이미지 업로드 중... ({uploadProgress.current}/{uploadProgress.total})
+          </p>
+          <div className="mt-4 w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#A67C52] rounded-full transition-all duration-300"
+              style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-2">잠시만 기다려주세요...</p>
+        </div>
+      )}
       {/* ── 툴바 ─────────────────────────────── */}
       <div className="sticky top-[60px] md:top-0 z-30 bg-white border-b border-[var(--border)] px-3 py-2 flex flex-wrap items-center gap-1.5">
 
@@ -627,11 +712,12 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
         </ToolBtn>
       </div>
 
-      {/* ── 숨겨진 파일 입력 ─────────────────── */}
+      {/* ── 숨겨진 파일 입력 ────────────────── */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={handleImageUpload}
       />

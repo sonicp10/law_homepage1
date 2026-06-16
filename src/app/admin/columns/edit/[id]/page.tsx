@@ -232,7 +232,7 @@ export default function EditColumnPage() {
         </div>
 
         {/* 본문 에디터 */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[var(--border)] overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-[var(--border)]">
           <div className="px-6 py-4 border-b border-[var(--border)] bg-gray-50/50">
             <h2 className="text-sm font-bold text-[var(--primary)]/50 uppercase tracking-widest">본문 편집</h2>
           </div>

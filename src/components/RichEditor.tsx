@@ -502,7 +502,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
 
   return (
     <div
-      className={`border rounded-2xl overflow-hidden bg-white shadow-sm relative transition-all duration-200
+      className={`border rounded-2xl bg-white shadow-sm relative transition-all duration-200
         ${
           isDragOver
             ? 'border-[#A67C52] border-2 shadow-[0_0_0_4px_rgba(166,124,82,0.15)] ring-0'

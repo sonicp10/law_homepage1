@@ -1,5 +1,6 @@
 import PublicLayoutWrapper from "@/components/PublicLayoutWrapper";
 import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
+import KakaoPixel from "@/components/analytics/KakaoPixel";
 import "./globals.css";
 
 export const metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased font-outfit">
         <AnalyticsTracker />
+        <KakaoPixel />
         <PublicLayoutWrapper>
           {children}
         </PublicLayoutWrapper>

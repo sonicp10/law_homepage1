@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPhone } from '@/lib/utils';
+import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
 
 const formSchema = z.object({
   type: z.enum(['개인회생', '개인파산']),
@@ -125,6 +126,9 @@ export default function FloatingConsultForm() {
 
       if (response.ok) {
         setCurrentStep(3); // Show success message
+
+        // 카카오 픽셀: 상담 신청 완료 이벤트 전송 (가장 중요한 전환 이벤트)
+        kakaoPixelEvent.completeRegistration('Consulting');
         
         // 3초 후 자동으로 닫기 (사용자 요청 사항)
         setTimeout(() => {
@@ -149,7 +153,11 @@ export default function FloatingConsultForm() {
   if (!isOpen) {
     return (
       <button 
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true);
+          // 카카오 픽셀: 상담 폼 열기 → 잠재고객 이벤트 전송
+          kakaoPixelEvent.participation('Consulting');
+        }}
         className="fixed left-6 bottom-40 z-50 w-16 h-16 bg-[#2C3E50] text-[#90CAF9] rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-2 border-[#34495E]"
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">

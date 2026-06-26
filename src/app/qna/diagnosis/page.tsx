@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { formatPhone, formatPrice } from '@/lib/utils';
+import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -37,6 +38,11 @@ export default function DiagnosisPage() {
       }
     }
   }, [formData.phone]);
+
+  // 카카오 픽셀: 자가진단 페이지 진입 시 잠재고객 이벤트 전송 (1회)
+  useEffect(() => {
+    kakaoPixelEvent.participation('Consulting');
+  }, []);
 
   const handlePriceChange = (field: string, value: string) => {
     const prevValue = (formData as any)[field] || "";
@@ -80,6 +86,8 @@ export default function DiagnosisPage() {
       });
 
       if (!response.ok) throw new Error('Submission failed');
+      // 카카오 픽셀: 자가진단 제출 완료 → 서비스신청 이벤트 전송
+      kakaoPixelEvent.signUp('SignUp');
       setStep(4);
     } catch (error) {
       console.error('Error:', error);

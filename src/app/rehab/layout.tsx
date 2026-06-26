@@ -1,6 +1,7 @@
 import React from 'react';
 import SubPageBanner from '@/components/SubPageBanner';
 import TabNavigation from '@/components/TabNavigation';
+import ServicePageTracker from '@/components/analytics/ServicePageTracker';
 
 const rehabTabs = [
   { label: '개인회생절차', href: '/rehab/step' },
@@ -17,6 +18,8 @@ export default function RehabLayout({ children }: { children: React.ReactNode })
         backgroundImage="/images/rehab_banner.png?v=3"
         position="center 25%"
       />
+      {/* 카카오 픽셀: 개인회생 서비스 페이지 조회 이벤트 */}
+      <ServicePageTracker serviceName="개인회생" />
       
       <TabNavigation tabs={rehabTabs} />
       

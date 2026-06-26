@@ -1,6 +1,7 @@
 import React from 'react';
 import SubPageBanner from '@/components/SubPageBanner';
 import TabNavigation from '@/components/TabNavigation';
+import ServicePageTracker from '@/components/analytics/ServicePageTracker';
 
 const bankruptcyTabs = [
   { label: '개인파산절차', href: '/bankruptcy/step' },
@@ -17,6 +18,8 @@ export default function BankruptcyLayout({ children }: { children: React.ReactNo
         backgroundImage="/images/bankruptcy-banner-liberation.jpg"
         position="center calc(50% + 100px)"
       />
+      {/* 카카오 픽셀: 개인파산 서비스 페이지 조회 이벤트 */}
+      <ServicePageTracker serviceName="개인파산" />
       
       <TabNavigation tabs={bankruptcyTabs} />
       

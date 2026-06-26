@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPhone, formatPrice } from '@/lib/utils';
+import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
 
 const sectionFormSchema = z.object({
   name: z.string().min(2, { message: '성함을 입력해주세요.' }),
@@ -76,6 +77,8 @@ export default function RequestSection() {
       if (response.ok) {
         setIsSuccess(true);
         reset();
+        // 카카오 픽셀: 메인 섹션 상담 신청 완료 이벤트 전송
+        kakaoPixelEvent.completeRegistration('Consulting');
         setTimeout(() => setIsSuccess(false), 5000);
       } else {
         alert('전송 중 오류가 발생했습니다.');

@@ -3,8 +3,13 @@ import prisma from '../src/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 async function main() {
-  const email = 'sonicp@naver.com';
-  const passwordText = 'zms!@7ghkdth';
+  const email = process.env.ADMIN_SEED_EMAIL || process.env.ADMIN_EMAIL;
+  const passwordText = process.env.ADMIN_SEED_PASSWORD || process.env.ADMIN_PASSWORD;
+
+  if (!email || !passwordText) {
+    console.error('오류: ADMIN_SEED_EMAIL 및 ADMIN_SEED_PASSWORD 환경변수를 설정해주세요.');
+    process.exit(1);
+  }
   
   const existing = await prisma.user.findUnique({ where: { email } });
   const hashedPassword = await bcrypt.hash(passwordText, 10);

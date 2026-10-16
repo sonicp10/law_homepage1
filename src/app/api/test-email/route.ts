@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
+import { requireAdminAuth } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const session = await requireAdminAuth(request);
+  if (!session) {
+    return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
+  }
+
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
   const to = process.env.ADMIN_NOTIFY_EMAIL;

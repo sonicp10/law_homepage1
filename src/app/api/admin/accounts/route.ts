@@ -47,7 +47,19 @@ export async function POST(request: Request) {
         canManagePosts: !!canManagePosts,
         canManageConsultations: !!canManageConsultations,
         canManageAdmins: false, // Only SUPERADMIN can manage admins normally, but if explicitly set we can change
-      }
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+        memo: true,
+        canManagePosts: true,
+        canManageConsultations: true,
+        canManageAdmins: true,
+        createdAt: true,
+      },
     });
 
     return NextResponse.json({ success: true, admin });

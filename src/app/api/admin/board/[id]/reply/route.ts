@@ -19,6 +19,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         replyContent,
         status: 'ANSWERED',
       },
+      select: {
+        id: true,
+        author: true,
+        title: true,
+        replyContent: true,
+        status: true,
+        updatedAt: true,
+      },
     });
 
     return NextResponse.json({ success: true, data: updated });

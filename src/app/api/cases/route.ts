@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -39,6 +40,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const session = await requireAdminAuth(request, 'canManagePosts');
+  if (!session) {
+    return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { title, content, excerpt, category, thumbnail } = body;

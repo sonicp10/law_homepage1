@@ -28,6 +28,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updated = await prisma.user.update({
       where: { id },
       data,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isActive: true,
+        memo: true,
+        canManagePosts: true,
+        canManageConsultations: true,
+        canManageAdmins: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return NextResponse.json({ success: true, admin: updated });

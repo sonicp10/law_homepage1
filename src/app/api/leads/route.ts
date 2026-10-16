@@ -17,11 +17,9 @@ const leadSchema = z.object({
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    console.log('API RECEIVED LEAD JSON:', json);
     const validation = leadSchema.safeParse(json);
 
     if (!validation.success) {
-      console.log('API VALIDATION FAILED:', validation.error.format());
       return NextResponse.json(
         { error: '입력 데이터가 유효하지 않습니다.', details: validation.error.format() },
         { status: 400 }

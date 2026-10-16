@@ -92,7 +92,13 @@ export default function ReviewPage() {
                   <div className="w-8 h-8 bg-[var(--background)] rounded-full flex items-center justify-center font-bold text-xs text-[var(--primary)]/50">
                     {review.author[0]}
                   </div>
-                  <span className="text-sm font-bold text-[var(--primary)]/80">{review.author} 의뢰인님</span>
+                  <span className="text-sm font-bold text-[var(--primary)]/80">
+                    {review.author.length <= 1
+                      ? review.author
+                      : review.author.length === 2
+                      ? review.author[0] + '*'
+                      : review.author[0] + '*'.repeat(review.author.length - 2) + review.author[review.author.length - 1]} 의뢰인님
+                  </span>
                 </div>
                 <span className="text-[12px] text-gray-400 font-medium">{new Date(review.createdAt).toLocaleDateString()}</span>
               </div>

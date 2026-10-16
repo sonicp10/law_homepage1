@@ -9,6 +9,7 @@ interface Post {
   excerpt: string | null;
   thumbnail: string | null;
   category: string;
+  tags?: string | null;
   createdAt: string;
 }
 

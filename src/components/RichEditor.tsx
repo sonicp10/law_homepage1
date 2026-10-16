@@ -3,6 +3,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
+const BubbleMenuComponent = BubbleMenu as any;
 import type { NodeViewProps } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -42,10 +43,10 @@ const FontSize = Extension.create({
   },
   addCommands() {
     return {
-      setFontSize: (fontSize: string) => ({ chain }) => {
+      setFontSize: (fontSize: string) => ({ chain }: any) => {
         return chain().setMark('textStyle', { fontSize }).run();
       },
-      unsetFontSize: () => ({ chain }) => {
+      unsetFontSize: () => ({ chain }: any) => {
         return chain().setMark('textStyle', { fontSize: null }).run();
       },
     } as any;
@@ -75,7 +76,7 @@ const CustomHorizontalRule = Node.create({
   },
   addCommands() {
     return {
-      setHorizontalRule: () => ({ chain }) => {
+      setHorizontalRule: () => ({ chain }: any) => {
         return chain()
           .insertContent({ type: this.name })
           .run();
@@ -285,9 +286,10 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
           const { tr, selection } = state;
           // 현재 선택된 노드 끝 위치로 커서 이동
           const resolvedPos = state.doc.resolve(selection.to);
+          const selectionConstructor = state.selection.constructor as any;
           const newTr = tr.setSelection(
-            state.selection.constructor.near
-              ? (state.selection.constructor as any).near(resolvedPos, 1)
+            selectionConstructor?.near
+              ? selectionConstructor.near(resolvedPos, 1)
               : state.selection
           );
           dispatch(newTr);
@@ -844,7 +846,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
 
       {/* ── 버블 메뉴 (플로팅 툴바) ──────────────────────── */}
       {editor && (
-        <BubbleMenu editor={editor} tippyOptions={{ duration: 100, maxWidth: 450, placement: 'top' }} className="bg-white border border-gray-200 shadow-2xl rounded-xl px-2 py-1.5 flex flex-wrap items-center gap-1.5 z-50">
+        <BubbleMenuComponent editor={editor} tippyOptions={{ duration: 100, maxWidth: 450, placement: 'top' }} className="bg-white border border-gray-200 shadow-2xl rounded-xl px-2 py-1.5 flex flex-wrap items-center gap-1.5 z-50">
           {/* 텍스트 스타일 */}
           <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="굵게">
             <strong>B</strong>
@@ -889,7 +891,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
           <ToolBtn onClick={handleLink} active={editor.isActive('link')} title="링크 삽입">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
           </ToolBtn>
-        </BubbleMenu>
+        </BubbleMenuComponent>
       )}
 
       {/* 네이버 블로그 스타일 글자수 세기 플로팅 박스 */}

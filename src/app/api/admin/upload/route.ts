@@ -2,15 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdminAuth } from '@/lib/auth';
 
-// ✅ Next.js App Router: API Route body 크기 제한 20MB로 확장 (413 오류 해결)
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '20mb',
-    },
-  },
-};
-
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 파일 1개당 최대 10MB
 const MAX_FILES = 10; // 업로드 최대 파일 수
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];

@@ -3,7 +3,6 @@ import SubPageBanner from '@/components/SubPageBanner';
 import TabNavigation from '@/components/TabNavigation';
 
 const qnaTabs = [
-  { label: '상담 안내', href: '/qna' },
   { label: '실시간 전화 상담', href: '/qna/phone' },
   { label: '방문 상담', href: '/qna/visit' },
   { label: '게시판 상담', href: '/qna/board' },
@@ -22,7 +21,7 @@ export default function QnaLayout({ children }: { children: React.ReactNode }) {
       
       <TabNavigation tabs={qnaTabs} />
       
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         {children}
       </div>
     </main>

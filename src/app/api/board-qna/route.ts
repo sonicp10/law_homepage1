@@ -22,14 +22,27 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
+  const status = searchParams.get('status');
+  const search = searchParams.get('search')?.trim();
   const skip = (page - 1) * limit;
 
   try {
     const adminSession = await requireAdminAuth(request, 'canManageConsultations');
     const isAdmin = !!adminSession;
 
+    const where: any = {};
+    if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { author: { contains: search, mode: 'insensitive' } },
+        { content: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
     const [items, totalCount] = await Promise.all([
       prisma.boardQna.findMany({
+        where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -47,7 +60,7 @@ export async function GET(request: Request) {
           createdAt: true,
         },
       }),
-      prisma.boardQna.count(),
+      prisma.boardQna.count({ where }),
     ]);
 
     // 일반 방문자에게는 민감 개인정보 마스킹 및 비밀글 본문 보호

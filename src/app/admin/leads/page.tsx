@@ -3,17 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, User, Phone, MapPin, Calendar, HelpCircle, 
-  Briefcase, Wallet, Scale, ShieldAlert, FileText
+  Briefcase, Wallet, Scale, ShieldAlert, FileText,
+  Search, Download, RefreshCw
 } from 'lucide-react';
 
 const statusLabel: Record<string, string> = {
-  PENDING: '대기중', CONTACTED: '연락완료', IN_PROGRESS: '진행중', COMPLETED: '완료', CANCELLED: '취소',
+  PENDING: '대기중', 
+  CONTACTED: '연락완료', 
+  IN_PROGRESS: '진행중', 
+  COMPLETED: '완료', 
+  CANCELLED: '취소',
 };
+
 const statusColors: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-700 border border-yellow-200', 
-  CONTACTED: 'bg-blue-100 text-blue-700 border border-blue-200',
-  IN_PROGRESS: 'bg-indigo-100 text-indigo-700 border border-indigo-200', 
-  COMPLETED: 'bg-green-100 text-green-700 border border-green-200', 
+  PENDING: 'bg-amber-100 text-amber-800 border border-amber-200', 
+  CONTACTED: 'bg-blue-100 text-blue-800 border border-blue-200',
+  IN_PROGRESS: 'bg-indigo-100 text-indigo-800 border border-indigo-200', 
+  COMPLETED: 'bg-green-100 text-green-800 border border-green-200', 
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 };
 
@@ -34,15 +40,26 @@ interface Lead {
 export default function AdminLeadsPage() {
   const [items, setItems] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const fetchData = async (silent = false) => {
-    if (!silent) setLoading(true);
+    if (!silent) {
+      if (items.length > 0) setIsRefreshing(true);
+      else setLoading(true);
+    }
     try {
-      const params = new URLSearchParams({ page: String(page), limit: '10' });
+      const params = new URLSearchParams({ 
+        page: String(page), 
+        limit: '10',
+        ...(statusFilter && { status: statusFilter }),
+        ...(searchTerm.trim() && { search: searchTerm.trim() }),
+      });
       const res = await fetch(`/api/admin/leads?${params}`);
       const data = await res.json();
       setItems(data.items || []);
@@ -56,15 +73,25 @@ export default function AdminLeadsPage() {
           setSelectedLead(currentUpdated);
         }
       }
-    } catch { setItems([]); }
-    finally { if (!silent) setLoading(false); }
+    } catch { 
+      setItems([]); 
+    } finally { 
+      setLoading(false);
+      setIsRefreshing(false);
+    }
   };
 
   useEffect(() => { 
     fetchData(); 
     const interval = setInterval(() => fetchData(true), 10000);
     return () => clearInterval(interval);
-  }, [page]);
+  }, [statusFilter, page]);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    fetchData();
+  };
 
   const changeStatus = async (id: string, status: string) => {
     try {
@@ -73,10 +100,11 @@ export default function AdminLeadsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
-      // 모달 활성화 중이면 모달 데이터 즉각 업데이트
       setSelectedLead(prev => prev && prev.id === id ? { ...prev, status } : prev);
       fetchData(true);
-    } catch { alert('상태 변경에 실패했습니다.'); }
+    } catch { 
+      alert('상태 변경에 실패했습니다.'); 
+    }
   };
 
   const formatDate = (s: string) => {
@@ -84,25 +112,129 @@ export default function AdminLeadsPage() {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
+  const exportToCsv = () => {
+    if (items.length === 0) {
+      alert('내보낼 데이터가 없습니다.');
+      return;
+    }
+    const headers = ['이름,연락처,지역,채무액,희망제도,상태,유입경로,신청일시,상담내용'];
+    const rows = items.map(it => {
+      const contentStr = `"${(it.content || '').replace(/"/g, '""')}"`;
+      return `"${it.name}","${it.phone}","${it.location || ''}","${it.debtAmount || ''}","${it.preferredType || ''}","${statusLabel[it.status] || it.status}","${it.source || ''}","${formatDate(it.createdAt)}",${contentStr}`;
+    });
+    const csvContent = '\uFEFF' + [headers, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `빠른상담_리드목록_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const pendingCount = items.filter(it => it.status === 'PENDING').length;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--primary)]">상담 신청 (리드) 관리</h1>
-        <p className="text-sm text-[var(--primary)]/50 mt-1">총 {total}건의 상담 신청 | 행을 클릭하면 상세 내역을 조회할 수 있습니다.</p>
+      {/* 상단 헤더 */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[var(--border)] shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--primary)] flex items-center gap-2">
+            <span>📌</span> 빠른 상담 (리드) 관리
+          </h1>
+          <p className="text-sm text-[var(--primary)]/60 mt-1">
+            총 <span className="font-bold text-[#A67C52]">{total}건</span>의 상담 신청 (현재 페이지 대기: {pendingCount}건) | 행을 클릭하면 자가진단 상세 내역을 조회할 수 있습니다.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fetchData()}
+            disabled={isRefreshing}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-100 transition-colors"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#A67C52]' : ''}`} />
+            <span>새로고침</span>
+          </button>
+          <button
+            onClick={exportToCsv}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#A67C52] text-white rounded-xl text-xs font-bold hover:bg-[#8B6840] transition-colors shadow-sm"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>CSV 다운로드</span>
+          </button>
+        </div>
       </div>
 
+      {/* 필터 및 검색 컨트롤러 */}
+      <div className="bg-white p-5 rounded-2xl border border-[var(--border)] shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          
+          {/* 상태 필터 버튼 */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-gray-400 font-bold mr-1">상태별:</span>
+            {[{ value: '', label: '전체' }, ...Object.entries(statusLabel).map(([k, v]) => ({ value: k, label: v }))].map((st) => (
+              <button
+                key={st.value}
+                onClick={() => { setStatusFilter(st.value); setPage(1); }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                  statusFilter === st.value
+                    ? 'bg-gray-900 text-white border-gray-900 font-bold shadow-sm'
+                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                {st.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 검색창 */}
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="이름, 연락처, 지역, 희망제도"
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] focus:bg-white transition-all font-medium"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-3.5 py-1.5 bg-gray-800 text-white rounded-xl text-xs font-bold hover:bg-gray-700 transition-colors shrink-0"
+            >
+              검색
+            </button>
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => { setSearchTerm(''); setPage(1); }}
+                className="text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                초기화
+              </button>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* 테이블 영역 */}
       <div className="bg-white rounded-2xl shadow-sm border border-[var(--border)] overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-[var(--primary)]/40">불러오는 중...</div>
+          <div className="p-12 text-center text-gray-400 text-sm">목록을 불러오는 중입니다...</div>
         ) : items.length === 0 ? (
-          <div className="p-12 text-center text-[var(--primary)]/30 font-semibold">상담 신청이 없습니다.</div>
+          <div className="p-16 text-center text-gray-400 font-medium space-y-1">
+            <p className="text-base font-bold text-gray-500">상담 신청 리드가 없습니다.</p>
+            <p className="text-xs">필터 조건을 변경하거나 검색어를 초기화해보세요.</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1200px]">
+            <table className="w-full min-w-[1100px]">
               <thead>
-                <tr className="border-b border-[var(--border)] bg-gray-50">
-                  {['이름', '연락처', '지역', '채무액', '희망제도', '상담내용', '유입경로', '상태', '신청일', '변경'].map((h) => (
-                    <th key={h} className="text-left px-4 py-4 text-xs font-bold text-[var(--primary)]/50 uppercase whitespace-nowrap">{h}</th>
+                <tr className="border-b border-[var(--border)] bg-gray-50/80">
+                  {['이름', '연락처', '지역', '채무액', '희망제도', '상담내용 요약', '유입경로', '상태', '신청일', '상태 변경'].map((h) => (
+                    <th key={h} className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -111,34 +243,44 @@ export default function AdminLeadsPage() {
                   <tr 
                     key={item.id} 
                     onClick={() => setSelectedLead(item)}
-                    className="hover:bg-gray-50/80 transition-colors cursor-pointer"
+                    className="hover:bg-amber-50/30 transition-colors cursor-pointer group"
                   >
-                    <td className="px-4 py-4 font-bold text-[var(--primary)] text-sm whitespace-nowrap">{item.name}</td>
-                    <td className="px-4 py-4 text-sm text-[var(--primary)]/70 font-medium whitespace-nowrap">{item.phone}</td>
-                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">{item.location || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">{item.debtAmount || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 whitespace-nowrap">{item.preferredType || '-'}</td>
-                    <td className="px-4 py-4 text-sm text-[var(--primary)]/60 max-w-xs">
-                      <p className="line-clamp-1">{item.content || '-'}</p>
+                    <td className="px-4 py-3.5 font-bold text-[var(--primary)] text-sm whitespace-nowrap group-hover:text-[#A67C52] transition-colors">
+                      {item.name}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
-                        {item.source || '-'}
+                    <td className="px-4 py-3.5 text-sm text-gray-700 font-medium whitespace-nowrap">
+                      {item.phone}
+                    </td>
+                    <td className="px-4 py-3.5 text-xs text-gray-600 whitespace-nowrap">{item.location || '-'}</td>
+                    <td className="px-4 py-3.5 text-xs font-bold text-red-600 whitespace-nowrap">{item.debtAmount || '-'}</td>
+                    <td className="px-4 py-3.5 text-xs text-gray-600 whitespace-nowrap">
+                      <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-medium">
+                        {item.preferredType || '-'}
                       </span>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${statusColors[item.status] || 'bg-gray-100 text-gray-500'}`}>
+                    <td className="px-4 py-3.5 text-xs text-gray-500 max-w-xs truncate">
+                      {item.content || (item.extraInfo ? '1분 자가진단 작성완료' : '-')}
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        {item.source || '일반 접수'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${statusColors[item.status] || 'bg-gray-100 text-gray-600'}`}>
                         {statusLabel[item.status] || item.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-xs text-[var(--primary)]/50 whitespace-nowrap">{formatDate(item.createdAt)}</td>
-                    <td className="px-4 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-3.5 text-xs text-gray-400 whitespace-nowrap">{formatDate(item.createdAt)}</td>
+                    <td className="px-4 py-3.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={item.status}
                         onChange={(e) => changeStatus(item.id, e.target.value)}
-                        className="text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#A67C52] font-medium"
+                        className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-[#A67C52] font-medium"
                       >
-                        {Object.entries(statusLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                        {Object.entries(statusLabel).map(([v, l]) => (
+                          <option key={v} value={v}>{l}</option>
+                        ))}
                       </select>
                     </td>
                   </tr>
@@ -148,11 +290,19 @@ export default function AdminLeadsPage() {
           </div>
         )}
 
+        {/* 페이지네이션 */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-[var(--border)] flex justify-center gap-2">
+          <div className="p-4 border-t border-[var(--border)] flex justify-center gap-1.5">
             {[...Array(totalPages)].map((_, i) => (
-              <button key={i} onClick={() => setPage(i + 1)}
-                className={`w-9 h-9 rounded-lg border text-sm font-bold transition-all ${page === i + 1 ? 'bg-[#A67C52] text-white border-[#A67C52]' : 'border-[var(--border)] text-[var(--primary)]/50 hover:border-[#A67C52]'}`}>
+              <button 
+                key={i} 
+                onClick={() => setPage(i + 1)}
+                className={`w-8 h-8 rounded-lg border text-xs font-bold transition-all ${
+                  page === i + 1 
+                    ? 'bg-[#A67C52] text-white border-[#A67C52]' 
+                    : 'border-gray-200 text-gray-600 hover:border-[#A67C52]'
+                }`}
+              >
                 {i + 1}
               </button>
             ))}
@@ -165,7 +315,7 @@ export default function AdminLeadsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
             
-            {/* 모달 헤더 (Deep Navy & Gold 테마) */}
+            {/* 모달 헤더 */}
             <div className="bg-[#0F172A] text-white px-6 py-5 flex items-center justify-between border-b border-[#C5A059]/30">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#C5A059]/10 border border-[#C5A059]/30 flex items-center justify-center">
@@ -186,10 +336,10 @@ export default function AdminLeadsPage() {
               </button>
             </div>
 
-            {/* 모달 바디 (스크롤 가능) */}
+            {/* 모달 바디 */}
             <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50/50">
               
-              {/* 기본 연락 정보 */}
+              {/* 기본 신청 정보 */}
               <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                 <h4 className="text-sm font-bold text-[#0F172A] border-b pb-2 flex items-center gap-2">
                   <Phone className="w-4 h-4 text-[#C5A059]" /> 기본 신청 정보
@@ -217,18 +367,24 @@ export default function AdminLeadsPage() {
                       <strong className="text-gray-800">{selectedLead.preferredType}</strong>
                     </div>
                   )}
+                  {selectedLead.debtAmount && (
+                    <div>
+                      <span className="text-gray-400 block text-xs">채무 금액</span>
+                      <strong className="text-red-600 font-bold">{selectedLead.debtAmount}</strong>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* 자가진단 결과 (extraInfo)가 있을 때 상세 정보 출력 */}
+              {/* 자가진단 항목 (extraInfo가 있는 경우) */}
               {selectedLead.extraInfo ? (
                 <div className="space-y-4">
                   <h4 className="text-sm font-bold text-[#0F172A] flex items-center gap-2 px-1">
-                    <Scale className="w-4 h-4 text-[#C5A059]" /> 1분 자가진단 작성 내역
+                    <Scale className="w-4 h-4 text-[#C5A059]" /> 1분 자가진단 세부 내역
                   </h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* 카테고리 1: 기초 자격 */}
+                    {/* 카테고리 1: 소득 자격 */}
                     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
                       <div className="text-xs font-bold text-[#C5A059] flex items-center gap-1.5 uppercase tracking-wider">
                         <Briefcase className="w-3.5 h-3.5" /> 01. 인적 및 소득 자격
@@ -237,7 +393,7 @@ export default function AdminLeadsPage() {
                         <tbody>
                           <tr className="py-2 flex justify-between">
                             <td className="text-gray-400">생년월일</td>
-                            <td className="font-semibold text-gray-800">{selectedLead.extraInfo.birth ? `${selectedLead.extraInfo.birth} (6자리)` : '-'}</td>
+                            <td className="font-semibold text-gray-800">{selectedLead.extraInfo.birth || '-'}</td>
                           </tr>
                           <tr className="py-2 flex justify-between">
                             <td className="text-gray-400">현재 직업</td>
@@ -278,12 +434,12 @@ export default function AdminLeadsPage() {
                       </table>
                     </div>
 
-                    {/* 카테고리 3: 심층 상황 (1열 확장 가능) */}
+                    {/* 카테고리 3: 심층 상황 */}
                     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3 md:col-span-2">
                       <div className="text-xs font-bold text-[#C5A059] flex items-center gap-1.5 uppercase tracking-wider">
-                        <ShieldAlert className="w-3.5 h-3.5" /> 03. 면책 이력 및 강제집행 상황
+                        <ShieldAlert className="w-3.5 h-3.5" /> 03. 면책 이력 및 독촉 상황
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                         <div className="flex justify-between border-b pb-2 md:border-none md:pb-0">
                           <span className="text-gray-400">주된 채무 사유</span>
                           <strong className="text-gray-800">{selectedLead.extraInfo.debtReason || '-'}</strong>
@@ -292,9 +448,11 @@ export default function AdminLeadsPage() {
                           <span className="text-gray-400">최근 면책 이력</span>
                           <strong className="text-gray-800">{selectedLead.extraInfo.reliefHistory || '-'}</strong>
                         </div>
-                        <div className="flex justify-between md:col-span-2 mt-1">
-                          <span className="text-gray-400">현재 압류 / 독촉 여부</span>
-                          <span className={`px-2 py-0.5 rounded font-bold text-xs ${selectedLead.extraInfo.seizureHistory === '진행 중' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                        <div className="flex justify-between md:col-span-2 pt-2">
+                          <span className="text-gray-400 font-semibold">현재 압류 / 독촉 상태</span>
+                          <span className={`px-2.5 py-0.5 rounded font-bold text-xs ${
+                            selectedLead.extraInfo.seizureHistory === '진행 중' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'
+                          }`}>
                             {selectedLead.extraInfo.seizureHistory || '-'}
                           </span>
                         </div>
@@ -302,47 +460,39 @@ export default function AdminLeadsPage() {
                     </div>
                   </div>
                 </div>
-              ) : (
-                /* 자가진단 결과가 없는 일반 문의 */
-                <div className="bg-[#FFF8EE] p-5 rounded-2xl border-l-4 border-[#C5A059] flex items-start gap-3">
-                  <HelpCircle className="w-5 h-5 text-[#C5A059] shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="font-bold text-sm text-[#7a6040]">자가진단 데이터 없음</h5>
-                    <p className="text-xs text-[#7a6040]/80 mt-1">
-                      이 신청은 메인 화면의 실시간 퀵 상담위젯 또는 상담 게시판을 통해 인적 사항과 간단한 상담 희망 내용만을 남긴 리드입니다.
-                    </p>
-                  </div>
-                </div>
-              )}
+              ) : null}
 
-              {/* 상담 내용 요약 */}
+              {/* 상담 내용 메모 */}
               <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-2">
                 <h4 className="text-sm font-bold text-[#0F172A] flex items-center gap-2 border-b pb-2">
-                  <FileText className="w-4 h-4 text-[#C5A059]" /> 상세 상담 희망 내용
+                  <FileText className="w-4 h-4 text-[#C5A059]" /> 상담 문의 및 접수 메모
                 </h4>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed py-2">
-                  {selectedLead.content || '상세 입력된 상담 내용이 없습니다.'}
+                  {selectedLead.content || '작성된 추가 상담 내용이 없습니다.'}
                 </p>
               </div>
+
             </div>
 
-            {/* 모달 푸터 (상태 조작 및 닫기) */}
+            {/* 모달 푸터 */}
             <div className="bg-gray-100 px-6 py-4 flex items-center justify-between border-t border-gray-200">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold text-[#0F172A]">처리 상태 변경</span>
+                <span className="text-xs font-bold text-gray-700">처리 상태 변경:</span>
                 <select
                   value={selectedLead.status}
                   onChange={(e) => changeStatus(selectedLead.id, e.target.value)}
-                  className="text-sm border border-gray-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-[#C5A059] font-medium"
+                  className="text-xs border border-gray-300 rounded-xl px-3 py-1.5 bg-white focus:outline-none focus:border-[#C5A059] font-medium"
                 >
-                  {Object.entries(statusLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  {Object.entries(statusLabel).map(([v, l]) => (
+                    <option key={v} value={v}>{l}</option>
+                  ))}
                 </select>
               </div>
               <button 
                 onClick={() => setSelectedLead(null)}
-                className="px-5 py-2.5 bg-[#0F172A] text-white hover:bg-[#1E293B] rounded-xl text-sm font-bold transition-colors"
+                className="px-5 py-2 bg-[#0F172A] text-white hover:bg-[#1E293B] rounded-xl text-xs font-bold transition-colors shadow-sm"
               >
-                확인 완료 / 닫기
+                닫기
               </button>
             </div>
 

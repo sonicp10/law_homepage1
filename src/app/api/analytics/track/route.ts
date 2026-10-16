@@ -12,15 +12,30 @@ const analyticsSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    // 관리자 세션 체크 (관리자의 방문은 통계에 포함하지 않음)
     const cookieStore = await cookies();
+
+    // 1. 관리자 기기 제외 쿠키 체크
+    const isExcludedDevice = cookieStore.get('admin_device_excluded')?.value === 'true';
+    if (isExcludedDevice) {
+      return NextResponse.json({ success: true, message: 'Admin device visit ignored' });
+    }
+
+    // 2. 관리자 세션 JWT 검증
     const token = cookieStore.get('admin_session_v1')?.value;
-    
     if (token) {
       const payload = await verifyToken(token);
       if (payload) {
-        return NextResponse.json({ success: true, message: 'Admin visit ignored' });
+        return NextResponse.json({ success: true, message: 'Admin session visit ignored' });
       }
+    }
+
+    // 3. 최근 관리자 로그인 IP와 일치 여부 체크
+    const adminLastIp = cookieStore.get('admin_last_ip')?.value;
+    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const clientIp = rawIp.split(',')[0].trim();
+
+    if (adminLastIp && clientIp === adminLastIp) {
+      return NextResponse.json({ success: true, message: 'Admin IP visit ignored' });
     }
 
     const body = await request.json();
@@ -30,15 +45,18 @@ export async function POST(request: Request) {
     }
 
     const { path, referrer, userAgent } = validation.data;
-    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    const ip = rawIp.split(',')[0].trim();
+
+    // 4. 관리자 URL 경로 필터링
+    if (path.startsWith('/admin')) {
+      return NextResponse.json({ success: true, message: 'Admin route ignored' });
+    }
 
     await prisma.analytics.create({
       data: {
         path,
         referrer: referrer || null,
         userAgent: userAgent || null,
-        ip: ip || null,
+        ip: clientIp !== 'unknown' ? clientIp : null,
       },
     });
 
@@ -51,5 +69,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-

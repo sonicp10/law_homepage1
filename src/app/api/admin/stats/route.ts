@@ -17,6 +17,17 @@ export async function GET(request: Request) {
     const todayKstStr = kstNow.toISOString().split('T')[0];
     const todayStartUtc = new Date(new Date(`${todayKstStr}T00:00:00+09:00`).toISOString());
 
+    // 현재 접속한 관리자의 IP 추출
+    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+    const currentAdminIp = rawIp.split(',')[0].trim();
+    const excludedIps = ['127.0.0.1', '::1'];
+    if (currentAdminIp) excludedIps.push(currentAdminIp);
+
+    const adminVisitFilter = {
+      path: { not: { startsWith: '/admin' } },
+      ...(excludedIps.length > 0 ? { ip: { notIn: excludedIps } } : {}),
+    };
+
     const [
       totalPosts,
       rehabPosts,
@@ -51,7 +62,7 @@ export async function GET(request: Request) {
       prisma.boardQna.count({ where: { status: 'PENDING' } }),
       prisma.boardQna.count({ where: { createdAt: { gte: todayStartUtc } } }),
       prisma.review.count({ where: { isPublic: true } }),
-      prisma.analytics.count({ where: { createdAt: { gte: todayStartUtc } } }),
+      prisma.analytics.count({ where: { ...adminVisitFilter, createdAt: { gte: todayStartUtc } } }),
       prisma.lead.findMany({
         orderBy: { createdAt: 'desc' },
         take: 6,

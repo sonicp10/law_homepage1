@@ -7,16 +7,29 @@ export default function AnalyticsTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // 관리자 페이지(/admin)는 통계에서 제외
+    // 1. 관리자 전용 페이지(/admin)는 통계에서 제외
     if (pathname.startsWith('/admin')) return;
 
-    // 로컬스토리지의 관리자 세션 플래그가 있는 경우 통계에서 제외
-    if (typeof window !== 'undefined' && localStorage.getItem('is_admin_session') === 'true') {
-      return;
+    if (typeof window !== 'undefined') {
+      // 2. 로컬 스토리지의 관리자 플래그 체크
+      if (
+        localStorage.getItem('is_admin_session') === 'true' ||
+        localStorage.getItem('exclude_from_analytics') === 'true'
+      ) {
+        return;
+      }
+
+      // 3. 브라우저 쿠키의 관리자 기기 제외 플래그 체크
+      const cookies = document.cookie || '';
+      if (
+        cookies.includes('admin_device_excluded=true') ||
+        cookies.includes('admin_session_v1')
+      ) {
+        return;
+      }
     }
 
     const trackView = async () => {
-
       try {
         await fetch('/api/analytics/track', {
           method: 'POST',
@@ -38,5 +51,5 @@ export default function AnalyticsTracker() {
     trackView();
   }, [pathname]);
 
-  return null; // 시각적 요소 없음
+  return null;
 }

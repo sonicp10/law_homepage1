@@ -7,7 +7,7 @@ import {
 import { 
   Users, Eye, MousePointer2, ArrowUpRight, Calendar, 
   RefreshCcw, Globe, Link2, ExternalLink,
-  Sparkles, Lightbulb, TrendingUp, Clock, Smartphone, Monitor, PhoneCall, MessageSquare, ShieldCheck
+  Sparkles, Lightbulb, TrendingUp, Clock, Smartphone, Monitor, PhoneCall, MessageSquare, ShieldCheck, Trash2
 } from 'lucide-react';
 
 export default function StatisticsPage() {
@@ -69,6 +69,25 @@ export default function StatisticsPage() {
     fetchStats();
   }, [period, (period === 'custom' ? startDate : ''), (period === 'custom' ? endDate : '')]);
 
+  const handleCleanupTestLogs = async () => {
+    const adminIp = data?.currentAdminIp || '현재 IP';
+    if (!confirm(`현재 관리자 IP(${adminIp})에서 테스트로 발생한 과거 방문 기록을 통계 DB에서 정리하시겠습니까?`)) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/admin/analytics/stats', { method: 'DELETE' });
+      const result = await res.json();
+      if (res.ok) {
+        alert(result.message || '관리자 테스트 로그가 정리되었습니다.');
+        fetchStats();
+      } else {
+        alert(result.error || '정리에 실패했습니다.');
+      }
+    } catch {
+      alert('서버 통신 중 오류가 발생했습니다.');
+    }
+  };
+
   if (isLoading && !data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
@@ -85,10 +104,20 @@ export default function StatisticsPage() {
       {/* 헤더 섹션 */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pb-2 border-b border-gray-100">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="px-3 py-1 bg-[#A67C52]/10 text-[#A67C52] text-xs font-bold rounded-full flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" /> 실시간 분석 대시보드
             </span>
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1 border border-emerald-200/50">
+              🛡️ 관리자 테스트 유입 자동 제외 중 ({data?.currentAdminIp || '내 IP'})
+            </span>
+            <button
+              onClick={handleCleanupTestLogs}
+              className="px-2.5 py-1 bg-gray-100 hover:bg-rose-50 hover:text-rose-600 text-gray-600 text-xs font-bold rounded-full transition-colors flex items-center gap-1 cursor-pointer border border-gray-200"
+              title="현재 관리자 IP의 과거 테스트 방문 로그 삭제"
+            >
+              <Trash2 className="w-3 h-3" /> 테스트 로그 정리
+            </button>
             {data?.summary?.peakHours && data.summary.peakHours.length > 0 && (
               <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-full flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" /> 최다 방문 시간: {data.summary.peakHours.join(', ')}

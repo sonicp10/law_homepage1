@@ -54,7 +54,7 @@ function categorizeReferrer(rawRef: string | null): { name: string; category: st
 }
 
 export async function GET(request: Request) {
-  // 관리자 권한 확인 (보안 강화)
+  // 관리자 권한 확인
   const session = await requireAdminAuth(request);
   if (!session) {
     return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 401 });
@@ -62,9 +62,24 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'month'; // day, week, month, quarter, 3m, 6m, 1y
+    const period = searchParams.get('period') || 'month';
     const startParam = searchParams.get('start');
     const endParam = searchParams.get('end');
+
+    // 현재 접속한 관리자의 IP 추출
+    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+    const currentAdminIp = rawIp.split(',')[0].trim();
+
+    // 관리자 테스트 유입 제외 필터 (관리자 경로 + 관리자 IP)
+    const excludedIps = ['127.0.0.1', '::1'];
+    if (currentAdminIp) {
+      excludedIps.push(currentAdminIp);
+    }
+
+    const adminFilter = {
+      path: { not: { startsWith: '/admin' } },
+      ...(excludedIps.length > 0 ? { ip: { notIn: excludedIps } } : {}),
+    };
 
     let startDate: Date;
     let endDate: Date;
@@ -101,16 +116,14 @@ export async function GET(request: Request) {
       }
     }
 
-    // 1. 현재 기간 데이터 집계
-    const adminPathFilter = { path: { not: { startsWith: '/admin' } } };
-
+    // 1. 현재 기간 데이터 집계 (관리자 테스트 제외)
     const [totalViews, uniqueVisitors, leadCount, consultCount, qnaCount] = await Promise.all([
       prisma.analytics.count({
-        where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+        where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
       }),
       prisma.analytics.groupBy({
         by: ['ip'],
-        where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+        where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
       }).then(res => res.length),
       prisma.lead.count({
         where: { createdAt: { gte: startDate, lte: endDate } },
@@ -135,11 +148,11 @@ export async function GET(request: Request) {
 
     const [prevViews, prevVisitors, prevLeadC, prevConsultC, prevQnaC] = await Promise.all([
       prisma.analytics.count({
-        where: { ...adminPathFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
+        where: { ...adminFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
       }),
       prisma.analytics.groupBy({
         by: ['ip'],
-        where: { ...adminPathFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
+        where: { ...adminFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
       }).then(res => res.length),
       prisma.lead.count({
         where: { createdAt: { gte: prevStartDate, lte: prevEndDate } },
@@ -155,7 +168,6 @@ export async function GET(request: Request) {
     const prevLeads = prevLeadC + prevConsultC + prevQnaC;
     const prevConvRate = prevVisitors > 0 ? (prevLeads / prevVisitors) * 100 : 0;
 
-    // 증감률 계산 함수 (백분율)
     const calcTrend = (curr: number, prev: number) => {
       if (prev === 0) return curr > 0 ? 100 : 0;
       return Number((((curr - prev) / prev) * 100).toFixed(1));
@@ -168,9 +180,9 @@ export async function GET(request: Request) {
       rateTrend: calcTrend(conversionRate, prevConvRate),
     };
 
-    // 2. 스마트 유입 경로 통계 (분류 및 집계)
+    // 2. 스마트 유입 경로 통계
     const rawReferrers = await prisma.analytics.findMany({
-      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
       select: { referrer: true },
     });
 
@@ -190,7 +202,7 @@ export async function GET(request: Request) {
     // 3. 인기 페이지 통계
     const popularPages = await prisma.analytics.groupBy({
       by: ['path'],
-      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
       _count: { path: true },
       orderBy: { _count: { path: 'desc' } },
       take: 10,
@@ -199,7 +211,7 @@ export async function GET(request: Request) {
     // 4. 날짜별 추이 데이터
     const trendData = await prisma.analytics.groupBy({
       by: ['createdAt'],
-      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
       _count: { id: true },
     });
 
@@ -215,7 +227,7 @@ export async function GET(request: Request) {
 
     // 5. 시간대별 분석 (24시간)
     const hourlyData = await prisma.analytics.findMany({
-      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
       select: { createdAt: true },
     });
 
@@ -232,13 +244,12 @@ export async function GET(request: Request) {
       .map(([hour, count]) => ({ hour: `${hour}:00`, count }))
       .sort((a, b) => a.hour.localeCompare(b.hour));
 
-    // 피크 시간대(Peak Hours) 계산 (가장 방문이 많은 상위 2개 시간대)
     const sortedHours = [...hourlyChart].sort((a, b) => b.count - a.count);
     const peakHours = sortedHours.slice(0, 2).map(h => h.hour);
 
-    // 6. 디바이스/브라우저 분석 (userAgent)
+    // 6. 디바이스/브라우저 분석
     const deviceAnalytics = await prisma.analytics.findMany({
-      where: { ...adminPathFilter, createdAt: { gte: startDate, lte: endDate } },
+      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
       select: { userAgent: true },
     });
 
@@ -328,10 +339,50 @@ export async function GET(request: Request) {
       deviceChart,
       browserChart,
       dayChart,
-      adminName: session.name || '김형근 대표 법무사',
+      adminName: session.name || '대표 관리자',
+      currentAdminIp: currentAdminIp || '확인됨',
+      excludedAdminIps: excludedIps,
     });
   } catch (error) {
     console.error('Failed to fetch analytics stats:', error);
     return NextResponse.json({ error: '통계 데이터를 불러오는데 실패했습니다.' }, { status: 500 });
+  }
+}
+
+// DELETE /api/admin/analytics/stats - 현재 관리자 IP 또는 테스트 방문 로그 영구 정리
+export async function DELETE(request: Request) {
+  const session = await requireAdminAuth(request);
+  if (!session) {
+    return NextResponse.json({ error: '관리자 권한이 필요합니다.' }, { status: 401 });
+  }
+
+  try {
+    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+    const currentAdminIp = rawIp.split(',')[0].trim();
+
+    const targets: any[] = [
+      { path: { startsWith: '/admin' } },
+      { ip: '127.0.0.1' },
+      { ip: '::1' },
+    ];
+
+    if (currentAdminIp) {
+      targets.push({ ip: currentAdminIp });
+    }
+
+    const deleteResult = await prisma.analytics.deleteMany({
+      where: {
+        OR: targets,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      deletedCount: deleteResult.count,
+      message: `관리자 테스트 방문 로그 ${deleteResult.count}건이 통계 DB에서 완전히 정리되었습니다.`,
+    });
+  } catch (error) {
+    console.error('Failed to cleanup admin test analytics:', error);
+    return NextResponse.json({ error: '관리자 테스트 로그 정리에 실패했습니다.' }, { status: 500 });
   }
 }

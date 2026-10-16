@@ -52,6 +52,28 @@ export async function POST(request: Request) {
       path: '/',
     });
 
+    // 관리자 기기 식별 쿠키 (1년간 유지되어 프론트엔드 및 백엔드 트래커에서 유입 통계 수집 차단)
+    response.cookies.set('admin_device_excluded', 'true', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365, // 1년
+      path: '/',
+    });
+
+    // 현재 관리자 접속 IP 쿠키
+    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
+    const adminIp = rawIp.split(',')[0].trim();
+    if (adminIp) {
+      response.cookies.set('admin_last_ip', adminIp, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30, // 30일
+        path: '/',
+      });
+    }
+
     return response;
   } catch (error) {
     console.error('Login Error:', error);

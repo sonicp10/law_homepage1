@@ -29,6 +29,13 @@ export default function AdminAccountsPage() {
     canManageConsultations: false,
   });
 
+  // 비밀번호 재설정 모달 상태
+  const [selectedAdminForPassword, setSelectedAdminForPassword] = useState<Admin | null>(null);
+  const [resetPasswordInput, setResetPasswordInput] = useState('');
+  const [resetPasswordConfirm, setResetPasswordConfirm] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+
   useEffect(() => {
     fetchAdmins();
   }, []);
@@ -88,6 +95,45 @@ export default function AdminAccountsPage() {
       fetchAdmins();
     } catch (e) {
       alert('오류가 발생했습니다.');
+    }
+  };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError('');
+
+    if (!selectedAdminForPassword) return;
+    if (resetPasswordInput.length < 6) {
+      setResetError('비밀번호는 최소 6자 이상이어야 합니다.');
+      return;
+    }
+    if (resetPasswordInput !== resetPasswordConfirm) {
+      setResetError('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const res = await fetch(`/api/admin/accounts/${selectedAdminForPassword.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: resetPasswordInput }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`${selectedAdminForPassword.email} 계정의 비밀번호가 성공적으로 변경되었습니다.`);
+        setSelectedAdminForPassword(null);
+        setResetPasswordInput('');
+        setResetPasswordConfirm('');
+        fetchAdmins();
+      } else {
+        setResetError(data.error || '비밀번호 변경 실패');
+      }
+    } catch (err) {
+      setResetError('오류가 발생했습니다.');
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -154,14 +200,25 @@ export default function AdminAccountsPage() {
                   </td>
                   <td className="py-4 px-6 text-center whitespace-nowrap">
                     <button 
+                      onClick={() => {
+                        setSelectedAdminForPassword(admin);
+                        setResetPasswordInput('');
+                        setResetPasswordConfirm('');
+                        setResetError('');
+                      }}
+                      className="text-xs px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg mr-2 hover:bg-amber-100 font-medium transition-colors"
+                    >
+                      비번 변경
+                    </button>
+                    <button 
                       onClick={() => handleToggleActive(admin.id, admin.isActive)}
-                      className="text-xs px-3 py-1 border rounded mr-2 hover:bg-gray-100"
+                      className="text-xs px-2.5 py-1 border border-gray-200 rounded-lg mr-2 hover:bg-gray-100 font-medium transition-colors"
                     >
                       상태전환
                     </button>
                     <button 
                       onClick={() => handleDelete(admin.id)}
-                      className="text-xs px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100"
+                      className="text-xs px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 font-medium transition-colors"
                     >
                       삭제
                     </button>
@@ -173,6 +230,7 @@ export default function AdminAccountsPage() {
         </div>
       </div>
 
+      {/* 새 관리자 추가 모달 */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg p-6">
@@ -212,6 +270,77 @@ export default function AdminAccountsPage() {
               <div className="flex gap-3 justify-end mt-6">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-5 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">취소</button>
                 <button type="submit" className="px-5 py-2 bg-[#A67C52] text-white rounded-lg">계정 생성</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 비밀번호 재설정 모달 */}
+      {selectedAdminForPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-gray-100">
+            <div className="flex items-center justify-between pb-3 border-b mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">관리자 비밀번호 재설정</h3>
+                <p className="text-xs text-gray-500 mt-0.5">{selectedAdminForPassword.email} ({selectedAdminForPassword.name || '이름 없음'})</p>
+              </div>
+              <button 
+                onClick={() => setSelectedAdminForPassword(null)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">새 비밀번호 (6자 이상)</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={resetPasswordInput}
+                  onChange={e => setResetPasswordInput(e.target.value)}
+                  placeholder="새로운 비밀번호를 입력하세요"
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:border-[#A67C52]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">새 비밀번호 확인</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={resetPasswordConfirm}
+                  onChange={e => setResetPasswordConfirm(e.target.value)}
+                  placeholder="새로운 비밀번호를 한 번 더 입력하세요"
+                  className="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:border-[#A67C52]"
+                />
+              </div>
+
+              {resetError && (
+                <div className="p-2.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium">
+                  {resetError}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedAdminForPassword(null)}
+                  className="flex-1 py-2 text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResettingPassword}
+                  className="flex-1 py-2 text-xs font-bold text-white bg-[#A67C52] hover:bg-[#8B6840] rounded-lg shadow disabled:opacity-50"
+                >
+                  {isResettingPassword ? '변경 중...' : '비밀번호 변경'}
+                </button>
               </div>
             </form>
           </div>

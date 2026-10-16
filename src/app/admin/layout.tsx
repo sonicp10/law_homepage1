@@ -32,6 +32,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // 비밀번호 변경 모달 상태
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
   useEffect(() => {
     checkSession();
   }, [pathname]); // pathname 변경 시마다 세션 확인
@@ -93,6 +102,65 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       localStorage.removeItem('is_admin_session');
     }
     router.push('/admin');
+  };
+
+  const resetPasswordModalForm = () => {
+    setCurrentPasswordInput('');
+    setNewPasswordInput('');
+    setConfirmPasswordInput('');
+    setPasswordError('');
+    setPasswordSuccess('');
+    setShowPasswordModal(false);
+  };
+
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!currentPasswordInput) {
+      setPasswordError('현재 비밀번호를 입력해주세요.');
+      return;
+    }
+    if (newPasswordInput.length < 6) {
+      setPasswordError('새 비밀번호는 최소 6자 이상이어야 합니다.');
+      return;
+    }
+    if (newPasswordInput !== confirmPasswordInput) {
+      setPasswordError('새 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+      return;
+    }
+    if (currentPasswordInput === newPasswordInput) {
+      setPasswordError('새 비밀번호는 현재 비밀번호와 달라야 합니다.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await fetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: currentPasswordInput,
+          newPassword: newPasswordInput,
+          confirmPassword: confirmPasswordInput,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPasswordSuccess(data.message || '비밀번호가 안전하게 변경되었습니다.');
+        setTimeout(() => {
+          resetPasswordModalForm();
+        }, 1500);
+      } else {
+        setPasswordError(data.error || '비밀번호 변경에 실패했습니다.');
+      }
+    } catch (err) {
+      setPasswordError('네트워크 오류가 발생했습니다.');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   if (isLoading) {
@@ -240,7 +308,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* 하단 */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 space-y-3">
+          {session && (
+            <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-white/50 truncate max-w-[130px]">{session.email}</span>
+                <span className="text-[10px] bg-[#A67C52] text-white px-1.5 py-0.5 rounded font-bold">{session.role}</span>
+              </div>
+              <p className="text-xs font-semibold text-white truncate">{session.name || '관리자'}</p>
+              <button
+                type="button"
+                onClick={() => setShowPasswordModal(true)}
+                className="mt-2.5 w-full flex items-center justify-center gap-1.5 text-xs py-1.5 px-2 bg-white/10 hover:bg-white/20 text-[#EAD8C0] rounded-lg transition-colors font-medium border border-white/10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                </svg>
+                비밀번호 변경
+              </button>
+            </div>
+          )}
+
           <Link href="/" className="flex items-center justify-center gap-2 text-white/40 hover:text-white/70 text-xs font-medium transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -254,6 +342,111 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="md:ml-64 flex-1 p-4 md:p-8 w-full max-w-[100vw]">
         {children}
       </main>
+
+      {/* 비밀번호 변경 모달 */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#A67C52]/10 flex items-center justify-center text-[#A67C52]">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">관리자 비밀번호 변경</h3>
+                  <p className="text-xs text-gray-500">{session?.email}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={resetPasswordModalForm}
+                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePasswordSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">현재 비밀번호</label>
+                <input
+                  type="password"
+                  required
+                  value={currentPasswordInput}
+                  onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  placeholder="현재 비밀번호를 입력하세요"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A67C52] focus:bg-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">새 비밀번호 (6자 이상)</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  placeholder="새로운 비밀번호를 입력하세요"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A67C52] focus:bg-white transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">새 비밀번호 확인</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={confirmPasswordInput}
+                  onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                  placeholder="새로운 비밀번호를 한 번 더 입력하세요"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A67C52] focus:bg-white transition-all"
+                />
+              </div>
+
+              {passwordError && (
+                <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-medium flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                  <span>{passwordError}</span>
+                </div>
+              )}
+
+              {passwordSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl text-xs font-medium flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                  <span>{passwordSuccess}</span>
+                </div>
+              )}
+
+              <div className="flex gap-2.5 pt-3">
+                <button
+                  type="button"
+                  onClick={resetPasswordModalForm}
+                  className="flex-1 py-2.5 px-4 text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className="flex-1 py-2.5 px-4 text-xs font-bold text-white bg-[#A67C52] hover:bg-[#8B6840] rounded-xl transition-colors shadow-md disabled:opacity-50"
+                >
+                  {isChangingPassword ? '변경 처리 중...' : '비밀번호 변경하기'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

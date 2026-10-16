@@ -10,17 +10,29 @@ export async function GET(request: Request) {
   }
 
   try {
+    // 한국 시간(KST, UTC+9) 기준 오늘 00:00:00 계산
+    const now = new Date();
+    const kstOffset = 9 * 60 * 60 * 1000;
+    const kstNow = new Date(now.getTime() + kstOffset);
+    const todayKstStr = kstNow.toISOString().split('T')[0];
+    const todayStartUtc = new Date(new Date(`${todayKstStr}T00:00:00+09:00`).toISOString());
+
     const [
       totalPosts,
       rehabPosts,
       bankruptcyPosts,
+      successStoryPosts,
       totalLeads,
       pendingLeads,
+      todayLeads,
       totalConsultations,
       pendingConsultations,
+      todayConsultations,
       totalBoardQna,
       pendingBoardQna,
+      todayBoardQna,
       totalReviews,
+      todayVisits,
       recentLeads,
       recentConsultations,
       recentBoardQna,
@@ -28,16 +40,21 @@ export async function GET(request: Request) {
       prisma.post.count({ where: { published: true } }),
       prisma.post.count({ where: { category: 'REHAB', published: true } }),
       prisma.post.count({ where: { category: 'BANKRUPTCY', published: true } }),
+      prisma.post.count({ where: { category: 'SUCCESS_STORY', published: true } }),
       prisma.lead.count(),
       prisma.lead.count({ where: { status: 'PENDING' } }),
+      prisma.lead.count({ where: { createdAt: { gte: todayStartUtc } } }),
       prisma.consultation.count(),
       prisma.consultation.count({ where: { status: 'PENDING' } }),
+      prisma.consultation.count({ where: { createdAt: { gte: todayStartUtc } } }),
       prisma.boardQna.count(),
       prisma.boardQna.count({ where: { status: 'PENDING' } }),
+      prisma.boardQna.count({ where: { createdAt: { gte: todayStartUtc } } }),
       prisma.review.count({ where: { isPublic: true } }),
+      prisma.analytics.count({ where: { createdAt: { gte: todayStartUtc } } }),
       prisma.lead.findMany({
         orderBy: { createdAt: 'desc' },
-        take: 5,
+        take: 6,
         select: { 
           id: true, name: true, phone: true, debtAmount: true, 
           preferredType: true, content: true, status: true, 
@@ -46,23 +63,60 @@ export async function GET(request: Request) {
       }),
       prisma.consultation.findMany({
         orderBy: { createdAt: 'desc' },
-        take: 5,
-        select: { id: true, name: true, phone: true, type: true, category: true, visitDate: true, visitTime: true, content: true, status: true, createdAt: true, location: true },
+        take: 6,
+        select: { 
+          id: true, name: true, phone: true, type: true, 
+          category: true, visitDate: true, visitTime: true, 
+          content: true, status: true, createdAt: true, location: true 
+        },
       }),
       prisma.boardQna.findMany({
         orderBy: { createdAt: 'desc' },
-        take: 5,
-        select: { id: true, author: true, title: true, content: true, status: true, createdAt: true },
+        take: 6,
+        select: { 
+          id: true, author: true, title: true, content: true, 
+          status: true, createdAt: true, replyContent: true, isSecret: true 
+        },
       }),
     ]);
 
+    const totalPending = pendingLeads + pendingConsultations + pendingBoardQna;
+
     return NextResponse.json({
-      posts: { total: totalPosts, rehab: rehabPosts, bankruptcy: bankruptcyPosts },
-      leads: { total: totalLeads, pending: pendingLeads },
-      consultations: { total: totalConsultations, pending: pendingConsultations },
-      boardQna: { total: totalBoardQna, pending: pendingBoardQna },
+      posts: { 
+        total: totalPosts, 
+        rehab: rehabPosts, 
+        bankruptcy: bankruptcyPosts,
+        successStory: successStoryPosts,
+      },
+      leads: { 
+        total: totalLeads, 
+        pending: pendingLeads,
+        today: todayLeads,
+      },
+      consultations: { 
+        total: totalConsultations, 
+        pending: pendingConsultations,
+        today: todayConsultations,
+      },
+      boardQna: { 
+        total: totalBoardQna, 
+        pending: pendingBoardQna,
+        today: todayBoardQna,
+      },
       reviews: { total: totalReviews },
-      recent: { leads: recentLeads, consultations: recentConsultations, boardQna: recentBoardQna },
+      analytics: {
+        todayVisits,
+      },
+      summary: {
+        totalPending,
+        todayTotalInquiries: todayLeads + todayConsultations + todayBoardQna,
+      },
+      recent: { 
+        leads: recentLeads, 
+        consultations: recentConsultations, 
+        boardQna: recentBoardQna 
+      },
     });
   } catch (error) {
     console.error('Admin Stats Error:', error);

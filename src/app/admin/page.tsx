@@ -4,11 +4,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 interface StatsData {
-  posts: { total: number; rehab: number; bankruptcy: number };
-  leads: { total: number; pending: number };
-  consultations: { total: number; pending: number };
-  boardQna: { total: number; pending: number };
+  posts: { total: number; rehab: number; bankruptcy: number; successStory?: number };
+  leads: { total: number; pending: number; today?: number };
+  consultations: { total: number; pending: number; today?: number };
+  boardQna: { total: number; pending: number; today?: number };
   reviews: { total: number };
+  analytics?: { todayVisits?: number };
+  summary?: { totalPending?: number; todayTotalInquiries?: number };
   recent: {
     leads: any[];
     consultations: any[];
@@ -45,6 +47,8 @@ const statusLabel: Record<string, string> = {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [err, setErr] = useState('');
   
   // 알림 사운드 및 토스트 설정
@@ -70,7 +74,6 @@ export default function AdminDashboard() {
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
       
-      // 첫 번째 음 C5
       const osc1 = ctx.createOscillator();
       const gain1 = ctx.createGain();
       osc1.connect(gain1);
@@ -82,7 +85,6 @@ export default function AdminDashboard() {
       osc1.start();
       osc1.stop(ctx.currentTime + 0.45);
       
-      // 두 번째 음 E5 (150ms 후)
       setTimeout(() => {
         const osc2 = ctx.createOscillator();
         const gain2 = ctx.createGain();
@@ -101,7 +103,10 @@ export default function AdminDashboard() {
   };
 
   const fetchStats = async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
+    if (!isSilent) {
+      if (stats) setIsRefreshing(true);
+      else setLoading(true);
+    }
     try {
       const res = await fetch('/api/admin/stats');
       if (!res.ok) throw new Error('Failed');
@@ -141,25 +146,25 @@ export default function AdminDashboard() {
             });
           });
           
-          setToasts(prev => [...newToasts, ...prev].slice(0, 5)); // 최대 5개 유지
+          setToasts(prev => [...newToasts, ...prev].slice(0, 5));
         }
       }
 
-      // 이전 데이터 Ref 업데이트
       prevLeadsRef.current = data.recent.leads;
       prevConsultsRef.current = data.recent.consultations;
 
       setStats(data);
+      setLastUpdated(new Date().toLocaleTimeString('ko-KR'));
       setErr('');
     } catch {
       setErr('통계를 불러오지 못했습니다. DB 연결 또는 세션 상태를 확인하세요.');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    // 사운드 설정 로컬저장소 확인
     const savedSound = localStorage.getItem('admin_sound_alert');
     if (savedSound !== null) {
       setSoundEnabled(savedSound === 'true');
@@ -167,7 +172,6 @@ export default function AdminDashboard() {
 
     fetchStats();
     
-    // 10초마다 백그라운드 자동 갱신 및 신규 접수 모니터링
     const interval = setInterval(() => fetchStats(true), 10000);
     return () => clearInterval(interval);
   }, []);
@@ -177,7 +181,6 @@ export default function AdminDashboard() {
     setSoundEnabled(nextVal);
     localStorage.setItem('admin_sound_alert', String(nextVal));
     if (nextVal) {
-      // 오디오 동작 허용 보증용 소형 플레이
       playAlertChime();
     }
   };
@@ -186,7 +189,6 @@ export default function AdminDashboard() {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  // 모달 안에서 상태를 즉시 업데이트하는 기능
   const handleUpdateStatusInModal = async (newStatus: string) => {
     if (!selectedItem) return;
     setModalUpdating(true);
@@ -205,7 +207,6 @@ export default function AdminDashboard() {
       
       if (!res.ok) throw new Error('Update failed');
       
-      // 즉각 데이터 갱신 및 모달 닫기
       await fetchStats(true);
       setSelectedItem(null);
     } catch {
@@ -220,14 +221,12 @@ export default function AdminDashboard() {
     return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   };
 
-  // 한국 시간(UTC+9) 기준 오늘 날짜 구하기
   const getKoreaTodayStr = () => {
     const offset = 9 * 60 * 60 * 1000; 
     const krDate = new Date(Date.now() + offset);
     return krDate.toISOString().split('T')[0];
   };
 
-  // 오늘 예정된 방문 상담 매핑
   const getTodayVisitors = () => {
     if (!stats) return [];
     const todayStr = getKoreaTodayStr();
@@ -239,64 +238,239 @@ export default function AdminDashboard() {
   };
 
   const todayVisitors = getTodayVisitors();
+  const totalPending = stats?.summary?.totalPending ?? (
+    (stats?.leads.pending || 0) + (stats?.consultations.pending || 0) + (stats?.boardQna.pending || 0)
+  );
+
   const statCards = stats ? [
-    { label: 'About 개인회생 글', value: stats.posts.rehab, sub: `전체 ${stats.posts.total}건`, color: 'from-blue-500 to-blue-600', icon: '⚖️', link: '/admin/columns?cat=REHAB' },
-    { label: 'About 개인파산 글', value: stats.posts.bankruptcy, sub: `전체 ${stats.posts.total}건`, color: 'from-emerald-500 to-emerald-600', icon: '💸', link: '/admin/columns?cat=BANKRUPTCY' },
-    { label: '상담 신청', value: stats.consultations.total, sub: `대기 ${stats.consultations.pending}건`, color: 'from-[#A67C52] to-[#8B6840]', icon: '📞', link: '/admin/consultations' },
-    { label: '빠른 상담 (리드)', value: stats.leads.total, sub: `대기 ${stats.leads.pending}건`, color: 'from-orange-500 to-orange-600', icon: '📌', link: '/admin/leads' },
-    { label: '게시판 문의', value: stats.boardQna.total, sub: `미답변 ${stats.boardQna.pending}건`, color: 'from-green-500 to-green-600', icon: '💬', link: '/admin/board' },
-    { label: '의뢰인 후기', value: stats.reviews.total, sub: '공개 후기', color: 'from-pink-500 to-pink-600', icon: '⭐', link: '/s_story/review' },
+    { 
+      label: 'About 개인회생 글', 
+      value: stats.posts.rehab, 
+      sub: `발행 칼럼 ${stats.posts.rehab}건`, 
+      color: 'from-blue-600 to-indigo-700', 
+      icon: '⚖️', 
+      link: '/admin/columns?cat=REHAB',
+      badge: null
+    },
+    { 
+      label: 'About 개인파산 글', 
+      value: stats.posts.bankruptcy, 
+      sub: `발행 칼럼 ${stats.posts.bankruptcy}건`, 
+      color: 'from-emerald-600 to-teal-700', 
+      icon: '💸', 
+      link: '/admin/columns?cat=BANKRUPTCY',
+      badge: null
+    },
+    { 
+      label: '성공사례 관리', 
+      value: stats.posts.successStory || 0, 
+      sub: '의뢰인 승소·탕감 사례', 
+      color: 'from-purple-600 to-violet-700', 
+      icon: '🏆', 
+      link: '/admin/columns?cat=SUCCESS_STORY',
+      badge: '핵심 전환'
+    },
+    { 
+      label: '상담 신청 (전화/방문)', 
+      value: stats.consultations.total, 
+      sub: `대기 ${stats.consultations.pending}건`, 
+      color: 'from-[#A67C52] to-[#8B6840]', 
+      icon: '📞', 
+      link: '/admin/consultations',
+      badge: stats.consultations.today ? `오늘 +${stats.consultations.today}` : null
+    },
+    { 
+      label: '빠른 상담 (리드)', 
+      value: stats.leads.total, 
+      sub: `대기 ${stats.leads.pending}건`, 
+      color: 'from-orange-500 to-amber-600', 
+      icon: '📌', 
+      link: '/admin/leads',
+      badge: stats.leads.today ? `오늘 +${stats.leads.today}` : null
+    },
+    { 
+      label: '게시판 문의', 
+      value: stats.boardQna.total, 
+      sub: `미답변 ${stats.boardQna.pending}건`, 
+      color: 'from-green-600 to-emerald-700', 
+      icon: '💬', 
+      link: '/admin/board',
+      badge: stats.boardQna.today ? `오늘 +${stats.boardQna.today}` : null
+    },
+    { 
+      label: '오늘 홈페이지 방문', 
+      value: stats.analytics?.todayVisits || 0, 
+      sub: '실시간 유입 트래픽', 
+      color: 'from-cyan-600 to-blue-700', 
+      icon: '📈', 
+      link: '/admin/statistics',
+      badge: '실시간'
+    },
+    { 
+      label: '의뢰인 후기', 
+      value: stats.reviews.total, 
+      sub: '누적 공개 후기', 
+      color: 'from-pink-500 to-rose-600', 
+      icon: '⭐', 
+      link: '/s_story/review',
+      badge: null
+    },
   ] : [];
 
   if (loading) return (
     <div className="space-y-8 animate-pulse">
       <div>
         <h1 className="text-2xl font-bold text-[var(--primary)]">관리자 대시보드</h1>
-        <p className="text-[var(--primary)]/50 text-sm mt-1">실시간 통계 및 알림 엔진 활성화 중...</p>
+        <p className="text-[var(--primary)]/50 text-sm mt-1">실시간 통계 및 관제 엔진 활성화 중...</p>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-32 bg-gray-150 rounded-2xl" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="h-32 bg-gray-200 rounded-2xl" />
         ))}
       </div>
     </div>
   );
 
   return (
-    <div className="space-y-8 relative">
+    <div className="space-y-7 relative">
       {/* 헤더 및 알림 컨트롤러 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[var(--border)] shadow-sm">
         <div>
           <h1 className="text-2xl font-bold text-[var(--primary)] flex items-center gap-2">
             <span>💻</span> 관리자 통합 관제 센터
           </h1>
-          <p className="text-[var(--primary)]/60 text-sm mt-1 font-medium">법무사 김형근 사무소 전체 실시간 현황 브리핑</p>
+          <p className="text-[var(--primary)]/60 text-sm mt-1 font-medium">법무사 김형근 사무소 실시간 통합 현황 브리핑</p>
         </div>
         
-        <div className="flex items-center gap-4 text-right">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* 수동 새로고침 버튼 */}
+          <button
+            onClick={() => fetchStats()}
+            disabled={isRefreshing}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all border border-gray-200 disabled:opacity-50"
+            title="데이터 즉시 새로고침"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth={2} 
+              stroke="currentColor" 
+              className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#A67C52]' : ''}`}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <span>{isRefreshing ? '갱신 중...' : '지금 새로고침'}</span>
+          </button>
+
           {/* 사운드 활성 토글 */}
           <button 
             onClick={toggleSound}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border shadow-sm ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border shadow-sm ${
               soundEnabled 
                 ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
                 : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
             }`}
           >
-            <span>{soundEnabled ? '🔔 실시간 알림음 On' : '🔕 사운드 끔'}</span>
+            <span>{soundEnabled ? '🔔 알림음 On' : '🔕 알림음 Off'}</span>
             <div className={`w-2 h-2 rounded-full ${soundEnabled ? 'bg-amber-500 animate-ping' : 'bg-gray-300'}`} />
           </button>
 
-          <div className="text-xs text-[var(--primary)]/40 font-medium">
-            <p className="text-[var(--primary)]/50">실시간 동기화 완료</p>
-            <p className="font-bold text-[var(--primary)] text-sm">{new Date().toLocaleTimeString('ko-KR')}</p>
+          <div className="text-right pl-2 border-l border-gray-200">
+            <p className="text-[10px] text-gray-400 font-medium">마지막 동기화</p>
+            <p className="font-bold text-gray-800 text-xs">{lastUpdated || new Date().toLocaleTimeString('ko-KR')}</p>
           </div>
         </div>
       </div>
 
       {err && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium">
-          ⚠️ {err}
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium flex items-center gap-2">
+          <span>⚠️</span>
+          <span>{err}</span>
+        </div>
+      )}
+
+      {/* 긴급 관제 배너: 미처리 업무가 있을 때 즉각 조치 유도 */}
+      {totalPending > 0 && (
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-2xl p-5 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center shrink-0 backdrop-blur-sm">
+              <span className="text-2xl animate-pulse">🚨</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-white/25 px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wide">Action Required</span>
+                <span className="text-xs text-amber-100 font-medium">실시간 미처리 상담 관제</span>
+              </div>
+              <h2 className="text-base font-bold mt-0.5">
+                신속한 의뢰인 연락이 필요한 미처리 업무가 총 <span className="underline decoration-white/60 decoration-2 font-black">{totalPending}건</span> 있습니다.
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {stats?.leads.pending ? (
+              <Link 
+                href="/admin/leads" 
+                className="px-3 py-1.5 bg-white text-orange-700 text-xs font-bold rounded-xl hover:bg-orange-50 transition-colors shadow-sm"
+              >
+                리드 대기 ({stats.leads.pending}건)
+              </Link>
+            ) : null}
+            {stats?.consultations.pending ? (
+              <Link 
+                href="/admin/consultations" 
+                className="px-3 py-1.5 bg-white text-amber-800 text-xs font-bold rounded-xl hover:bg-amber-50 transition-colors shadow-sm"
+              >
+                상담 대기 ({stats.consultations.pending}건)
+              </Link>
+            ) : null}
+            {stats?.boardQna.pending ? (
+              <Link 
+                href="/admin/board" 
+                className="px-3 py-1.5 bg-white text-emerald-800 text-xs font-bold rounded-xl hover:bg-emerald-50 transition-colors shadow-sm"
+              >
+                게시판 미답변 ({stats.boardQna.pending}건)
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* 오늘(Today) 실시간 접수 펄스 바 */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100/80">
+            <div className="flex items-center justify-between text-xs text-blue-700 font-semibold mb-1">
+              <span>오늘 방문자</span>
+              <span>📈</span>
+            </div>
+            <p className="text-2xl font-black text-blue-950">{(stats.analytics?.todayVisits || 0).toLocaleString()} <span className="text-xs font-normal text-blue-600">명</span></p>
+          </div>
+
+          <div className="p-3 bg-orange-50/60 rounded-xl border border-orange-100/80">
+            <div className="flex items-center justify-between text-xs text-orange-700 font-semibold mb-1">
+              <span>오늘 빠른 상담(리드)</span>
+              <span>📌</span>
+            </div>
+            <p className="text-2xl font-black text-orange-950">{stats.leads.today || 0} <span className="text-xs font-normal text-orange-600">건</span></p>
+          </div>
+
+          <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100/80">
+            <div className="flex items-center justify-between text-xs text-amber-700 font-semibold mb-1">
+              <span>오늘 전화/방문 상담</span>
+              <span>📞</span>
+            </div>
+            <p className="text-2xl font-black text-amber-950">{stats.consultations.today || 0} <span className="text-xs font-normal text-amber-600">건</span></p>
+          </div>
+
+          <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100/80">
+            <div className="flex items-center justify-between text-xs text-emerald-700 font-semibold mb-1">
+              <span>오늘 게시판 문의</span>
+              <span>💬</span>
+            </div>
+            <p className="text-2xl font-black text-emerald-950">{stats.boardQna.today || 0} <span className="text-xs font-normal text-emerald-600">건</span></p>
+          </div>
         </div>
       )}
 
@@ -340,21 +514,25 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* 통계 카드 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+      {/* 통계 카드 (8개 그리드) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((card) => (
-          <Link key={card.label} href={card.link} className="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-            <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-90`} />
-            <div className="relative p-6 text-white">
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-3xl">{card.icon}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-white/60 group-hover:text-white transition-colors">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
+          <Link key={card.label} href={card.link} className="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+            <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-95`} />
+            <div className="relative p-5 text-white flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-2xl">{card.icon}</span>
+                  {card.badge && (
+                    <span className="text-[10px] bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-full font-bold">
+                      {card.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-3xl font-black mb-1">{card.value.toLocaleString()}</p>
+                <p className="text-white/90 text-xs font-bold leading-tight">{card.label}</p>
               </div>
-              <p className="text-4xl font-black mb-1">{card.value.toLocaleString()}</p>
-              <p className="text-white/80 text-sm font-semibold">{card.label}</p>
-              <p className="text-white/60 text-xs mt-1">{card.sub}</p>
+              <p className="text-white/70 text-[11px] mt-2.5 font-medium pt-2 border-t border-white/10">{card.sub}</p>
             </div>
           </Link>
         ))}
@@ -460,23 +638,33 @@ export default function AdminDashboard() {
 
       {/* 기능 빠른 접근 */}
       <div className="bg-white rounded-2xl shadow-sm border border-[var(--border)] p-6">
-        <h3 className="font-bold text-[var(--primary)] mb-4">⚡ 관제 센터 퀵 메뉴</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <h3 className="font-bold text-[var(--primary)] mb-4 flex items-center gap-2">
+          <span>⚡</span> 관제 센터 퀵 메뉴
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Link href="/admin/columns/write" className="flex flex-col items-center gap-2 p-4 bg-[#A67C52]/5 border border-[#A67C52]/20 rounded-xl hover:bg-[#A67C52]/10 transition-all text-center">
             <span className="text-2xl">✍️</span>
-            <span className="text-xs font-bold text-[var(--primary)]">새 글 작성</span>
+            <span className="text-xs font-bold text-[var(--primary)]">새 칼럼 작성</span>
+          </Link>
+          <Link href="/admin/columns?cat=SUCCESS_STORY" className="flex flex-col items-center gap-2 p-4 bg-purple-50 border border-purple-100 rounded-xl hover:bg-purple-100 transition-all text-center">
+            <span className="text-2xl">🏆</span>
+            <span className="text-xs font-bold text-purple-900">성공사례 관리</span>
+          </Link>
+          <Link href="/admin/statistics" className="flex flex-col items-center gap-2 p-4 bg-cyan-50 border border-cyan-100 rounded-xl hover:bg-cyan-100 transition-all text-center">
+            <span className="text-2xl">📈</span>
+            <span className="text-xs font-bold text-cyan-900">방문 통계 분석</span>
           </Link>
           <Link href="/admin/consultations" className="flex flex-col items-center gap-2 p-4 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 transition-all text-center">
-            <span className="text-2xl">📋</span>
-            <span className="text-xs font-bold text-[var(--primary)]">상담 관리</span>
+            <span className="text-2xl">📞</span>
+            <span className="text-xs font-bold text-blue-900">상담 내역 관리</span>
           </Link>
           <Link href="/admin/board" className="flex flex-col items-center gap-2 p-4 bg-green-50 border border-green-100 rounded-xl hover:bg-green-100 transition-all text-center">
             <span className="text-2xl">💬</span>
-            <span className="text-xs font-bold text-[var(--primary)]">게시판 답변</span>
+            <span className="text-xs font-bold text-green-900">게시판 답변</span>
           </Link>
           <Link href="/admin/leads" className="flex flex-col items-center gap-2 p-4 bg-orange-50 border border-orange-100 rounded-xl hover:bg-orange-100 transition-all text-center">
             <span className="text-2xl">📌</span>
-            <span className="text-xs font-bold text-[var(--primary)]">리드 관리</span>
+            <span className="text-xs font-bold text-orange-900">빠른 리드 관리</span>
           </Link>
         </div>
       </div>
@@ -718,17 +906,38 @@ export default function AdminDashboard() {
               {selectedItem.itemType === 'BOARD_QNA' && (
                 <div className="space-y-4">
                   <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
-                    <h4 className="text-sm font-bold text-[#0F172A] border-b pb-2 flex items-center gap-2">
-                      <span>📝</span> 문의 내용
-                    </h4>
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <h4 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
+                        <span>📝</span> 문의 내용
+                      </h4>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${statusColors[selectedItem.item.status] || 'bg-gray-100 text-gray-600'}`}>
+                        {statusLabel[selectedItem.item.status] || selectedItem.item.status}
+                      </span>
+                    </div>
                     <div className="space-y-2">
-                      <p className="text-xs text-gray-400">제목</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-400">작성자: <span className="font-bold text-gray-700">{selectedItem.item.author}</span></p>
+                        {selectedItem.item.isSecret && (
+                          <span className="text-[11px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-medium">🔒 비공개 비밀글</span>
+                        )}
+                      </div>
                       <h5 className="font-bold text-[#0F172A] text-base">{selectedItem.item.title}</h5>
-                      <p className="text-xs text-gray-400 mt-4">내용 본문</p>
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100 max-h-60 overflow-y-auto">
+                      <p className="text-xs text-gray-400 mt-3">문의 본문</p>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100 max-h-48 overflow-y-auto">
                         {selectedItem.item.content}
                       </p>
                     </div>
+
+                    {selectedItem.item.replyContent && (
+                      <div className="mt-4 pt-4 border-t border-gray-100 space-y-1.5">
+                        <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                          <span>✅</span> 등록된 답변 내용
+                        </span>
+                        <div className="bg-emerald-50/60 border border-emerald-100 p-3 rounded-xl text-xs text-emerald-950 whitespace-pre-wrap">
+                          {selectedItem.item.replyContent}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -736,7 +945,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* 모달 푸터 (상태 변경 및 닫기) */}
-            <div className="bg-gray-100 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+            <div className="bg-gray-100 px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-200">
               <div className="flex items-center gap-3">
                 {selectedItem.itemType !== 'BOARD_QNA' ? (
                   <>
@@ -756,16 +965,21 @@ export default function AdminDashboard() {
                     )}
                   </>
                 ) : (
-                  <span className="text-[10px] text-gray-400 font-semibold">
-                    ※ 게시판 답변은 게시판 상세 메뉴에서 진행해 주시기 바랍니다.
-                  </span>
+                  <Link
+                    href="/admin/board"
+                    onClick={() => setSelectedItem(null)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 bg-[#A67C52] hover:bg-[#8B6840] text-white rounded-xl transition-colors shadow-sm"
+                  >
+                    <span>💬</span>
+                    <span>게시판에서 바로 답변 작성하기</span>
+                  </Link>
                 )}
               </div>
               <button 
                 onClick={() => setSelectedItem(null)}
                 className="px-5 py-2.5 bg-[#0F172A] text-white hover:bg-[#1E293B] rounded-xl text-sm font-bold transition-colors"
               >
-                확인 완료 / 닫기
+                닫기
               </button>
             </div>
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, Download, Phone, Calendar, MapPin, 
-  User, CheckCircle2, AlertCircle, X, RefreshCw 
+  User, CheckCircle2, AlertCircle, X, RefreshCw, Trash2 
 } from 'lucide-react';
 
 const statusLabel: Record<string, string> = {
@@ -107,6 +107,21 @@ export default function AdminConsultationsPage() {
       fetchData(true);
     } catch {
       alert('상태 변경에 실패했습니다.');
+    }
+  };
+
+  const deleteConsultation = async (id: string, name: string) => {
+    if (!confirm(`'${name}' 고객의 상담 예약 내역을 영구 삭제하시겠습니까?`)) return;
+    try {
+      const res = await fetch(`/api/admin/consultations/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        if (selectedItem?.id === id) setSelectedItem(null);
+        fetchData(true);
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    } catch {
+      alert('서버 연결 중 오류가 발생했습니다.');
     }
   };
 
@@ -260,7 +275,7 @@ export default function AdminConsultationsPage() {
             <table className="w-full min-w-[950px]">
               <thead>
                 <tr className="border-b border-[var(--border)] bg-gray-50/80">
-                  {['이름', '연락처', '유형', '업무분야 / 예약일시', '지역', '상담 내용 요약', '상태', '신청일', '상태 변경'].map((h) => (
+                  {['이름', '연락처', '유형', '업무분야 / 예약일시', '지역', '상담 내용 요약', '상태', '신청일', '상태 변경', '관리'].map((h) => (
                     <th key={h} className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -316,6 +331,15 @@ export default function AdminConsultationsPage() {
                           <option key={v} value={v}>{l}</option>
                         ))}
                       </select>
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => deleteConsultation(item.id, item.name)}
+                        className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        title="상담 예약 삭제"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -425,13 +449,22 @@ export default function AdminConsultationsPage() {
                   ))}
                 </select>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedItem(null)}
-                className="px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
-              >
-                닫기
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => deleteConsultation(selectedItem.id, selectedItem.name)}
+                  className="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 border border-rose-200"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedItem(null)}
+                  className="px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
+                >
+                  닫기
+                </button>
+              </div>
             </div>
           </div>
         </div>

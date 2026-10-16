@@ -25,6 +25,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 
+// DELETE /api/admin/consultations/[id] - 상담 예약 영구 삭제
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const session = await requireAdminAuth(request, 'canManageConsultations');
+  if (!session) {
+    return NextResponse.json({ error: '권한이 없습니다.' }, { status: 401 });
+  }
+
+  try {
+    await prisma.consultation.delete({
+      where: { id },
+    });
+    return NextResponse.json({ success: true, message: '상담 예약 데이터가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('Consultation DELETE Error:', error);
+    return NextResponse.json({ error: '삭제 중 오류가 발생했습니다.' }, { status: 500 });
+  }
+}
+
 // GET /api/admin/consultations - 상담 목록 전체 조회
 export async function GET(request: Request) {
   const session = await requireAdminAuth(request, 'canManageConsultations');

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, User, Phone, MapPin, Calendar, HelpCircle, 
   Briefcase, Wallet, Scale, ShieldAlert, FileText,
-  Search, Download, RefreshCw
+  Search, Download, RefreshCw, Trash2
 } from 'lucide-react';
 
 const statusLabel: Record<string, string> = {
@@ -104,6 +104,21 @@ export default function AdminLeadsPage() {
       fetchData(true);
     } catch { 
       alert('상태 변경에 실패했습니다.'); 
+    }
+  };
+
+  const deleteLead = async (id: string, name: string) => {
+    if (!confirm(`'${name}' 고객의 상담 신청 내역을 영구 삭제하시겠습니까?`)) return;
+    try {
+      const res = await fetch(`/api/admin/leads/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        if (selectedLead?.id === id) setSelectedLead(null);
+        fetchData(true);
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    } catch {
+      alert('서버 연결 중 오류가 발생했습니다.');
     }
   };
 
@@ -233,7 +248,7 @@ export default function AdminLeadsPage() {
             <table className="w-full min-w-[1100px]">
               <thead>
                 <tr className="border-b border-[var(--border)] bg-gray-50/80">
-                  {['이름', '연락처', '지역', '채무액', '희망제도', '상담내용 요약', '유입경로', '상태', '신청일', '상태 변경'].map((h) => (
+                  {['이름', '연락처', '지역', '채무액', '희망제도', '상담내용 요약', '유입경로', '상태', '신청일', '상태 변경', '관리'].map((h) => (
                     <th key={h} className="text-left px-4 py-3.5 text-xs font-bold text-gray-500 uppercase whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -282,6 +297,15 @@ export default function AdminLeadsPage() {
                           <option key={v} value={v}>{l}</option>
                         ))}
                       </select>
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => deleteLead(item.id, item.name)}
+                        className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        title="상담 신청 삭제"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -488,12 +512,20 @@ export default function AdminLeadsPage() {
                   ))}
                 </select>
               </div>
-              <button 
-                onClick={() => setSelectedLead(null)}
-                className="px-5 py-2 bg-[#0F172A] text-white hover:bg-[#1E293B] rounded-xl text-xs font-bold transition-colors shadow-sm"
-              >
-                닫기
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => deleteLead(selectedLead.id, selectedLead.name)}
+                  className="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 border border-rose-200"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> 삭제
+                </button>
+                <button 
+                  onClick={() => setSelectedLead(null)}
+                  className="px-5 py-2 bg-[#0F172A] text-white hover:bg-[#1E293B] rounded-xl text-xs font-bold transition-colors shadow-sm"
+                >
+                  닫기
+                </button>
+              </div>
             </div>
 
           </div>

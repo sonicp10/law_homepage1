@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { formatPhone, formatPrice } from '@/lib/utils';
 import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
+import PrivacyModal from '@/components/PrivacyModal';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -15,19 +16,22 @@ export default function DiagnosisPage() {
     birth: '',
     occupation: '',
     monthlyIncome: '',
-    location: '', // 거주지역 추가
+    location: '',
     
     // Step 2: 재산 및 채무
     totalDebt: '',
     creditorCount: '',
     housingType: '',
-    hasMajorAssets: '', // 부동산/차량 등 주요자산 여부
+    hasMajorAssets: '',
     
     // Step 3: 심층 상황
     debtReason: '',
     reliefHistory: '',
     seizureHistory: '',
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // 전화번호 실시간 포맷팅
   useEffect(() => {
@@ -48,7 +52,6 @@ export default function DiagnosisPage() {
     const prevValue = (formData as any)[field] || "";
     let newValue = value;
     
-    // 백스페이스 감지: 글자수가 줄어들었고, 이전 값은 '원'으로 끝났는데 현재 값은 그렇지 않다면 마지막 숫자도 삭제
     if (value.length < prevValue.length && prevValue.endsWith('원') && !value.endsWith('원')) {
       newValue = value.slice(0, -1);
     }
@@ -59,10 +62,21 @@ export default function DiagnosisPage() {
 
   const nextStep = () => {
     // Validation for Step 1
-    if (step === 1 && (!formData.name || !formData.phone || !formData.occupation || !formData.location)) {
-      alert('필수 정보를 모두 입력해 주세요.');
-      return;
+    if (step === 1) {
+      if (!formData.name || !formData.phone || !formData.occupation || !formData.location) {
+        alert('성함, 연락처, 거주지역, 직업을 모두 입력/선택해 주세요.');
+        return;
+      }
     }
+
+    // Validation for Step 2
+    if (step === 2) {
+      if (!formData.totalDebt || !formData.housingType || !formData.hasMajorAssets) {
+        alert('총 채무 금액, 거주 형태, 주요 자산 보유 여부를 입력/선택해 주세요.');
+        return;
+      }
+    }
+
     setStep((prev) => (prev + 1) as Step);
   };
   
@@ -70,6 +84,13 @@ export default function DiagnosisPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.debtReason || !formData.reliefHistory || !formData.seizureHistory) {
+      alert('채무 사유, 면책 이력, 압류/독촉 여부를 모두 선택해 주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
@@ -86,12 +107,14 @@ export default function DiagnosisPage() {
       });
 
       if (!response.ok) throw new Error('Submission failed');
-      // 카카오 픽셀: 자가진단 제출 완료 → 서비스신청 이벤트 전송
+      // 카카오 픽셀: 자가진단 제출 완료
       kakaoPixelEvent.signUp('SignUp');
       setStep(4);
     } catch (error) {
       console.error('Error:', error);
       alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -177,6 +200,7 @@ export default function DiagnosisPage() {
                 {['직장인', '자영업자', '프리랜서', '일용직', '무직'].map((o) => (
                   <button
                     key={o}
+                    type="button"
                     onClick={() => updateField('occupation', o)}
                     className={`py-4 rounded-xl border-2 font-bold transition-all text-sm ${
                       formData.occupation === o 
@@ -214,7 +238,22 @@ export default function DiagnosisPage() {
               </div>
             </div>
 
+            <div className="flex items-center gap-3 pt-2">
+              <input type="checkbox" required className="w-5 h-5 accent-[#A67C52]" id="privacy-diag" />
+              <label htmlFor="privacy-diag" className="text-sm font-medium text-gray-400">
+                개인정보 수집 및 이용동의 
+                <button 
+                  type="button" 
+                  onClick={() => setShowPrivacyModal(true)} 
+                  className="text-[#A67C52] ml-2 cursor-pointer hover:underline"
+                >
+                  전문보기
+                </button>
+              </label>
+            </div>
+
             <button 
+              type="button"
               onClick={nextStep}
               className="w-full py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-lg hover:-translate-y-1 transition-all mt-6"
             >
@@ -234,7 +273,7 @@ export default function DiagnosisPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-bold text-[var(--primary)] mb-2">총 채무 원금 (대략)</label>
+                <label className="block text-sm font-bold text-[var(--primary)] mb-2">총 채무 원금 (대략) *</label>
                 <input 
                   type="text" 
                   value={formData.totalDebt}
@@ -261,6 +300,7 @@ export default function DiagnosisPage() {
                 {['자가', '전세', '월세', '기타'].map((o) => (
                   <button
                     key={o}
+                    type="button"
                     onClick={() => updateField('housingType', o)}
                     className={`py-4 rounded-xl border-2 font-bold transition-all text-sm ${
                       formData.housingType === o 
@@ -280,6 +320,7 @@ export default function DiagnosisPage() {
                 {['있음', '없음'].map((o) => (
                   <button
                     key={o}
+                    type="button"
                     onClick={() => updateField('hasMajorAssets', o)}
                     className={`py-4 rounded-xl border-2 font-bold transition-all ${
                       formData.hasMajorAssets === o 
@@ -294,8 +335,8 @@ export default function DiagnosisPage() {
             </div>
 
             <div className="flex gap-4 mt-6">
-              <button onClick={prevStep} className="flex-1 py-5 bg-gray-100 text-[var(--primary)]/60 rounded-2xl font-bold">이전</button>
-              <button onClick={nextStep} className="flex-[2] py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-lg hover:-translate-y-1 transition-all">다음 단계 (3/3)</button>
+              <button type="button" onClick={prevStep} className="flex-1 py-5 bg-gray-100 text-[var(--primary)]/60 rounded-2xl font-bold">이전</button>
+              <button type="button" onClick={nextStep} className="flex-[2] py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-lg shadow-lg hover:-translate-y-1 transition-all">다음 단계 (3/3)</button>
             </div>
           </div>
         </div>
@@ -315,6 +356,7 @@ export default function DiagnosisPage() {
                 {['생활비', '사업실패', '주식/코인', '보증/사기'].map((o) => (
                   <button
                     key={o}
+                    type="button"
                     onClick={() => updateField('debtReason', o)}
                     className={`py-4 rounded-xl border-2 font-bold transition-all text-xs ${
                       formData.debtReason === o 
@@ -335,6 +377,7 @@ export default function DiagnosisPage() {
                   {['있음', '없음'].map((o) => (
                     <button
                       key={o}
+                      type="button"
                       onClick={() => updateField('reliefHistory', o)}
                       className={`py-4 rounded-xl border-2 font-bold transition-all text-sm ${
                         formData.reliefHistory === o 
@@ -353,6 +396,7 @@ export default function DiagnosisPage() {
                   {['진행 중', '해당 없음'].map((o) => (
                     <button
                       key={o}
+                      type="button"
                       onClick={() => updateField('seizureHistory', o)}
                       className={`py-4 rounded-xl border-2 font-bold transition-all text-sm ${
                         formData.seizureHistory === o 
@@ -368,12 +412,14 @@ export default function DiagnosisPage() {
             </div>
 
             <div className="flex gap-4 mt-10">
-              <button onClick={prevStep} className="flex-1 py-5 bg-gray-100 text-[var(--primary)]/60 rounded-2xl font-bold">이전</button>
+              <button type="button" onClick={prevStep} className="flex-1 py-5 bg-gray-100 text-[var(--primary)]/60 rounded-2xl font-bold">이전</button>
               <button 
+                type="button"
                 onClick={handleSubmit} 
-                className="flex-[2] py-5 bg-[var(--secondary)] text-[var(--primary)] rounded-2xl font-bold text-lg shadow-lg shadow-[var(--secondary)]/20 hover:-translate-y-1 transition-all"
+                disabled={isSubmitting}
+                className="flex-[2] py-5 bg-[var(--secondary)] text-[var(--primary)] rounded-2xl font-bold text-lg shadow-lg shadow-[var(--secondary)]/20 hover:-translate-y-1 transition-all disabled:opacity-50"
               >
-                무료 진단 결과 받기
+                {isSubmitting ? '제출 중...' : '무료 진단 결과 받기'}
               </button>
             </div>
           </div>
@@ -393,6 +439,7 @@ export default function DiagnosisPage() {
             빠른 시일 내에 전문가가 연락드리겠습니다.
           </p>
           <button 
+            type="button"
             onClick={() => window.location.href = '/'}
             className="px-8 py-3.5 bg-[var(--primary)] text-white rounded-full font-bold shadow-lg"
           >
@@ -400,6 +447,8 @@ export default function DiagnosisPage() {
           </button>
         </div>
       )}
+
+      <PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </div>
   );
 }

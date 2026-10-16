@@ -11,8 +11,23 @@ interface BoardItem {
   createdAt: string;
 }
 
+interface DetailItem {
+  id: string;
+  title: string;
+  author: string;
+  content: string;
+  replyContent?: string | null;
+  status: string;
+  createdAt: string;
+}
+
 export default function BoardQnaPage() {
   const [questions, setQuestions] = useState<BoardItem[]>([]);
+  const [selectedQuestion, setSelectedQuestion] = useState<BoardItem | null>(null);
+  const [inputPassword, setInputPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
 
   useEffect(() => {
     fetch('/api/board-qna')
@@ -28,6 +43,44 @@ export default function BoardQnaPage() {
       })
       .catch(() => setQuestions([]));
   }, []);
+
+  const handleRowClick = (q: BoardItem) => {
+    setSelectedQuestion(q);
+    setInputPassword('');
+    setPasswordError('');
+  };
+
+  const handleVerifyPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedQuestion || !inputPassword) return;
+
+    setVerifying(true);
+    setPasswordError('');
+
+    try {
+      const res = await fetch('/api/board-qna/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedQuestion.id,
+          password: inputPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDetailItem(data.item);
+        setSelectedQuestion(null);
+        setInputPassword('');
+      } else {
+        setPasswordError(data.error || '비밀번호가 일치하지 않습니다.');
+      }
+    } catch {
+      setPasswordError('서버 연결 중 오류가 발생했습니다.');
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -63,7 +116,11 @@ export default function BoardQnaPage() {
             <tbody className="divide-y divide-gray-50">
               {questions.length > 0 ? (
                 questions.map((q, idx) => (
-                  <tr key={q.id} className="hover:bg-gray-50 transition-colors cursor-pointer group">
+                  <tr 
+                    key={q.id} 
+                    onClick={() => handleRowClick(q)}
+                    className="hover:bg-gray-50 transition-colors cursor-pointer group"
+                  >
                     <td className="px-4 sm:px-10 py-4 sm:py-6 text-sm text-gray-400 font-medium whitespace-nowrap">{questions.length - idx}</td>
                     <td className="px-3 sm:px-6 py-4 sm:py-6">
                       <div className="flex items-center gap-2 sm:gap-3">
@@ -93,6 +150,128 @@ export default function BoardQnaPage() {
           </table>
         </div>
       </div>
+
+      {/* 비밀번호 확인 모달 */}
+      {selectedQuestion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <h3 className="font-bold text-[#2C3E50]">비밀글 확인</h3>
+              <button 
+                type="button"
+                onClick={() => setSelectedQuestion(null)}
+                className="text-gray-400 hover:text-gray-600 p-1 leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500">
+              작성 시 설정한 비밀번호를 입력해 주세요.
+            </p>
+
+            <form onSubmit={handleVerifyPassword} className="space-y-3">
+              <div>
+                <input
+                  type="password"
+                  required
+                  autoFocus
+                  placeholder="비밀번호"
+                  value={inputPassword}
+                  onChange={(e) => {
+                    setInputPassword(e.target.value);
+                    setPasswordError('');
+                  }}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#A67C52]"
+                />
+                {passwordError && (
+                  <p className="text-xs text-red-500 mt-1">{passwordError}</p>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedQuestion(null)}
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={verifying}
+                  className="flex-1 py-2.5 bg-[#A67C52] text-white rounded-xl text-xs font-bold hover:bg-[#8e6842] transition-colors"
+                >
+                  {verifying ? '확인 중...' : '확인'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 상담 상세 및 답변 열람 모달 */}
+      {detailItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            className="bg-white rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                  detailItem.status === 'PENDING' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'
+                }`}>
+                  {detailItem.status === 'PENDING' ? '답변대기' : '답변완료'}
+                </span>
+                <h3 className="font-bold text-[#2C3E50] text-sm sm:text-base line-clamp-1">{detailItem.title}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailItem(null)}
+                className="text-gray-400 hover:text-gray-600 p-1 leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-5 text-sm">
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-gray-400">상담 문의 내용</span>
+                <div className="bg-gray-50 p-4 rounded-xl text-gray-800 leading-relaxed whitespace-pre-wrap border border-gray-100 text-xs sm:text-sm">
+                  {detailItem.content}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-[#A67C52]">법무사 답변</span>
+                {detailItem.replyContent ? (
+                  <div className="bg-amber-50/50 border border-amber-200/50 p-4 rounded-xl text-gray-800 leading-relaxed whitespace-pre-wrap text-xs sm:text-sm">
+                    {detailItem.replyContent}
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 p-4 rounded-xl text-gray-400 text-xs text-center border border-dashed border-gray-200">
+                    현재 담당 법무사가 문의 내용을 확인 중입니다. 빠른 시일 내에 답변이 등록됩니다.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setDetailItem(null)}
+                className="px-5 py-2 bg-[#2C3E50] text-white rounded-lg text-xs font-bold hover:bg-[#1A252F] transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

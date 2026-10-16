@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { formatPhone } from '@/lib/utils';
+import PrivacyModal from '@/components/PrivacyModal';
 
 export default function VisitConsultPage() {
   const today = new Date();
@@ -9,6 +10,8 @@ export default function VisitConsultPage() {
 
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -59,6 +62,8 @@ export default function VisitConsultPage() {
       alert('거주지역을 선택해주세요.');
       return;
     }
+
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/consultations', {
         method: 'POST',
@@ -70,8 +75,10 @@ export default function VisitConsultPage() {
       } else {
         alert('전송 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
       }
-    } catch (err) {
+    } catch {
       alert('서버 연결 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -89,6 +96,7 @@ export default function VisitConsultPage() {
           예약 일정을 확인한 후 신속하게 연락드리겠습니다.
         </p>
         <button 
+          type="button"
           onClick={() => window.location.href = '/'}
           className="px-8 py-4 bg-[#B89E6E] text-white rounded-xl font-bold text-base shadow-lg hover:bg-[#A67C52] transition-all inline-block mt-4"
         >
@@ -103,7 +111,7 @@ export default function VisitConsultPage() {
       <form onSubmit={handleSubmit} className="space-y-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           
-          {/* Left: Calendar (Visual mockup based on Image 2) */}
+          {/* Left: Calendar */}
           <div className="lg:col-span-5">
             <label className="flex items-center gap-2 text-lg font-bold text-[#2C3E50] mb-8">
               <span className="w-1.5 h-1.5 bg-[#A67C52] rounded-full"></span> 예약날짜선택
@@ -313,21 +321,31 @@ export default function VisitConsultPage() {
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-center break-keep">
                 <input type="checkbox" required className="w-5 h-5 accent-[#A67C52] flex-shrink-0" id="privacy-visit" />
                 <label htmlFor="privacy-visit" className="text-sm font-medium text-gray-400">
-                  개인정보 수집 및 이용동의 <span className="text-[#A67C52] ml-2 cursor-pointer hover:underline">전문보기</span>
+                  개인정보 수집 및 이용동의 
+                  <button 
+                    type="button"
+                    onClick={() => setShowPrivacyModal(true)} 
+                    className="text-[#A67C52] ml-2 cursor-pointer hover:underline"
+                  >
+                    전문보기
+                  </button>
                 </label>
             </div>
 
             <button 
               type="submit"
-              className="w-full sm:w-auto px-10 sm:px-24 py-5 bg-[#B89E6E] text-white rounded-xl font-bold text-xl shadow-xl hover:bg-[#A67C52] transition-all flex items-center justify-center gap-3 whitespace-nowrap"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-10 sm:px-24 py-5 bg-[#B89E6E] text-white rounded-xl font-bold text-xl shadow-xl hover:bg-[#A67C52] transition-all flex items-center justify-center gap-3 whitespace-nowrap disabled:opacity-50"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 flex-shrink-0">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              예약하기
+              {isSubmitting ? '예약 중...' : '예약하기'}
             </button>
         </div>
       </form>
+
+      <PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </div>
   );
 }

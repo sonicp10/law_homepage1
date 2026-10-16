@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatPhone } from '@/lib/utils';
+import PrivacyModal from '@/components/PrivacyModal';
 
 export default function BoardWritePage() {
   const router = useRouter();
@@ -15,10 +16,19 @@ export default function BoardWritePage() {
     title: '',
     content: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.password.length < 4) {
+      alert('비밀번호는 최소 4자리 이상 입력해 주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/board-qna', {
         method: 'POST',
@@ -30,8 +40,10 @@ export default function BoardWritePage() {
       } else {
         alert('등록 중 오류가 발생했습니다.');
       }
-    } catch (err) {
+    } catch {
       alert('서버 연결 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -50,12 +62,14 @@ export default function BoardWritePage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <button 
+            type="button"
             onClick={() => router.push('/qna/board')}
             className="px-6 py-4 bg-[#2C3E50] text-white rounded-xl font-bold text-base shadow-lg hover:bg-[#1A252F] transition-all inline-block"
           >
             목록으로 이동
           </button>
           <button 
+            type="button"
             onClick={() => window.location.href = '/'}
             className="px-6 py-4 bg-[#B89E6E] text-white rounded-xl font-bold text-base shadow-lg hover:bg-[#A67C52] transition-all inline-block"
           >
@@ -96,7 +110,8 @@ export default function BoardWritePage() {
                   <input 
                     required
                     type="password" 
-                    placeholder="비밀번호를 입력하세요"
+                    minLength={4}
+                    placeholder="비밀번호를 입력하세요 (4자리 이상)"
                     className="w-full px-6 py-3 border border-gray-100 rounded-lg focus:outline-none focus:border-[#A67C52]"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -201,22 +216,32 @@ export default function BoardWritePage() {
              <div className="flex items-center gap-3">
                 <input type="checkbox" required className="w-5 h-5 accent-[#A67C52]" id="privacy-board" />
                 <label htmlFor="privacy-board" className="text-sm font-medium text-gray-400">
-                  개인정보 수집 및 이용동의 <span className="text-[#A67C52] ml-2 cursor-pointer hover:underline">전문보기</span>
+                  개인정보 수집 및 이용동의 
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPrivacyModal(true)} 
+                    className="text-[#A67C52] ml-2 cursor-pointer hover:underline"
+                  >
+                    전문보기
+                  </button>
                 </label>
              </div>
              
              <button 
                type="submit"
-               className="px-24 py-5 bg-[#B89E6E] text-white rounded-xl font-bold text-xl shadow-xl hover:bg-[#A67C52] transition-all flex items-center gap-3"
+               disabled={isSubmitting}
+               className="px-24 py-5 bg-[#B89E6E] text-white rounded-xl font-bold text-xl shadow-xl hover:bg-[#A67C52] transition-all flex items-center gap-3 disabled:opacity-50"
              >
                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.023c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                </svg>
-               문의하기
+               {isSubmitting ? '등록 중...' : '문의하기'}
              </button>
           </div>
         </form>
       </div>
+
+      <PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </div>
   );
 }

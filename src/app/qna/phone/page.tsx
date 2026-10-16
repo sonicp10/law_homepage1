@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { formatPhone } from '@/lib/utils';
+import PrivacyModal from '@/components/PrivacyModal';
 
 export default function PhoneConsultPage() {
   const [formData, setFormData] = useState({
@@ -10,10 +11,13 @@ export default function PhoneConsultPage() {
     location: '',
     category: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/consultations', {
         method: 'POST',
@@ -25,8 +29,10 @@ export default function PhoneConsultPage() {
       } else {
         alert('전송 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
       }
-    } catch (err) {
+    } catch {
       alert('서버 연결 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -44,6 +50,7 @@ export default function PhoneConsultPage() {
           신속하게 내용을 확인한 후 법무사가 직접 연락드리겠습니다.
         </p>
         <button 
+          type="button"
           onClick={() => window.location.href = '/'}
           className="px-8 py-4 bg-[#B89E6E] text-white rounded-xl font-bold text-base shadow-lg hover:bg-[#A67C52] transition-all inline-block mt-4"
         >
@@ -152,18 +159,26 @@ export default function PhoneConsultPage() {
             <div className="flex items-center gap-3 pt-4">
                 <input type="checkbox" required className="w-5 h-5 accent-[#A67C52]" id="privacy" />
                 <label htmlFor="privacy" className="text-sm font-medium text-gray-400">
-                  개인정보 수집 및 이용동의 <span className="text-[#A67C52] ml-2 cursor-pointer hover:underline">전문보기</span>
+                  개인정보 수집 및 이용동의 
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPrivacyModal(true)} 
+                    className="text-[#A67C52] ml-2 cursor-pointer hover:underline"
+                  >
+                    전문보기
+                  </button>
                 </label>
             </div>
 
             <button 
               type="submit"
-              className="w-full flex items-center justify-center gap-3 py-6 bg-[#B89E6E] text-white rounded-xl font-bold text-xl shadow-xl hover:bg-[#A67C52] transition-all"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-3 py-6 bg-[#B89E6E] text-white rounded-xl font-bold text-xl shadow-xl hover:bg-[#A67C52] transition-all disabled:opacity-50"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 12.426 10.074 22.5 22.5 22.5 1.242 0 2.25-1.008 2.25-2.25v-4.509c0-1.11-.901-2.009-2.008-2.009l-4.509.006c-1.11 0-2.012.91-2.012 2.009l-.014 2.254c-7.923-1.01-14.332-7.419-15.342-15.342l2.254-.014c1.098 0 2.009-.902 2.009-2.012l.006-4.509c0-1.11-.899-2.008-2.009-2.008H4.5c-1.242 0-2.25 1.008-2.25 2.25v4.5z" />
               </svg>
-              상담 신청
+              {isSubmitting ? '신청 중...' : '상담 신청'}
             </button>
           </form>
         </div>
@@ -177,6 +192,8 @@ export default function PhoneConsultPage() {
           />
         </div>
       </div>
+
+      <PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </div>
   );
 }

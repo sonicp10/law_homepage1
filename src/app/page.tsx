@@ -77,11 +77,6 @@ export default function HomePage() {
               </div>
             </div>
             
-            <p className="text-lg md:text-2xl text-[var(--primary)]/90 mb-10 md:mb-12 leading-relaxed max-w-2xl mx-auto lg:mx-0 px-2 md:px-0 font-medium">
-              포기하고 싶었던 순간이 있으셨나요? 그 마음 충분히<br className="hidden md:block" />
-              이해합니다. 이제 내려 놓으세요! 저희가 하겠습니다.
-            </p>
-            
             <div className="flex flex-col sm:flex-row gap-4 md:gap-5 justify-center lg:justify-start px-4 sm:px-0">
               <Link href="/qna/diagnosis" className="px-6 md:px-10 py-4 md:py-5 bg-[var(--primary)] text-white rounded-2xl font-bold text-base md:text-lg shadow-2xl shadow-[var(--primary)]/20 hover:-translate-y-1.5 transition-all text-center">
                 <span>1분 자가진단 바로가기 ➔</span>

@@ -20,6 +20,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function FloatingConsultForm() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [position, setPosition] = useState({ x: 20, y: 150 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -59,17 +60,34 @@ export default function FloatingConsultForm() {
   const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsOpen(true);
-    
-    // 로컬 스토리지에서 위치 기억 (새로고침 시 유지)
-    const savedPos = localStorage.getItem('widgetPos');
-    if (savedPos) {
-      try {
-        setPosition(JSON.parse(savedPos));
-      } catch (e) {
-        console.error('Failed to load position');
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      return mobile;
+    };
+
+    const mobile = checkMobile();
+    if (!mobile) {
+      // 데스크톱: 기본 열림 상태
+      setIsOpen(true);
+      const savedPos = localStorage.getItem('widgetPos');
+      if (savedPos) {
+        try {
+          setPosition(JSON.parse(savedPos));
+        } catch (e) {
+          console.error('Failed to load position');
+        }
       }
+    } else {
+      // 모바일: 사용자가 요청한 대로 기본 축소 버튼(서류 아이콘) 상태로 시작하여 뒤의 글귀 가림 방지
+      setIsOpen(false);
     }
+
+    const handleResize = () => {
+      checkMobile();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -162,33 +180,27 @@ export default function FloatingConsultForm() {
           // 카카오 픽셀: 상담 폼 열기 → 잠재고객 이벤트 전송
           kakaoPixelEvent.participation('Consulting');
         }}
-        className="fixed left-6 bottom-40 z-50 w-16 h-16 bg-[#2C3E50] text-[#90CAF9] rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-2 border-[#34495E]"
+        className="fixed left-4 md:left-6 bottom-20 md:bottom-40 z-50 w-14 h-14 md:w-16 md:h-16 bg-[#2C3E50] text-[#90CAF9] rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-2 border-[#34495E]"
+        aria-label="실시간 상담신청 열기"
+        title="실시간 상담신청"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-7 h-7 md:w-8 md:h-8">
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
         </svg>
       </button>
     );
   }
 
-  return (
-    <div 
-      ref={widgetRef}
-      onMouseDown={handleMouseDown}
-      style={{ left: position.x, top: position.y }}
-      className={`fixed z-[100] transition-transform duration-300 ${isDragging ? 'cursor-grabbing scale-[1.02]' : 'cursor-grab'}`}
-    >
-      {/* Ultra-Wide & Shorter Premium Frame */}
-      <div className="relative w-[260px] sm:w-[280px] lg:w-[300px] bg-gradient-to-br from-[#F3EAD3] via-[#E8DCC4] to-[#D4CEC1] border border-[#C4B494] rounded-[3rem] p-3 transition-all shadow-[0_30px_60px_rgba(0,0,0,0.3),inset_0_2px_5px_rgba(255,255,255,0.8)]">
-        
-        {/* Metallic Luster Reflection */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 pointer-events-none rounded-[3rem]"></div>
+  const widgetBody = (
+    <div className="relative w-[280px] sm:w-[290px] lg:w-[300px] bg-gradient-to-br from-[#F3EAD3] via-[#E8DCC4] to-[#D4CEC1] border border-[#C4B494] rounded-[3rem] p-3 transition-all shadow-[0_30px_60px_rgba(0,0,0,0.3),inset_0_2px_5px_rgba(255,255,255,0.8)]">
+      {/* Metallic Luster Reflection */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 pointer-events-none rounded-[3rem]"></div>
 
-        {/* Header Sensors */}
-        <div className="h-7 flex items-center justify-center gap-3 select-none">
-          <div className="w-10 h-1.5 bg-[#BFAF8F]/30 rounded-full shadow-inner"></div>
-          <div className="w-2.5 h-2.5 bg-[#BFAF8F]/30 rounded-full shadow-inner"></div>
-        </div>
+      {/* Header Sensors */}
+      <div className="h-7 flex items-center justify-center gap-3 select-none">
+        <div className="w-10 h-1.5 bg-[#BFAF8F]/30 rounded-full shadow-inner"></div>
+        <div className="w-2.5 h-2.5 bg-[#BFAF8F]/30 rounded-full shadow-inner"></div>
+      </div>
 
         {/* Inner Content Area (Deep Navy Screen) */}
         <div className="bg-[#1A252F] rounded-[2rem] p-5 sm:p-6 pt-5 flex flex-col h-full border border-black/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
@@ -368,6 +380,29 @@ export default function FloatingConsultForm() {
           </svg>
         </button>
       </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div 
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setIsOpen(false);
+        }}
+      >
+        {widgetBody}
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      ref={widgetRef}
+      onMouseDown={handleMouseDown}
+      style={{ left: position.x, top: position.y }}
+      className={`fixed z-[100] transition-transform duration-300 ${isDragging ? 'cursor-grabbing scale-[1.02]' : 'cursor-grab'}`}
+    >
+      {widgetBody}
     </div>
   );
 }

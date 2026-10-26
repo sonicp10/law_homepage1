@@ -180,7 +180,7 @@ export default function FloatingConsultForm() {
           // 카카오 픽셀: 상담 폼 열기 → 잠재고객 이벤트 전송
           kakaoPixelEvent.participation('Consulting');
         }}
-        className="fixed left-4 md:left-6 bottom-20 md:bottom-40 z-50 w-14 h-14 md:w-16 md:h-16 bg-[#2C3E50] text-[#90CAF9] rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-2 border-[#34495E]"
+        className="fixed left-4 md:left-6 bottom-[84px] md:bottom-40 z-50 w-14 h-14 md:w-16 md:h-16 bg-[#2C3E50] text-[#90CAF9] rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-2 border-[#34495E]"
         aria-label="실시간 상담신청 열기"
         title="실시간 상담신청"
       >

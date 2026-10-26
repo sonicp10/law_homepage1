@@ -15,7 +15,7 @@ export default function PublicLayoutWrapper({ children }: { children: React.Reac
   }
 
   return (
-    <div className="min-h-screen flex flex-col pt-0">
+    <div className="min-h-screen flex flex-col pt-0 pb-20 md:pb-0">
       <Header />
       <main className="flex-grow">
         {children}

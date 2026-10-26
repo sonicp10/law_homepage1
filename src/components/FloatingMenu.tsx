@@ -22,6 +22,14 @@ export default function FloatingMenu() {
     }
   };
 
+  const handleCallClick = () => {
+    try {
+      kakaoPixelEvent.participation('PhoneCall');
+    } catch {
+      // ignore
+    }
+  };
+
   return (
     <>
       {/* Desktop Floating Menu (Hidden on Mobile) */}
@@ -81,24 +89,8 @@ export default function FloatingMenu() {
         </button>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[var(--primary)] flex items-stretch h-14 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] pb-safe">
-        <Link href="/qna/diagnosis" prefetch={false} className="flex-1 flex flex-col items-center justify-center gap-0.5 border-r border-white/10 active:bg-white/10 transition-colors">
-          <span className="text-lg">📊</span>
-          <span className="text-[10px] font-bold text-white/90">1분 자가진단</span>
-        </Link>
-        <Link href="/qna/visit" prefetch={false} className="flex-1 flex flex-col items-center justify-center gap-0.5 border-r border-white/10 active:bg-white/10 transition-colors">
-          <span className="text-lg">📅</span>
-          <span className="text-[10px] font-bold text-white/90">방문예약</span>
-        </Link>
-        <Link href="/qna/phone" prefetch={false} className="flex-[1.2] flex flex-col items-center justify-center gap-0.5 bg-[var(--secondary)] active:brightness-90 transition-all text-white">
-          <span className="text-lg">📞</span>
-          <span className="text-[11px] font-extrabold tracking-wide">빠른 상담예약</span>
-        </Link>
-      </div>
-      
-      {/* Floating Actions - Mobile */}
-      <div className="md:hidden fixed right-4 bottom-20 z-50 flex flex-col items-center gap-3">
+      {/* Floating Actions - Mobile (Right side, positioned above the sticky bar) */}
+      <div className="md:hidden fixed right-4 bottom-[84px] z-50 flex flex-col items-center gap-2.5">
         <a
           href={KAKAO_CHAT_URL}
           target="_blank"
@@ -119,6 +111,36 @@ export default function FloatingMenu() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
           </svg>
         </button>
+      </div>
+
+      {/* Mobile Bottom Full-Width Sticky Call Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md border-t border-gray-200 p-2 sm:p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-8px_25px_rgba(0,0,0,0.15)]">
+        <a
+          href="tel:02-6405-6363"
+          onClick={handleCallClick}
+          className="relative flex items-center justify-center gap-2.5 sm:gap-3 w-full py-3.5 bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#1E40AF] text-white rounded-2xl shadow-lg shadow-blue-600/30 active:scale-[0.98] transition-all overflow-hidden group"
+          aria-label="지금 바로 법무사와 전화 상담하기"
+        >
+          {/* Subtle Shine Animation */}
+          <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 pointer-events-none"></div>
+
+          {/* Pulsing Phone Icon Badge */}
+          <span className="relative flex items-center justify-center w-8 h-8 rounded-full bg-white/20 text-white shrink-0 animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
+              <path fillRule="evenodd" d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" clipRule="evenodd" />
+            </svg>
+          </span>
+
+          {/* Typography */}
+          <div className="flex flex-col items-center leading-tight">
+            <span className="text-[15px] sm:text-[17px] font-black tracking-tight text-white flex items-center gap-1">
+              지금 바로 법무사와 전화 상담하기
+            </span>
+            <span className="text-[11px] font-bold text-blue-200 mt-0.5 tracking-wide">
+              02-6405-6363 · 100% 비밀보장 무료상담
+            </span>
+          </div>
+        </a>
       </div>
     </>
   );

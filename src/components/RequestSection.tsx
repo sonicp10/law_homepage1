@@ -201,10 +201,6 @@ export default function RequestSection() {
                             {...register('location')}
                             type="text" 
                             placeholder="예: 서울 서초구"
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣\s]/g, '');
-                              setValue('location', value);
-                            }}
                             className="w-full px-4 py-3.5 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--secondary)] transition-colors text-sm"
                           />
                         </div>
@@ -213,6 +209,7 @@ export default function RequestSection() {
                           <input 
                             {...register('debtAmount')}
                             type="text" 
+                            value={debtValue || ''}
                             placeholder="예: 50,000,000원"
                             onChange={(e) => {
                               const value = e.target.value;

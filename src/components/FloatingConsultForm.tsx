@@ -7,6 +7,7 @@ import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPhone } from '@/lib/utils';
 import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
+import { reportGoogleAdsConversion } from '@/components/analytics/GoogleAdsTag';
 
 const formSchema = z.object({
   type: z.enum(['개인회생', '개인파산']),
@@ -129,6 +130,9 @@ export default function FloatingConsultForm() {
 
         // 카카오 픽셀: 상담 신청 완료 이벤트 전송 (가장 중요한 전환 이벤트)
         kakaoPixelEvent.completeRegistration('Consulting');
+        
+        // Google Ads: 리드 양식 제출 전환 이벤트 전송
+        reportGoogleAdsConversion();
         
         // 3초 후 자동으로 닫기 (사용자 요청 사항)
         setTimeout(() => {

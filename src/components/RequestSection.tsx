@@ -7,6 +7,7 @@ import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPhone, formatPrice } from '@/lib/utils';
 import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
+import { reportGoogleAdsConversion } from '@/components/analytics/GoogleAdsTag';
 
 const sectionFormSchema = z.object({
   name: z.string().min(2, { message: '성함을 입력해주세요.' }),
@@ -53,15 +54,6 @@ export default function RequestSection() {
     }
   }, [phoneValue, setValue]);
 
-  // 전화번호 자동 포맷팅
-  useEffect(() => {
-    if (!phoneValue) return;
-    const formatted = formatPhone(phoneValue);
-    if (formatted !== phoneValue) {
-      setValue('phone', formatted, { shouldValidate: true });
-    }
-  }, [phoneValue, setValue]);
-
   const onFormSubmit = async (data: SectionFormData) => {
     setIsSubmitting(true);
     try {
@@ -79,6 +71,8 @@ export default function RequestSection() {
         reset();
         // 카카오 픽셀: 메인 섹션 상담 신청 완료 이벤트 전송
         kakaoPixelEvent.completeRegistration('Consulting');
+        // Google Ads: 리드 양식 제출 전환 이벤트 전송
+        reportGoogleAdsConversion();
         setTimeout(() => setIsSuccess(false), 5000);
       } else {
         alert('전송 중 오류가 발생했습니다.');

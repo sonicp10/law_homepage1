@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { formatPhone } from '@/lib/utils';
 import PrivacyModal from '@/components/PrivacyModal';
+import { reportGoogleAdsConversion } from '@/components/analytics/GoogleAdsTag';
+import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
 
 export default function VisitConsultPage() {
   const today = new Date();
@@ -72,6 +74,8 @@ export default function VisitConsultPage() {
       });
       if (res.ok) {
         setIsSubmitted(true);
+        kakaoPixelEvent.completeRegistration('VisitReservation');
+        reportGoogleAdsConversion();
       } else {
         alert('전송 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
       }

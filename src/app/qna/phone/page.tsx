@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { formatPhone } from '@/lib/utils';
 import PrivacyModal from '@/components/PrivacyModal';
+import { reportGoogleAdsConversion } from '@/components/analytics/GoogleAdsTag';
+import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
 
 export default function PhoneConsultPage() {
   const [formData, setFormData] = useState({
@@ -26,6 +28,8 @@ export default function PhoneConsultPage() {
       });
       if (res.ok) {
         setIsSubmitted(true);
+        kakaoPixelEvent.completeRegistration('PhoneConsult');
+        reportGoogleAdsConversion();
       } else {
         alert('전송 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
       }

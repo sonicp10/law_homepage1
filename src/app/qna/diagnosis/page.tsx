@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { formatPhone, formatPrice } from '@/lib/utils';
 import { kakaoPixelEvent } from '@/components/analytics/KakaoPixel';
+import { reportGoogleAdsConversion } from '@/components/analytics/GoogleAdsTag';
 import PrivacyModal from '@/components/PrivacyModal';
 
 type Step = 1 | 2 | 3 | 4;
@@ -109,6 +110,8 @@ export default function DiagnosisPage() {
       if (!response.ok) throw new Error('Submission failed');
       // 카카오 픽셀: 자가진단 제출 완료
       kakaoPixelEvent.signUp('SignUp');
+      // Google Ads: 리드 양식 제출 전환 이벤트 전송
+      reportGoogleAdsConversion();
       setStep(4);
     } catch (error) {
       console.error('Error:', error);

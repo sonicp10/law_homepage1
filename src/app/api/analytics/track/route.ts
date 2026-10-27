@@ -46,7 +46,13 @@ export async function POST(request: Request) {
 
     const { path, referrer, userAgent } = validation.data;
 
-    // 4. 관리자 URL 경로 필터링
+    // 4. 검색엔진 크롤러 / 광고 심사 봇 / 스캐너 자동 제외
+    const BOT_REGEX = /bot|crawler|spider|googlebot|bingbot|yandex|naverbot|bytespider|headlesschrome|headless|phantomjs|python|axios|curl|wget|lighthouse|mediapartners|adsbot|ads-naver|dataprovider/i;
+    if (userAgent && BOT_REGEX.test(userAgent)) {
+      return NextResponse.json({ success: true, message: 'Bot/crawler visit ignored' });
+    }
+
+    // 5. 관리자 URL 경로 필터링
     if (path.startsWith('/admin')) {
       return NextResponse.json({ success: true, message: 'Admin route ignored' });
     }

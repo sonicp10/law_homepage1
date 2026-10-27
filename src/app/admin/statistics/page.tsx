@@ -118,6 +118,11 @@ export default function StatisticsPage() {
             <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1 border border-emerald-200/50">
               🛡️ 관리자 테스트 유입 자동 제외 중 ({data?.currentAdminIp || '내 IP'})
             </span>
+            {typeof data?.summary?.botVisitsFiltered === 'number' && data.summary.botVisitsFiltered > 0 && (
+              <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-full flex items-center gap-1 border border-purple-200/50" title="검색엔진 크롤러 및 봇 허수 트래픽 필터링됨">
+                🤖 봇/크롤러 {data.summary.botVisitsFiltered}건 필터링 완료
+              </span>
+            )}
             <button
               onClick={handleCleanupTestLogs}
               className="px-2.5 py-1 bg-gray-100 hover:bg-rose-50 hover:text-rose-600 text-gray-600 text-xs font-bold rounded-full transition-colors flex items-center gap-1 cursor-pointer border border-gray-200"

@@ -21,6 +21,14 @@ export function getKSTEndOfDay(dateStr: string): Date {
   return new Date(`${dateStr}T23:59:59.999+09:00`);
 }
 
+// 검색엔진 크롤러 및 봇 필터링 정규식
+const BOT_REGEX = /bot|crawler|spider|googlebot|bingbot|yandex|naverbot|bytespider|headlesschrome|headless|phantomjs|python|axios|curl|wget|lighthouse|mediapartners|adsbot|ads-naver|dataprovider/i;
+
+export function isBot(userAgent: string | null): boolean {
+  if (!userAgent) return false;
+  return BOT_REGEX.test(userAgent);
+}
+
 // 유입 출처 스마트 분류 함수
 function categorizeReferrer(rawRef: string | null): { name: string; category: string; icon: string } {
   if (!rawRef || rawRef.trim() === '' || rawRef === 'Direct') {
@@ -152,55 +160,44 @@ export async function GET(request: Request) {
         }
       }
     }
+    // 1-1. 이전 기간 계산용 타임스탬프
+    const duration = endDate.getTime() - startDate.getTime();
+    const prevStartDate = new Date(startDate.getTime() - duration - 1000);
+    const prevEndDate = new Date(startDate.getTime() - 1);
 
-    // 1. 현재 기간 데이터 집계 (관리자 테스트 제외)
-    const [totalViews, uniqueVisitors, leadCount, consultCount, qnaCount] = await Promise.all([
-      prisma.analytics.count({
+    // 1-2. 현재 기간 및 이전 기간 데이터 집계 (단일 병렬 쿼리로 DB 부하 최소화)
+    const [currentRawLogs, prevRawLogs, leadCount, consultCount, qnaCount, prevLeadC, prevConsultC, prevQnaC] = await Promise.all([
+      prisma.analytics.findMany({
         where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
+        select: { id: true, createdAt: true, ip: true, path: true, referrer: true, userAgent: true },
       }),
-      prisma.analytics.groupBy({
-        by: ['ip'],
-        where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
-      }).then(res => res.length),
-      prisma.lead.count({
-        where: { createdAt: { gte: startDate, lte: endDate } },
+      prisma.analytics.findMany({
+        where: { ...adminFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
+        select: { id: true, ip: true, userAgent: true },
       }),
-      prisma.consultation.count({
-        where: { createdAt: { gte: startDate, lte: endDate } },
-      }),
-      prisma.boardQna.count({
-        where: { createdAt: { gte: startDate, lte: endDate } },
-      }),
+      prisma.lead.count({ where: { createdAt: { gte: startDate, lte: endDate } } }),
+      prisma.consultation.count({ where: { createdAt: { gte: startDate, lte: endDate } } }),
+      prisma.boardQna.count({ where: { createdAt: { gte: startDate, lte: endDate } } }),
+      prisma.lead.count({ where: { createdAt: { gte: prevStartDate, lte: prevEndDate } } }),
+      prisma.consultation.count({ where: { createdAt: { gte: prevStartDate, lte: prevEndDate } } }),
+      prisma.boardQna.count({ where: { createdAt: { gte: prevStartDate, lte: prevEndDate } } }),
     ]);
+
+    // 1-3. 봇/크롤러 허수 트래픽 필터링 (순수 사람 의뢰인 데이터만 정제)
+    const currentLogs = currentRawLogs.filter(r => !isBot(r.userAgent));
+    const prevLogs = prevRawLogs.filter(r => !isBot(r.userAgent));
+    const botVisitsFiltered = currentRawLogs.length - currentLogs.length;
+
+    const totalViews = currentLogs.length;
+    const uniqueVisitors = new Set(currentLogs.map(r => r.ip).filter(Boolean)).size;
+
+    const prevViews = prevLogs.length;
+    const prevVisitors = new Set(prevLogs.map(r => r.ip).filter(Boolean)).size;
 
     const totalLeads = leadCount + consultCount + qnaCount;
     const conversionRate = uniqueVisitors > 0 
       ? Number(((totalLeads / uniqueVisitors) * 100).toFixed(1)) 
       : 0;
-
-    // 1-1. 이전 기간 데이터 집계 (증감률 계산용)
-    const duration = endDate.getTime() - startDate.getTime();
-    const prevStartDate = new Date(startDate.getTime() - duration - 1000);
-    const prevEndDate = new Date(startDate.getTime() - 1);
-
-    const [prevViews, prevVisitors, prevLeadC, prevConsultC, prevQnaC] = await Promise.all([
-      prisma.analytics.count({
-        where: { ...adminFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
-      }),
-      prisma.analytics.groupBy({
-        by: ['ip'],
-        where: { ...adminFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
-      }).then(res => res.length),
-      prisma.lead.count({
-        where: { createdAt: { gte: prevStartDate, lte: prevEndDate } },
-      }),
-      prisma.consultation.count({
-        where: { createdAt: { gte: prevStartDate, lte: prevEndDate } },
-      }),
-      prisma.boardQna.count({
-        where: { createdAt: { gte: prevStartDate, lte: prevEndDate } },
-      }),
-    ]);
 
     const prevLeads = prevLeadC + prevConsultC + prevQnaC;
     const prevConvRate = prevVisitors > 0 ? (prevLeads / prevVisitors) * 100 : 0;
@@ -217,14 +214,9 @@ export async function GET(request: Request) {
       rateTrend: calcTrend(conversionRate, prevConvRate),
     };
 
-    // 2. 스마트 유입 경로 통계
-    const rawReferrers = await prisma.analytics.findMany({
-      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
-      select: { referrer: true },
-    });
-
+    // 2. 스마트 유입 경로 통계 (순수 사람 기준)
     const smartReferrerMap: { [key: string]: { name: string; count: number; icon: string; category: string } } = {};
-    rawReferrers.forEach(item => {
+    currentLogs.forEach(item => {
       const cat = categorizeReferrer(item.referrer);
       if (!smartReferrerMap[cat.name]) {
         smartReferrerMap[cat.name] = { name: cat.name, count: 0, icon: cat.icon, category: cat.category };
@@ -236,23 +228,19 @@ export async function GET(request: Request) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // 3. 인기 페이지 통계
-    const popularPages = await prisma.analytics.groupBy({
-      by: ['path'],
-      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
-      _count: { path: true },
-      orderBy: { _count: { path: 'desc' } },
-      take: 10,
+    // 3. 인기 페이지 통계 (순수 사람 기준)
+    const pageCounts: { [path: string]: number } = {};
+    currentLogs.forEach(item => {
+      pageCounts[item.path] = (pageCounts[item.path] || 0) + 1;
     });
+    const popularPages = Object.entries(pageCounts)
+      .map(([path, count]) => ({ path, _count: { path: count } }))
+      .sort((a, b) => b._count.path - a._count.path)
+      .slice(0, 10);
 
     // 4. 날짜별 추이 데이터 (KST 기준)
-    const hourlyData = await prisma.analytics.findMany({
-      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
-      select: { createdAt: true },
-    });
-
     const processedTrend: { [key: string]: number } = {};
-    hourlyData.forEach(item => {
+    currentLogs.forEach(item => {
       const kstTime = toKST(item.createdAt);
       const dateStr = kstTime.toISOString().split('T')[0];
       processedTrend[dateStr] = (processedTrend[dateStr] || 0) + 1;
@@ -267,7 +255,7 @@ export async function GET(request: Request) {
     for (let i = 0; i < 24; i++) {
       hourlyBreakdown[String(i).padStart(2, '0')] = 0;
     }
-    hourlyData.forEach(item => {
+    currentLogs.forEach(item => {
       const kstTime = toKST(item.createdAt);
       const hour = String(kstTime.getUTCHours()).padStart(2, '0');
       hourlyBreakdown[hour] = (hourlyBreakdown[hour] || 0) + 1;
@@ -283,12 +271,7 @@ export async function GET(request: Request) {
       .slice(0, 2)
       .map(h => h.hour);
 
-    // 6. 디바이스/브라우저 분석
-    const deviceAnalytics = await prisma.analytics.findMany({
-      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
-      select: { userAgent: true },
-    });
-
+    // 6. 디바이스/브라우저 분석 (순수 사람 기준)
     const parseDevice = (userAgent: string | null) => {
       if (!userAgent) return '기타 (Unknown)';
       const ua = userAgent.toLowerCase();
@@ -312,14 +295,14 @@ export async function GET(request: Request) {
     const deviceDistribution: { [key: string]: number } = {};
     const browserDistribution: { [key: string]: number } = {};
 
-    deviceAnalytics.forEach(item => {
+    currentLogs.forEach(item => {
       const device = parseDevice(item.userAgent);
       const browser = parseBrowser(item.userAgent);
       deviceDistribution[device] = (deviceDistribution[device] || 0) + 1;
       browserDistribution[browser] = (browserDistribution[browser] || 0) + 1;
     });
 
-    const totalLogs = deviceAnalytics.length || 1;
+    const totalLogs = currentLogs.length || 1;
 
     const deviceChart = Object.entries(deviceDistribution)
       .map(([device, count]) => ({ 
@@ -341,7 +324,7 @@ export async function GET(request: Request) {
     const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
     const dayAnalytics: { [key: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
 
-    hourlyData.forEach(item => {
+    currentLogs.forEach(item => {
       const kstTime = toKST(item.createdAt);
       const day = kstTime.getUTCDay();
       dayAnalytics[day] = (dayAnalytics[day] || 0) + 1;
@@ -368,6 +351,7 @@ export async function GET(request: Request) {
         consultationBreakdown,
         trends,
         peakHours,
+        botVisitsFiltered,
       },
       referrers,
       popularPages,

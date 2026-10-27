@@ -1,7 +1,25 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
-import { startOfDay, endOfDay, subWeeks, subMonths, subYears, startOfQuarter } from 'date-fns';
+
+// 한국 표준시 (KST, UTC+9) 처리 헬퍼
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+export function toKST(date: Date): Date {
+  return new Date(date.getTime() + KST_OFFSET_MS);
+}
+
+export function getKSTDateString(date: Date = new Date()): string {
+  return toKST(date).toISOString().split('T')[0];
+}
+
+export function getKSTStartOfDay(dateStr: string): Date {
+  return new Date(`${dateStr}T00:00:00.000+09:00`);
+}
+
+export function getKSTEndOfDay(dateStr: string): Date {
+  return new Date(`${dateStr}T23:59:59.999+09:00`);
+}
 
 // 유입 출처 스마트 분류 함수
 function categorizeReferrer(rawRef: string | null): { name: string; category: string; icon: string } {
@@ -84,35 +102,54 @@ export async function GET(request: Request) {
     let startDate: Date;
     let endDate: Date;
 
+    const todayKstStr = getKSTDateString(new Date());
+
     if (startParam && endParam) {
-      startDate = startOfDay(new Date(startParam));
-      endDate = endOfDay(new Date(endParam));
+      startDate = getKSTStartOfDay(startParam);
+      endDate = getKSTEndOfDay(endParam);
     } else {
-      endDate = endOfDay(new Date());
+      endDate = getKSTEndOfDay(todayKstStr);
       switch (period) {
-        case 'day':
-          startDate = startOfDay(new Date());
+        case 'day': {
+          startDate = getKSTStartOfDay(todayKstStr);
           break;
-        case 'week':
-          startDate = subWeeks(startOfDay(new Date()), 1);
+        }
+        case 'week': {
+          const d = toKST(new Date());
+          d.setUTCDate(d.getUTCDate() - 7);
+          startDate = getKSTStartOfDay(d.toISOString().split('T')[0]);
           break;
-        case 'month':
-          startDate = subMonths(startOfDay(new Date()), 1);
+        }
+        case 'month': {
+          const d = toKST(new Date());
+          d.setUTCMonth(d.getUTCMonth() - 1);
+          startDate = getKSTStartOfDay(d.toISOString().split('T')[0]);
           break;
+        }
         case 'quarter':
-          startDate = startOfQuarter(new Date());
+        case '3m': {
+          const d = toKST(new Date());
+          d.setUTCMonth(d.getUTCMonth() - 3);
+          startDate = getKSTStartOfDay(d.toISOString().split('T')[0]);
           break;
-        case '3m':
-          startDate = subMonths(startOfDay(new Date()), 3);
+        }
+        case '6m': {
+          const d = toKST(new Date());
+          d.setUTCMonth(d.getUTCMonth() - 6);
+          startDate = getKSTStartOfDay(d.toISOString().split('T')[0]);
           break;
-        case '6m':
-          startDate = subMonths(startOfDay(new Date()), 6);
+        }
+        case '1y': {
+          const d = toKST(new Date());
+          d.setUTCFullYear(d.getUTCFullYear() - 1);
+          startDate = getKSTStartOfDay(d.toISOString().split('T')[0]);
           break;
-        case '1y':
-          startDate = subYears(startOfDay(new Date()), 1);
-          break;
-        default:
-          startDate = subMonths(startOfDay(new Date()), 1);
+        }
+        default: {
+          const d = toKST(new Date());
+          d.setUTCMonth(d.getUTCMonth() - 1);
+          startDate = getKSTStartOfDay(d.toISOString().split('T')[0]);
+        }
       }
     }
 
@@ -208,35 +245,31 @@ export async function GET(request: Request) {
       take: 10,
     });
 
-    // 4. 날짜별 추이 데이터
-    const trendData = await prisma.analytics.groupBy({
-      by: ['createdAt'],
+    // 4. 날짜별 추이 데이터 (KST 기준)
+    const hourlyData = await prisma.analytics.findMany({
       where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
-      _count: { id: true },
+      select: { createdAt: true },
     });
 
     const processedTrend: { [key: string]: number } = {};
-    trendData.forEach(item => {
-      const dateStr = item.createdAt.toISOString().split('T')[0];
-      processedTrend[dateStr] = (processedTrend[dateStr] || 0) + item._count.id;
+    hourlyData.forEach(item => {
+      const kstTime = toKST(item.createdAt);
+      const dateStr = kstTime.toISOString().split('T')[0];
+      processedTrend[dateStr] = (processedTrend[dateStr] || 0) + 1;
     });
 
     const chartData = Object.entries(processedTrend)
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    // 5. 시간대별 분석 (24시간)
-    const hourlyData = await prisma.analytics.findMany({
-      where: { ...adminFilter, createdAt: { gte: startDate, lte: endDate } },
-      select: { createdAt: true },
-    });
-
+    // 5. 시간대별 분석 (24시간, KST 기준 00:00 ~ 23:00)
     const hourlyBreakdown: { [key: string]: number } = {};
     for (let i = 0; i < 24; i++) {
       hourlyBreakdown[String(i).padStart(2, '0')] = 0;
     }
     hourlyData.forEach(item => {
-      const hour = String(item.createdAt.getHours()).padStart(2, '0');
+      const kstTime = toKST(item.createdAt);
+      const hour = String(kstTime.getUTCHours()).padStart(2, '0');
       hourlyBreakdown[hour] = (hourlyBreakdown[hour] || 0) + 1;
     });
 
@@ -245,7 +278,10 @@ export async function GET(request: Request) {
       .sort((a, b) => a.hour.localeCompare(b.hour));
 
     const sortedHours = [...hourlyChart].sort((a, b) => b.count - a.count);
-    const peakHours = sortedHours.slice(0, 2).map(h => h.hour);
+    const peakHours = sortedHours
+      .filter(h => h.count > 0)
+      .slice(0, 2)
+      .map(h => h.hour);
 
     // 6. 디바이스/브라우저 분석
     const deviceAnalytics = await prisma.analytics.findMany({
@@ -301,13 +337,14 @@ export async function GET(request: Request) {
       }))
       .sort((a, b) => b.count - a.count);
 
-    // 7. 요일별 분석
+    // 7. 요일별 분석 (KST 기준 요일)
     const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
     const dayAnalytics: { [key: number]: number } = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
 
-    trendData.forEach(item => {
-      const day = item.createdAt.getDay();
-      dayAnalytics[day] = (dayAnalytics[day] || 0) + item._count.id;
+    hourlyData.forEach(item => {
+      const kstTime = toKST(item.createdAt);
+      const day = kstTime.getUTCDay();
+      dayAnalytics[day] = (dayAnalytics[day] || 0) + 1;
     });
 
     const dayChart = dayNames.map((name, idx) => ({

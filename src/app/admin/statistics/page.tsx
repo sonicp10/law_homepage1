@@ -13,12 +13,19 @@ import {
 export default function StatisticsPage() {
   const [period, setPeriod] = useState('month'); // day, week, month, quarter, 3m, 6m, 1y, custom
 
+  const formatDateToLocal = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setMonth(d.getMonth() - 1);
-    return d.toISOString().split('T')[0];
+    return formatDateToLocal(d);
   });
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(() => formatDateToLocal(new Date()));
   
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,8 +67,8 @@ export default function StatisticsPage() {
         case '1y': start.setFullYear(end.getFullYear() - 1); break;
       }
       
-      setStartDate(start.toISOString().split('T')[0]);
-      setEndDate(end.toISOString().split('T')[0]);
+      setStartDate(formatDateToLocal(start));
+      setEndDate(formatDateToLocal(end));
     }
   }, [period]);
 

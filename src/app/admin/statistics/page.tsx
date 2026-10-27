@@ -7,7 +7,8 @@ import {
 import { 
   Users, Eye, MousePointer2, ArrowUpRight, Calendar, 
   RefreshCcw, Globe, Link2, ExternalLink,
-  Sparkles, Lightbulb, TrendingUp, Clock, Smartphone, Monitor, PhoneCall, MessageSquare, ShieldCheck, Trash2
+  Sparkles, Lightbulb, TrendingUp, Clock, Smartphone, Monitor, PhoneCall, MessageSquare, ShieldCheck, Trash2,
+  Search, Tag, MapPin, DollarSign, PieChart as PieChartIcon, Info, HelpCircle
 } from 'lucide-react';
 
 export default function StatisticsPage() {
@@ -494,30 +495,129 @@ export default function StatisticsPage() {
         </div>
       </div>
 
-      {/* 6. 디바이스 & 브라우저 점유율 */}
+      {/* 6. 유입 검색어(키워드) 및 광고 캠페인 분석 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 디바이스 분포 */}
+        {/* 유입 검색어 TOP 10 */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[var(--border)] shadow-sm">
-          <h3 className="text-xl font-bold text-[var(--primary)] mb-6 flex items-center gap-2">
-            <Smartphone className="w-5 h-5 text-[#A67C52]" />
-            접속 디바이스 환경
-          </h3>
-          <div className="space-y-5">
-            {data?.deviceChart?.map((device: any, idx: number) => (
-              <div key={device.device} className="flex flex-col gap-2">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-[var(--primary)] flex items-center gap-2">
+              <Search className="w-5 h-5 text-[#A67C52]" />
+              유입 검색어 (Keywords) 랭킹
+            </h3>
+            <span className="text-xs text-gray-400">포털 및 광고 검색어</span>
+          </div>
+          <div className="space-y-3">
+            {data?.topKeywords && data.topKeywords.length > 0 ? (
+              data.topKeywords.map((item: any, idx: number) => (
+                <div key={item.keyword} className="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50/70 border border-gray-100 hover:bg-[#A67C52]/5 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      idx === 0 ? 'bg-amber-100 text-amber-800' :
+                      idx === 1 ? 'bg-gray-200 text-gray-700' :
+                      idx === 2 ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {idx + 1}
+                    </span>
+                    <span className="font-bold text-sm text-[var(--primary)]">{item.keyword}</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-[#A67C52]/10 text-[#A67C52] text-xs font-bold rounded-lg">
+                    {item.count}회 유입
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="py-12 text-center text-gray-400 text-sm font-medium">
+                <Search className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                선택한 기간 동안 수집된 검색어 파라미터가 없습니다.<br />
+                <span className="text-xs text-gray-400 mt-1 block">
+                  (네이버 검색어, 구글 검색광고 키워드, 다음 검색어 자동 수집 중)
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 광고 캠페인 유입 성과 */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[var(--border)] shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-[var(--primary)] flex items-center gap-2">
+              <Tag className="w-5 h-5 text-[#A67C52]" />
+              광고 캠페인 유입 분포
+            </h3>
+            <span className="text-xs text-gray-400">UTM 캠페인 & 광고 성과</span>
+          </div>
+          <div className="space-y-3">
+            {data?.campaignStats && data.campaignStats.length > 0 ? (
+              data.campaignStats.map((item: any) => (
+                <div key={item.campaign} className="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50/70 border border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🎯</span>
+                    <span className="font-bold text-sm text-[var(--primary)]">{item.campaign}</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-200/50">
+                    {item.count}건 클릭
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="py-12 text-center text-gray-400 text-sm font-medium">
+                <Tag className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                광고 캠페인 파라미터(utm_campaign/gclid)를 통해 유입된 기록을 자동 감지합니다.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 7. 디바이스 환경 & 모바일 상세 기종 분석 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 모바일 세부 기종 분포 */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[var(--border)] shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-[var(--primary)] flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-[#A67C52]" />
+              접속 디바이스 & 모바일 세부 기종
+            </h3>
+            {data?.summary?.deviceOverview && (
+              <span className="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-full">
+                모바일 {data.summary.deviceOverview.mobilePercentage}% / PC {data.summary.deviceOverview.desktopPercentage}%
+              </span>
+            )}
+          </div>
+
+          {/* 모바일 vs 데스크톱 퀵 비율 바 */}
+          {data?.summary?.deviceOverview && (
+            <div className="mb-6 p-4 rounded-2xl bg-gray-50/70 border border-gray-100">
+              <div className="flex justify-between text-xs font-bold text-gray-600 mb-2">
+                <span>📱 모바일 {data.summary.deviceOverview.mobile}건 ({data.summary.deviceOverview.mobilePercentage}%)</span>
+                <span>💻 PC {data.summary.deviceOverview.desktop}건 ({data.summary.deviceOverview.desktopPercentage}%)</span>
+              </div>
+              <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden flex">
+                <div style={{ width: `${data.summary.deviceOverview.mobilePercentage}%` }} className="bg-[#A67C52] h-full" />
+                <div style={{ width: `${data.summary.deviceOverview.desktopPercentage}%` }} className="bg-blue-600 h-full" />
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {data?.detailedDeviceChart?.map((device: any, idx: number) => (
+              <div key={device.name} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-bold text-[var(--primary)]">{device.device}</span>
+                  <span className="font-bold text-[var(--primary)] flex items-center gap-2">
+                    <span>{device.icon}</span>
+                    {device.name}
+                  </span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">{device.count.toLocaleString()}건</span>
                     <span className="text-[#A67C52] font-black text-sm">{device.percentage}%</span>
                   </div>
                 </div>
-                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full rounded-full transition-all duration-700"
                     style={{ 
                       width: `${device.percentage}%`,
-                      backgroundColor: ['#A67C52', '#3B82F6', '#10B981'][idx % 3]
+                      backgroundColor: ['#A67C52', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'][idx % 5]
                     }}
                   />
                 </div>
@@ -532,7 +632,7 @@ export default function StatisticsPage() {
             <Monitor className="w-5 h-5 text-[#A67C52]" />
             사용 브라우저 분포
           </h3>
-          <div className="space-y-5">
+          <div className="space-y-4">
             {data?.browserChart?.map((browser: any, idx: number) => (
               <div key={browser.browser} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-sm">
@@ -542,7 +642,7 @@ export default function StatisticsPage() {
                     <span className="text-[#A67C52] font-black text-sm">{browser.percentage}%</span>
                   </div>
                 </div>
-                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full rounded-full transition-all duration-700"
                     style={{ 
@@ -553,6 +653,101 @@ export default function StatisticsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 8. 실제 상담 의뢰인 인구통계 및 프로필 심층 분석 */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[var(--border)] shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
+          <div>
+            <h3 className="text-xl font-bold text-[var(--primary)] flex items-center gap-2">
+              <PieChartIcon className="w-5 h-5 text-[#A67C52]" />
+              상담 의뢰인 인구통계 & 프로필 심층 분석
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              홈페이지 유입 후 자가진단 및 상담을 신청한 실제 의뢰인들의 절차 관심도, 채무 규모, 거주 지역 분포입니다.
+            </p>
+          </div>
+          <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full w-fit">
+            실제 상담 데이터 기반
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* 절차 선호도 (회생 vs 파산) */}
+          <div className="p-5 rounded-2xl bg-gray-50/70 border border-gray-100">
+            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1.5">
+              <span>⚖️</span> 신청 희망 절차 비중
+            </h4>
+            <div className="space-y-3">
+              {data?.procedureDistribution && data.procedureDistribution.length > 0 ? (
+                data.procedureDistribution.map((p: any) => (
+                  <div key={p.name} className="flex items-center justify-between p-2.5 bg-white rounded-xl shadow-xs border border-gray-100">
+                    <span className="text-sm font-bold text-[var(--primary)]">{p.name}</span>
+                    <span className="text-xs font-extrabold text-[#A67C52] px-2 py-0.5 bg-[#A67C52]/10 rounded-md">
+                      {p.count}건
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-gray-400 py-6 text-center">해당 기간 신청 데이터 집계 중</div>
+              )}
+            </div>
+          </div>
+
+          {/* 채무 규모 분포 */}
+          <div className="p-5 rounded-2xl bg-gray-50/70 border border-gray-100">
+            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1.5">
+              <DollarSign className="w-4 h-4 text-emerald-600" /> 의뢰인 채무 규모 분포
+            </h4>
+            <div className="space-y-3">
+              {data?.debtDistribution && data.debtDistribution.length > 0 ? (
+                data.debtDistribution.map((d: any) => (
+                  <div key={d.label} className="flex items-center justify-between p-2.5 bg-white rounded-xl shadow-xs border border-gray-100">
+                    <span className="text-sm font-medium text-[var(--primary)]">{d.label}</span>
+                    <span className="text-xs font-bold text-emerald-700 px-2 py-0.5 bg-emerald-50 rounded-md">
+                      {d.count}건
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-gray-400 py-6 text-center">자가진단 채무액 데이터 집계 중</div>
+              )}
+            </div>
+          </div>
+
+          {/* 지역별 상담 분포 */}
+          <div className="p-5 rounded-2xl bg-gray-50/70 border border-gray-100">
+            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-rose-500" /> 의뢰인 지역별 분포
+            </h4>
+            <div className="space-y-3">
+              {data?.regionDistribution && data.regionDistribution.length > 0 ? (
+                data.regionDistribution.map((r: any) => (
+                  <div key={r.region} className="flex items-center justify-between p-2.5 bg-white rounded-xl shadow-xs border border-gray-100">
+                    <span className="text-sm font-medium text-[var(--primary)]">{r.region}</span>
+                    <span className="text-xs font-bold text-rose-600 px-2 py-0.5 bg-rose-50 rounded-md">
+                      {r.count}건
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-gray-400 py-6 text-center">지역별 접수 데이터 집계 중</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 성별 및 연령대 통계 안내 카드 */}
+        <div className="mt-6 p-4 rounded-2xl bg-amber-50/70 border border-amber-200/60 flex items-start gap-3">
+          <Info className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+          <div className="text-xs text-amber-900 leading-relaxed">
+            <p className="font-bold mb-1">💡 방문자 성별 및 연령대(인구통계) 확인 안내</p>
+            <p>
+              웹 브라우저의 HTTP 표준 규격 및 개인정보보호법상 일반 방문자의 브라우저는 성별/나이를 사이트에 직접 제공하지 않습니다.
+              구글 광고(Google Ads)를 통해 유입된 고객의 성별(남/여) 및 연령대(20대~60대) 심층 데이터는 <strong>[Google Ads 콘솔 &gt; 통계 &gt; 인구통계]</strong> 탭에서 구글 로그인 계정 기반의 통계와 100% 연동되어 확인하실 수 있습니다.
+            </p>
           </div>
         </div>
       </div>

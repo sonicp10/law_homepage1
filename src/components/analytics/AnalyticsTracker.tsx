@@ -31,13 +31,17 @@ export default function AnalyticsTracker() {
 
     const trackView = async () => {
       try {
+        const fullPath = typeof window !== 'undefined' 
+          ? (window.location.pathname + window.location.search)
+          : pathname;
+
         await fetch('/api/analytics/track', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            path: pathname,
+            path: fullPath,
             referrer: document.referrer || null,
             userAgent: navigator.userAgent,
           }),

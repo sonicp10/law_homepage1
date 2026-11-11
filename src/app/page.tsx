@@ -70,9 +70,20 @@ export default function HomePage() {
                   </svg>
                 </span>
                 <div className="text-[15px] sm:text-[17px] md:text-[18px] font-bold text-[var(--primary)] tracking-tight leading-snug break-keep">
-                  <span className="text-[#A67C52] font-black">착수금 0원 우선 접수</span>
-                  <span className="mx-1.5 text-gray-400">·</span>
-                  <span>수임료 전액 분납 시스템</span>
+                  <span className="text-[#A67C52] font-black">사업자 대출·카드 대출</span>
+                  <span> 다중 채무 전문 해결</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 bg-white/95 backdrop-blur-md rounded-2xl border border-[var(--border)] shadow-md shadow-[var(--primary)]/5 hover:border-[#A67C52]/40 transition-all text-left">
+                <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#A67C52] text-white flex items-center justify-center shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
+                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                  </svg>
+                </span>
+                <div className="text-[15px] sm:text-[17px] md:text-[18px] font-bold text-[var(--primary)] tracking-tight leading-snug break-keep">
+                  <span>자영업 폐업 위기 </span>
+                  <span className="text-[#A67C52] font-black">채무 탕감</span>
                 </div>
               </div>
             </div>

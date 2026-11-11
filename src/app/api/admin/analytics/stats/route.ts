@@ -49,6 +49,9 @@ function categorizeReferrer(rawRef: string | null): { name: string; category: st
   if (lower.includes('naver.com')) {
     return { name: '네이버 (기타 서비스)', category: 'PORTAL', icon: '🟢' };
   }
+  if (lower.includes('googleads.g.doubleclick.net') || lower.includes('googlesyndication.com') || lower.includes('googleadservices.com')) {
+    return { name: '구글 검색/배너 광고 (Google Ads)', category: 'AD', icon: '🎯' };
+  }
   if (lower.includes('google.co') || lower.includes('google.com')) {
     return { name: '구글 검색 (Google)', category: 'SEARCH', icon: '🔵' };
   }
@@ -114,10 +117,72 @@ function extractCampaign(path: string): string | null {
       const params = new URLSearchParams(path.split('?')[1]);
       const campaign = params.get('utm_campaign');
       if (campaign && campaign.trim()) return campaign.trim();
-      if (params.has('gclid')) return '구글 광고 (Google Ads)';
+      if (params.has('gclid') || params.has('gad_source') || params.has('gad_campaignid')) {
+        return '구글 광고 (Google Ads)';
+      }
     }
   } catch (e) {}
   return null;
+}
+
+// URL 경로 정규화 (광고 추적 파라미터 gclid, gad_source, utm_* 등을 제거하여 실제 페이지 단위로 통합)
+function normalizePagePath(rawPath: string): string {
+  if (!rawPath) return '/';
+  try {
+    const [pathname] = rawPath.split('?');
+    if (!pathname || pathname.trim() === '') return '/';
+    const cleaned = pathname.trim().replace(/\/+$/, '');
+    return cleaned === '' ? '/' : cleaned;
+  } catch {
+    return rawPath;
+  }
+}
+
+// 정적 URL 경로를 한글 페이지 명칭으로 변환하는 매핑 테이블
+const STATIC_PAGE_TITLES: Record<string, string> = {
+  '/': '메인 홈 (홈페이지 첫 화면)',
+  '/intro': '사무소 소개',
+  '/intro/greeting': '대표 법무사 인사말',
+  '/intro/business': '주요 업무 안내',
+  '/intro/map': '오시는 길 (약도)',
+  '/rehab': '개인회생 종합 안내',
+  '/rehab/strong': '개인회생 핵심 특장점',
+  '/rehab/step': '개인회생 진행 절차',
+  '/rehab/ask': '개인회생 자주 묻는 질문(FAQ)',
+  '/rehab/posts': 'About 개인회생 칼럼 목록',
+  '/bankruptcy': '개인파산 종합 안내',
+  '/bankruptcy/strong': '개인파산 핵심 특장점',
+  '/bankruptcy/step': '개인파산 진행 절차',
+  '/bankruptcy/ask': '개인파산 자주 묻는 질문(FAQ)',
+  '/bankruptcy/posts': 'About 개인파산 칼럼 목록',
+  '/s_story': '성공사례 종합',
+  '/s_story/rehab': '개인회생 성공사례 목록',
+  '/s_story/bankruptcy': '개인파산 성공사례 목록',
+  '/s_story/review': '의뢰인 실제 후기',
+  '/s_story/write': '의뢰인 후기 작성',
+  '/qna': '상담문의 안내',
+  '/qna/diagnosis': '1분 무료 자가진단',
+  '/qna/phone': '무료 전화상담 예약',
+  '/qna/visit': '방문상담 예약',
+  '/qna/board': '1:1 게시판 상담 목록',
+  '/qna/board/write': '1:1 게시판 상담 글쓰기',
+};
+
+function resolvePageTitle(cleanPath: string, postTitleMap: Record<string, string> = {}): string {
+  if (STATIC_PAGE_TITLES[cleanPath]) {
+    return STATIC_PAGE_TITLES[cleanPath];
+  }
+  const postMatch = cleanPath.match(/^\/(rehab\/posts|bankruptcy\/posts|s_story\/rehab|s_story\/bankruptcy)\/([^/]+)$/);
+  if (postMatch) {
+    const [, prefix, postId] = postMatch;
+    const postTitle = postTitleMap[postId];
+    const prefixLabel =
+      prefix === 'rehab/posts' ? '개인회생 칼럼' :
+      prefix === 'bankruptcy/posts' ? '개인파산 칼럼' :
+      prefix === 's_story/rehab' ? '개인회생 성공사례' : '개인파산 성공사례';
+    return postTitle ? `${prefixLabel}: ${postTitle}` : `${prefixLabel} 상세`;
+  }
+  return cleanPath;
 }
 
 // 모바일 및 디바이스 상세 기종 분류 함수
@@ -327,15 +392,40 @@ export async function GET(request: Request) {
       .map(([campaign, count]) => ({ campaign, count }))
       .sort((a, b) => b.count - a.count);
 
-    // 3. 인기 페이지 통계 (순수 사람 기준)
+    // 3. 인기 페이지 통계 (순수 사람 기준, 광고 파라미터 제거 후 실제 페이지 단위 집계)
     const pageCounts: { [path: string]: number } = {};
     currentLogs.forEach(item => {
-      pageCounts[item.path] = (pageCounts[item.path] || 0) + 1;
+      const cleanPath = normalizePagePath(item.path);
+      pageCounts[cleanPath] = (pageCounts[cleanPath] || 0) + 1;
     });
-    const popularPages = Object.entries(pageCounts)
+    const topRawPages = Object.entries(pageCounts)
       .map(([path, count]) => ({ path, _count: { path: count } }))
       .sort((a, b) => b._count.path - a._count.path)
       .slice(0, 10);
+
+    // 인기 페이지 중 게시글 상세 페이지(ID)가 있으면 실제 제목 조회
+    const postIdsToFetch: string[] = [];
+    topRawPages.forEach(p => {
+      const m = p.path.match(/^\/(?:rehab\/posts|bankruptcy\/posts|s_story\/rehab|s_story\/bankruptcy)\/([^/]+)$/);
+      if (m && m[1]) postIdsToFetch.push(m[1]);
+    });
+
+    const postTitleMap: Record<string, string> = {};
+    if (postIdsToFetch.length > 0) {
+      const posts = await prisma.post.findMany({
+        where: { id: { in: postIdsToFetch } },
+        select: { id: true, title: true },
+      });
+      posts.forEach(post => {
+        postTitleMap[post.id] = post.title;
+      });
+    }
+
+    const popularPages = topRawPages.map(p => ({
+      path: p.path,
+      title: resolvePageTitle(p.path, postTitleMap),
+      _count: p._count,
+    }));
 
     // 4. 날짜별 추이 데이터 (KST 기준)
     const processedTrend: { [key: string]: number } = {};

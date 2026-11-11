@@ -411,30 +411,39 @@ export default function StatisticsPage() {
 
           <div className="space-y-3">
             {data?.popularPages && data.popularPages.length > 0 ? (
-              data.popularPages.map((page: any, index: number) => (
-                <div key={page.path} className="flex items-center justify-between p-3.5 bg-gray-50/80 rounded-2xl hover:bg-gray-100 transition-colors group">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-white rounded-lg text-xs font-bold text-[#A67C52] shadow-sm">
-                      {index + 1}
-                    </span>
-                    <span className="font-bold text-[var(--primary)] text-sm truncate">
-                      {page.path === '/' ? '메인 홈 (홈페이지 첫 화면)' : page.path}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className="text-sm font-extrabold text-[var(--primary)]">{page._count.path.toLocaleString()}회</span>
-                    <a 
-                      href={page.path} 
-                      target="_blank" 
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-white rounded-lg shadow-sm text-[#A67C52]" 
-                      rel="noreferrer"
-                      title="해당 페이지 새창 열기"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                </div>
-              ))
+              data.popularPages.map((page: any, index: number) => {
+                const displayTitle = page.title || (page.path === '/' ? '메인 홈 (홈페이지 첫 화면)' : page.path);
+                return (
+                  <a
+                    key={page.path}
+                    href={page.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`${displayTitle} (${page.path}) 새 창에서 열기`}
+                    className="flex items-center justify-between p-3.5 bg-gray-50/80 rounded-2xl hover:bg-[#A67C52]/5 border border-transparent hover:border-[#A67C52]/30 transition-all group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-white rounded-lg text-xs font-bold text-[#A67C52] shadow-sm">
+                        {index + 1}
+                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-[var(--primary)] text-sm truncate group-hover:text-[#A67C52] transition-colors">
+                          {displayTitle}
+                        </span>
+                        <span className="text-[11px] text-gray-400 font-medium truncate">
+                          {page.path}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 flex-shrink-0 ml-2">
+                      <span className="text-sm font-extrabold text-[var(--primary)]">{page._count.path.toLocaleString()}회</span>
+                      <span className="p-1.5 bg-white group-hover:bg-[#A67C52] rounded-lg shadow-sm text-[#A67C52] group-hover:text-white transition-colors flex items-center gap-1 text-xs font-bold">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </a>
+                );
+              })
             ) : (
               <div className="py-12 text-center text-gray-300 font-medium">열람된 페이지 데이터가 없습니다.</div>
             )}
@@ -871,8 +880,20 @@ function AIInsightReportPanel({ data, adminName }: { data: any; adminName: strin
           </div>
           {topPage ? (
             <div className="space-y-3 text-sm text-gray-300">
-              <p>
-                의뢰인들이 가장 오래 머무르고 조회한 페이지는 <strong className="text-white bg-rose-500/20 px-2 py-0.5 rounded font-bold break-all">{topPage.path}</strong> 입니다.
+              <p className="leading-relaxed">
+                의뢰인들이 가장 오래 머무르고 조회한 페이지는{' '}
+                <a
+                  href={topPage.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={`${topPage.title || topPage.path} 페이지 새 창으로 이동`}
+                  className="inline-flex items-center gap-1.5 text-white bg-rose-500/25 hover:bg-rose-500/40 border border-rose-400/30 px-2.5 py-1 rounded-lg font-bold transition-all underline decoration-rose-400/60 underline-offset-4 cursor-pointer"
+                >
+                  <span>{topPage.title || (topPage.path === '/' ? '메인 홈 (홈페이지 첫 화면)' : topPage.path)}</span>
+                  <span className="text-xs text-rose-200 font-normal">({topPage.path})</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-rose-300 shrink-0" />
+                </a>{' '}
+                입니다.
               </p>
               <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-gray-300 font-medium">
                 <p className="text-rose-200 font-bold mb-1 flex items-center gap-1">

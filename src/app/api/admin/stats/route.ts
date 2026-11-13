@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireAdminAuth } from '@/lib/auth';
+import { isBot, deduplicateRapidLogs } from '@/app/api/admin/analytics/stats/route';
 
 // GET /api/admin/stats - 대시보드 통계
 export async function GET(request: Request) {
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
       pendingBoardQna,
       todayBoardQna,
       totalReviews,
-      todayVisits,
+      todayRawVisits,
       recentLeads,
       recentConsultations,
       recentBoardQna,
@@ -62,7 +63,10 @@ export async function GET(request: Request) {
       prisma.boardQna.count({ where: { status: 'PENDING' } }),
       prisma.boardQna.count({ where: { createdAt: { gte: todayStartUtc } } }),
       prisma.review.count({ where: { isPublic: true } }),
-      prisma.analytics.count({ where: { ...adminVisitFilter, createdAt: { gte: todayStartUtc } } }),
+      prisma.analytics.findMany({
+        where: { ...adminVisitFilter, createdAt: { gte: todayStartUtc } },
+        select: { id: true, createdAt: true, ip: true, path: true, userAgent: true },
+      }),
       prisma.lead.findMany({
         orderBy: { createdAt: 'desc' },
         take: 6,
@@ -93,6 +97,14 @@ export async function GET(request: Request) {
 
     const totalPending = pendingLeads + pendingConsultations + pendingBoardQna;
 
+    // 방문 통계 페이지(/admin/statistics)와 100% 동일한 기준(봇/크롤러 제외 + 5분 이내 중복 새로고침 제거) 적용
+    const todayHumanLogs = deduplicateRapidLogs(
+      todayRawVisits.filter(r => !isBot(r.userAgent, r.ip, r.path))
+    );
+    const todayPageViews = todayHumanLogs.length;
+    const todayUniqueVisitors = new Set(todayHumanLogs.map(r => r.ip).filter(Boolean)).size;
+    const todayVisits = todayUniqueVisitors;
+
     return NextResponse.json({
       posts: { 
         total: totalPosts, 
@@ -118,6 +130,8 @@ export async function GET(request: Request) {
       reviews: { total: totalReviews },
       analytics: {
         todayVisits,
+        todayUniqueVisitors,
+        todayPageViews,
       },
       summary: {
         totalPending,

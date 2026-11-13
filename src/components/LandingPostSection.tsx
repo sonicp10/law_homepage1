@@ -66,13 +66,20 @@ export default function LandingPostSection({ category, title, subtitle, href, li
               <div key={i} className="bg-white rounded-3xl h-96 animate-pulse border border-[var(--border)]"></div>
             ))
           ) : (
-            posts.map((post) => (
+            posts.map((post) => {
+              const firstTag = (post.tags || '').split(',')[0]?.trim() || '';
+              const isBankruptcyCase =
+                !firstTag.includes('회생') &&
+                !post.title.includes('개인회생') &&
+                (firstTag.includes('파산') || post.title.includes('개인파산') || Boolean(post.tags?.includes('파산')));
+
+              return (
               <Link 
                 key={post.id} 
                 href={
                   category === 'REHAB' ? `/rehab/posts/${post.id}` :
                   category === 'BANKRUPTCY' ? `/bankruptcy/posts/${post.id}` :
-                  (post.tags?.includes('파산') ? `/s_story/bankruptcy/${post.id}` : `/s_story/rehab/${post.id}`)
+                  (isBankruptcyCase ? `/s_story/bankruptcy/${post.id}` : `/s_story/rehab/${post.id}`)
                 }
                 className="group bg-white rounded-3xl overflow-hidden border border-[var(--border)] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
               >
@@ -94,7 +101,7 @@ export default function LandingPostSection({ category, title, subtitle, href, li
                     <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[var(--secondary)] text-[10px] font-black rounded-lg border border-[var(--secondary)]/10 shadow-sm uppercase tracking-widest">
                       {category === 'REHAB' ? '회생 정보' : 
                        category === 'BANKRUPTCY' ? '파산 정보' : 
-                       (post.tags?.includes('파산') ? '파산 성공사례' : '회생 성공사례')}
+                       (isBankruptcyCase ? '파산 성공사례' : '회생 성공사례')}
                     </span>
                   </div>
                 </div>
@@ -111,7 +118,8 @@ export default function LandingPostSection({ category, title, subtitle, href, li
                   </div>
                 </div>
               </Link>
-            ))
+              );
+            })
           )}
         </div>
       </div>

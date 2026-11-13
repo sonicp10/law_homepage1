@@ -38,10 +38,10 @@ export default function BankruptcyStoryPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-16 gap-4 md:gap-6">
         <div className="text-center md:text-left">
-          <h2 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-4">개인파산 성공사례</h2>
-          <div className="w-12 h-1 bg-[#A67C52] mb-6 md:mx-0 mx-auto"></div>
+          <h2 className="text-2xl md:text-4xl font-bold text-[var(--primary)] mb-2 md:mb-4">개인파산 성공사례</h2>
+          <div className="w-12 h-1 bg-[#A67C52] mb-3 md:mb-6 md:mx-0 mx-auto"></div>
           <p className="text-lg text-[var(--primary)]/60 font-medium flex items-center justify-center md:justify-start gap-x-1 flex-wrap break-keep leading-relaxed">
             <span>여러분도 다시</span>
             <span className="flex items-center mx-1">

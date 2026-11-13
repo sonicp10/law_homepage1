@@ -39,6 +39,11 @@ export default function AdminColumnsPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [listPageViews, setListPageViews] = useState<{
+    rehabListViews: number;
+    bankruptcyListViews: number;
+    totalListViews: number;
+  } | null>(null);
 
   const fetchPosts = async (silent = false) => {
     if (!silent) {
@@ -66,6 +71,7 @@ export default function AdminColumnsPage() {
       setPosts(fetchedPosts);
       setTotal(data.totalCount || 0);
       setTotalPages(data.totalPages || 1);
+      setListPageViews(data.listPageViews || null);
     } catch {
       setPosts([]);
     } finally {
@@ -124,11 +130,23 @@ export default function AdminColumnsPage() {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   };
 
+  // 성공사례 세부 분류 판별 헬퍼 (첫 태그 또는 제목에 '회생'이 우선하면 개인회생, 아니면 파산 여부 체크)
+  const isBankruptcySuccessStory = (item: Post) => {
+    const firstTag = (item.tags || '').split(',')[0]?.trim() || '';
+    if (firstTag.includes('회생') || item.title.includes('개인회생')) return false;
+    if (firstTag.includes('파산') || item.title.includes('개인파산') || item.tags?.includes('파산')) return true;
+    return false;
+  };
+
   // 사용자 웹사이트 실제 URL 매핑
   const getPublicPostUrl = (item: Post) => {
     if (item.category === 'REHAB') return `/rehab/posts/${item.id}`;
     if (item.category === 'BANKRUPTCY') return `/bankruptcy/posts/${item.id}`;
-    if (item.category === 'SUCCESS_STORY') return `/s_story/posts/${item.id}`;
+    if (item.category === 'SUCCESS_STORY') {
+      return isBankruptcySuccessStory(item)
+        ? `/s_story/bankruptcy/${item.id}`
+        : `/s_story/rehab/${item.id}`;
+    }
     return `/rehab/posts/${item.id}`;
   };
 
@@ -143,6 +161,23 @@ export default function AdminColumnsPage() {
           <p className="text-sm text-[var(--primary)]/60 mt-1">
             선택된 카테고리에 총 <span className="font-bold text-[#A67C52]">{total}건</span>의 글이 등록되어 있습니다.
           </p>
+          {listPageViews && (
+            <div className="mt-2.5 inline-flex flex-wrap items-center gap-2 px-3 py-1.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-950">
+              <span className="font-bold text-[#A67C52]">📊 카테고리 목록 유입 vs 개별 글 열람 안내:</span>
+              {cat === 'SUCCESS_STORY' ? (
+                <span>
+                  성공사례 목록 페이지 유입 총 <strong>{listPageViews.totalListViews.toLocaleString()}회</strong>
+                  (개인회생 목록 <strong>{listPageViews.rehabListViews.toLocaleString()}회</strong> · 개인파산 목록 <strong>{listPageViews.bankruptcyListViews.toLocaleString()}회</strong>)
+                  {' '}/ 개별 사례 상세 클릭 합계 <strong>{posts.reduce((acc, p) => acc + (p.viewCount || 0), 0).toLocaleString()}회</strong>
+                </span>
+              ) : (
+                <span>
+                  칼럼 목록 페이지 유입 <strong>{listPageViews.totalListViews.toLocaleString()}회</strong>
+                  {' '}/ 현재 페이지 개별 글 열람 합계 <strong>{posts.reduce((acc, p) => acc + (p.viewCount || 0), 0).toLocaleString()}회</strong>
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

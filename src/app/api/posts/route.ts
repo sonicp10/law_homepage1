@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireAdminAuth, verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { isBot, deduplicateRapidLogs } from '@/app/api/admin/analytics/stats/route';
 
 // GET /api/posts - 법률 칼럼 목록 조회
 export async function GET(request: Request) {
@@ -56,11 +57,53 @@ export async function GET(request: Request) {
       prisma.post.count({ where }),
     ]);
 
+    // 관리자가 조회할 때는 해당 카테고리 목록 페이지(/s_story/rehab 등)의 누적 방문 조회수도 함께 반환
+    let listPageViews: { rehabListViews: number; bankruptcyListViews: number; totalListViews: number } | undefined;
+    if (isAdmin) {
+      const targetPrefixes =
+        category === 'SUCCESS_STORY'
+          ? ['/s_story/rehab', '/s_story/bankruptcy', '/s_story']
+          : category === 'REHAB'
+          ? ['/rehab/posts', '/rehab']
+          : category === 'BANKRUPTCY'
+          ? ['/bankruptcy/posts', '/bankruptcy']
+          : [];
+
+      if (targetPrefixes.length > 0) {
+        const rawLogs = await prisma.analytics.findMany({
+          where: {
+            OR: targetPrefixes.map(p => ({ path: { startsWith: p } })),
+          },
+          select: { id: true, ip: true, path: true, userAgent: true, createdAt: true },
+        });
+        const cleanLogs = deduplicateRapidLogs(
+          rawLogs.filter(r => !isBot(r.userAgent, r.ip, r.path))
+        );
+        const normalize = (p: string) => (p.split('?')[0] || '/').trim().replace(/\/+$/, '') || '/';
+        if (category === 'SUCCESS_STORY') {
+          const rehabListViews = cleanLogs.filter(r => normalize(r.path) === '/s_story/rehab').length;
+          const bankruptcyListViews = cleanLogs.filter(r => normalize(r.path) === '/s_story/bankruptcy').length;
+          listPageViews = {
+            rehabListViews,
+            bankruptcyListViews,
+            totalListViews: rehabListViews + bankruptcyListViews,
+          };
+        } else if (category === 'REHAB') {
+          const rehabListViews = cleanLogs.filter(r => normalize(r.path) === '/rehab/posts').length;
+          listPageViews = { rehabListViews, bankruptcyListViews: 0, totalListViews: rehabListViews };
+        } else if (category === 'BANKRUPTCY') {
+          const bankruptcyListViews = cleanLogs.filter(r => normalize(r.path) === '/bankruptcy/posts').length;
+          listPageViews = { rehabListViews: 0, bankruptcyListViews, totalListViews: bankruptcyListViews };
+        }
+      }
+    }
+
     return NextResponse.json({
       posts,
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
+      ...(listPageViews && { listPageViews }),
     });
   } catch (error) {
     console.error('Posts GET Error:', error);

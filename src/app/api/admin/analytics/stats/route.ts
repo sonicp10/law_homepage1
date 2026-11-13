@@ -21,12 +21,42 @@ export function getKSTEndOfDay(dateStr: string): Date {
   return new Date(`${dateStr}T23:59:59.999+09:00`);
 }
 
-// 검색엔진 크롤러 및 봇 필터링 정규식
-const BOT_REGEX = /bot|crawler|spider|googlebot|bingbot|yandex|naverbot|bytespider|headlesschrome|headless|phantomjs|python|axios|curl|wget|lighthouse|mediapartners|adsbot|ads-naver|dataprovider/i;
+// 검색엔진 크롤러 및 봇 필터링 정규식 (네이버 Yeti, 다음 Daumoa, 카카오 스크랩, 구글 기타 봇 및 크롤러 IP 포함)
+const BOT_REGEX = /bot|crawler|spider|googlebot|bingbot|yandex|naverbot|yeti|daumoa|daum|kakaotalk-scrap|facebookexternalhit|facebot|slackbot|telegrambot|discordbot|applebot|petalbot|semrush|ahrefs|mj12bot|dotbot|gptbot|claudebot|perplexity|bytespider|headlesschrome|headless|phantomjs|python|axios|curl|wget|lighthouse|mediapartners|adsbot|ads-naver|dataprovider|googleother|google-inspectiontool|google-safety|apis-google|storebot-google/i;
+const BOT_IP_REGEX = /^(66\.249\.|192\.178\.)/;
+const LEGACY_SCANNER_PATHS = new Set([
+  '/index', '/admln', '/frequently', '/inquiry', '/successful_case',
+  '/intro-2', '/bank-advan', '/rivive-docu', '/queanw', '/about', '/robots.txt',
+]);
 
-export function isBot(userAgent: string | null): boolean {
-  if (!userAgent) return false;
-  return BOT_REGEX.test(userAgent);
+export function isBot(userAgent: string | null, ip?: string | null, rawPath?: string | null): boolean {
+  if (userAgent && BOT_REGEX.test(userAgent)) return true;
+  if (ip && BOT_IP_REGEX.test(ip)) return true;
+  if (rawPath) {
+    const clean = normalizePagePath(rawPath);
+    if (LEGACY_SCANNER_PATHS.has(clean)) return true;
+  }
+  return false;
+}
+
+// 동일 IP + 동일 정규화 페이지의 5분 이내 연속 중복 로그 제거 (새로고침/뒤로가기 허수 제거)
+export function deduplicateRapidLogs<T extends { ip: string | null; path: string; createdAt: Date }>(logs: T[]): T[] {
+  const sorted = [...logs].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  const lastSeenMap = new Map<string, number>();
+  const result: T[] = [];
+
+  for (const log of sorted) {
+    const cleanPath = normalizePagePath(log.path);
+    const key = `${log.ip || 'unknown'}|${cleanPath}`;
+    const ts = log.createdAt.getTime();
+    const prevTs = lastSeenMap.get(key);
+    if (prevTs !== undefined && ts - prevTs < 5 * 60 * 1000) {
+      continue;
+    }
+    lastSeenMap.set(key, ts);
+    result.push(log);
+  }
+  return result;
 }
 
 // 유입 출처 스마트 분류 함수
@@ -305,7 +335,7 @@ export async function GET(request: Request) {
       }),
       prisma.analytics.findMany({
         where: { ...adminFilter, createdAt: { gte: prevStartDate, lte: prevEndDate } },
-        select: { id: true, ip: true, userAgent: true },
+        select: { id: true, createdAt: true, ip: true, path: true, userAgent: true },
       }),
       prisma.lead.findMany({ 
         where: { createdAt: { gte: startDate, lte: endDate } },
@@ -321,9 +351,11 @@ export async function GET(request: Request) {
       prisma.boardQna.count({ where: { createdAt: { gte: prevStartDate, lte: prevEndDate } } }),
     ]);
 
-    // 1-3. 봇/크롤러 허수 트래픽 필터링 (순수 사람 의뢰인 데이터만 정제)
-    const currentLogs = currentRawLogs.filter(r => !isBot(r.userAgent));
-    const prevLogs = prevRawLogs.filter(r => !isBot(r.userAgent));
+    // 1-3. 봇/크롤러 및 5분 이내 연속 새로고침 허수 트래픽 필터링 (순수 사람 의뢰인 데이터만 정제)
+    const humanCurrentLogs = currentRawLogs.filter(r => !isBot(r.userAgent, r.ip, r.path));
+    const humanPrevLogs = prevRawLogs.filter(r => !isBot(r.userAgent, r.ip, r.path));
+    const currentLogs = deduplicateRapidLogs(humanCurrentLogs);
+    const prevLogs = deduplicateRapidLogs(humanPrevLogs);
     const botVisitsFiltered = currentRawLogs.length - currentLogs.length;
 
     const totalViews = currentLogs.length;

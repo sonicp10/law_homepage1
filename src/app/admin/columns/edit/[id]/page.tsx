@@ -50,7 +50,7 @@ export default function EditColumnPage() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await fetch(`/api/posts/${params.id}`);
+        const res = await fetch(`/api/posts/${params.id}?noIncrement=true`);
         const data = await res.json();
         setForm({
           title: data.title || '',

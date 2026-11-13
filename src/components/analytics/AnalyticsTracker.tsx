@@ -31,6 +31,21 @@ export default function AnalyticsTracker() {
 
     const trackView = async () => {
       try {
+        const cleanPathname = (typeof window !== 'undefined' ? window.location.pathname : pathname)
+          .trim()
+          .replace(/\/+$/, '') || '/';
+
+        // 4. 동일 세션(탭)에서 5분 이내 동일 페이지 중복 새로고침/재진입 시 중복 집계 방지
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          const storageKey = `analytics_last_view_${cleanPathname}`;
+          const lastViewedAt = Number(sessionStorage.getItem(storageKey) || '0');
+          const now = Date.now();
+          if (lastViewedAt && now - lastViewedAt < 5 * 60 * 1000) {
+            return;
+          }
+          sessionStorage.setItem(storageKey, String(now));
+        }
+
         const fullPath = typeof window !== 'undefined' 
           ? (window.location.pathname + window.location.search)
           : pathname;

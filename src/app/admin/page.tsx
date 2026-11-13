@@ -9,7 +9,7 @@ interface StatsData {
   consultations: { total: number; pending: number; today?: number };
   boardQna: { total: number; pending: number; today?: number };
   reviews: { total: number };
-  analytics?: { todayVisits?: number };
+  analytics?: { todayVisits?: number; todayUniqueVisitors?: number; todayPageViews?: number };
   summary?: { totalPending?: number; todayTotalInquiries?: number };
   recent: {
     leads: any[];
@@ -299,8 +299,8 @@ export default function AdminDashboard() {
     },
     { 
       label: '오늘 홈페이지 방문', 
-      value: stats.analytics?.todayVisits || 0, 
-      sub: '실시간 유입 트래픽', 
+      value: stats.analytics?.todayUniqueVisitors ?? stats.analytics?.todayVisits ?? 0, 
+      sub: `순 방문자(UV) · 조회수 ${(stats.analytics?.todayPageViews ?? stats.analytics?.todayVisits ?? 0).toLocaleString()}회`, 
       color: 'from-cyan-600 to-blue-700', 
       icon: '📈', 
       link: '/admin/statistics',
@@ -442,10 +442,13 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
           <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100/80">
             <div className="flex items-center justify-between text-xs text-blue-700 font-semibold mb-1">
-              <span>오늘 방문자</span>
+              <span>오늘 순 방문자 (UV)</span>
               <span>📈</span>
             </div>
-            <p className="text-2xl font-black text-blue-950">{(stats.analytics?.todayVisits || 0).toLocaleString()} <span className="text-xs font-normal text-blue-600">명</span></p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-2xl font-black text-blue-950">{(stats.analytics?.todayUniqueVisitors ?? stats.analytics?.todayVisits ?? 0).toLocaleString()} <span className="text-xs font-normal text-blue-600">명</span></p>
+              <span className="text-[11px] font-bold text-blue-600/80">(조회 {(stats.analytics?.todayPageViews ?? stats.analytics?.todayVisits ?? 0).toLocaleString()}회)</span>
+            </div>
           </div>
 
           <div className="p-3 bg-orange-50/60 rounded-xl border border-orange-100/80">

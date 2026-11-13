@@ -13,12 +13,12 @@ export default function SubPageBanner({
   subtitle, 
   backgroundImage, 
   position = 'center',
-  height = 'h-[480px]'
+  height = 'h-[260px] md:h-[420px]'
 }: SubPageBannerProps) {
   const defaultBg = "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1600";
   
   return (
-    <section className={`relative ${height} flex items-center justify-center overflow-hidden pt-36`}>
+    <section className={`relative ${height} flex items-center justify-center overflow-hidden pt-20 md:pt-32`}>
       <div className="absolute inset-0 z-0">
         <img 
           src={backgroundImage || defaultBg} 
@@ -29,15 +29,15 @@ export default function SubPageBanner({
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--primary)]/20 via-[var(--primary)]/50 to-[var(--primary)]/80 backdrop-blur-[1px]"></div>
       </div>
       
-      <div className="relative z-10 text-center text-white px-6 -translate-y-4 max-w-4xl">
+      <div className="relative z-10 text-center text-white px-6 -translate-y-2 md:-translate-y-4 max-w-4xl">
         <h1 
-          className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 animate-slide-up tracking-tight break-keep"
+          className="text-3xl sm:text-5xl md:text-7xl font-black mb-3 md:mb-8 animate-slide-up tracking-tight break-keep"
           style={{ textShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
         >
           {title}
         </h1>
         <p 
-          className="text-lg sm:text-xl md:text-2xl text-white/90 font-bold animate-slide-up break-keep" 
+          className="text-sm sm:text-xl md:text-2xl text-white/90 font-bold animate-slide-up break-keep" 
           style={{ 
             animationDelay: '0.1s',
             textShadow: '0 2px 10px rgba(0,0,0,0.3)'

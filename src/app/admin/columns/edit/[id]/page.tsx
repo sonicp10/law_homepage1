@@ -56,9 +56,10 @@ export default function EditColumnPage() {
         const firstTag = (data.tags || '').split(',')[0]?.trim() || '';
         const isBankruptcySuccess =
           data.category === 'SUCCESS_STORY' &&
-          !firstTag.includes('회생') &&
-          !(data.title || '').includes('개인회생') &&
-          (firstTag.includes('파산') || (data.title || '').includes('개인파산') || (data.tags || '').includes('파산'));
+          ((firstTag.includes('파산') && !firstTag.includes('회생')) ||
+            (!firstTag.includes('회생') &&
+              !(data.title || '').includes('회생') &&
+              ((data.title || '').includes('파산') || (data.tags || '').includes('파산'))));
 
         const resolvedCategory =
           data.category === 'SUCCESS_STORY'

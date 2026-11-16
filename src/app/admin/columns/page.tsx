@@ -127,11 +127,14 @@ export default function AdminColumnsPage() {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  // 성공사례 세부 분류 판별 헬퍼 (첫 태그 또는 제목에 '회생'이 우선하면 개인회생, 아니면 파산 여부 체크)
+  // 성공사례 세부 분류 판별 헬퍼 (첫 태그가 '파산'이거나, '회생' 없이 제목/태그에 '파산'이 있으면 개인파산 성공사례)
   const isBankruptcySuccessStory = (item: Post) => {
     const firstTag = (item.tags || '').split(',')[0]?.trim() || '';
-    if (firstTag.includes('회생') || item.title.includes('개인회생')) return false;
-    if (firstTag.includes('파산') || item.title.includes('개인파산') || item.tags?.includes('파산')) return true;
+    if (firstTag.includes('파산') && !firstTag.includes('회생')) return true;
+    if (firstTag.includes('회생')) return false;
+    if (item.title.includes('파산') && !item.title.includes('회생')) return true;
+    if (item.title.includes('회생')) return false;
+    if (item.tags?.includes('파산') && !item.tags?.includes('회생')) return true;
     return false;
   };
 

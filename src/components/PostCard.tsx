@@ -45,7 +45,7 @@ export default function PostCard({ title, excerpt, thumbnail, date, category, hr
           {title}
         </h3>
         <p className="text-sm text-[var(--primary)]/60 line-clamp-3 leading-relaxed mb-6">
-          {excerpt}
+          {(excerpt || '').replace(/\*\*/g, '')}
         </p>
         
         {/* Read More Link */}

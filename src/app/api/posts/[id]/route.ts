@@ -91,12 +91,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await request.json();
     const { title, content, excerpt, category, thumbnail, tags, author, readTime, published } = body;
 
+    const normalizedContent = content !== undefined
+      ? content.replace(/<p(\s[^>]*)?>\s*<\/p>/gi, '<p$1><br /></p>')
+      : undefined;
+    const normalizedExcerpt = excerpt !== undefined
+      ? excerpt.replace(/\*\*/g, '').trim()
+      : undefined;
+
     const updated = await prisma.post.update({
       where: { id },
       data: {
         ...(title && { title }),
-        ...(content && { content }),
-        ...(excerpt !== undefined && { excerpt }),
+        ...(normalizedContent && { content: normalizedContent }),
+        ...(normalizedExcerpt !== undefined && { excerpt: normalizedExcerpt }),
         ...(category && { category }),
         ...(thumbnail !== undefined && { thumbnail }),
         ...(tags !== undefined && { tags }),

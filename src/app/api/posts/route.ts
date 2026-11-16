@@ -146,11 +146,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '제목, 본문, 카테고리는 필수입니다.' }, { status: 400 });
     }
 
+    const normalizedContent = (content || '').replace(/<p(\s[^>]*)?>\s*<\/p>/gi, '<p$1><br /></p>');
+    const normalizedExcerpt = (excerpt || content.replace(/<[^>]+>/g, '').slice(0, 120) + '...').replace(/\*\*/g, '').trim();
+
     const post = await prisma.post.create({
       data: {
         title,
-        content,
-        excerpt: excerpt || content.slice(0, 120) + '...',
+        content: normalizedContent,
+        excerpt: normalizedExcerpt,
         category,
         thumbnail: thumbnail || 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=800',
         tags: tags || null,

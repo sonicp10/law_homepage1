@@ -109,7 +109,7 @@ export default function LandingPostSection({ category, title, subtitle, href, li
                     {post.title}
                   </h3>
                   <p className="text-sm text-[var(--primary)]/50 leading-relaxed line-clamp-2 mb-6">
-                    {post.excerpt}
+                    {(post.excerpt || '').replace(/\*\*/g, '')}
                   </p>
                   <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">
                     <span></span>

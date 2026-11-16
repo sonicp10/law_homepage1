@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 const navItems = [
   { label: '대시보드', href: '/admin', icon: '📊', requiredPermission: null },
@@ -10,6 +10,7 @@ const navItems = [
   { label: 'About 개인회생', href: '/admin/columns?cat=REHAB', icon: '⚖️', requiredPermission: 'canManagePosts' },
   { label: 'About 개인파산', href: '/admin/columns?cat=BANKRUPTCY', icon: '💸', requiredPermission: 'canManagePosts' },
   { label: '성공사례 관리', href: '/admin/columns?cat=SUCCESS_STORY', icon: '🏆', requiredPermission: 'canManagePosts' },
+  { label: '의뢰인 후기 관리', href: '/admin/reviews', icon: '⭐', requiredPermission: 'canManagePosts' },
   { label: '전화/방문 상담', href: '/admin/consultations', icon: '📞', requiredPermission: 'canManageConsultations' },
   { label: '게시판 상담', href: '/admin/board', icon: '💬', requiredPermission: 'canManageConsultations' },
   { label: '상담 신청 (리드)', href: '/admin/leads', icon: '📌', requiredPermission: 'canManageConsultations' },
@@ -17,8 +18,9 @@ const navItems = [
 ];
 
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   
   const [authed, setAuthed] = useState(false);
@@ -288,7 +290,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
 
           {filteredNavItems.map((item) => {
-            const isActive = pathname === item.href.split('?')[0];
+            const [itemPath, itemQuery] = item.href.split('?');
+            const currentCat = searchParams.get('cat') || 'REHAB';
+            const isActive = itemQuery
+              ? (pathname === itemPath || pathname.startsWith('/admin/columns/')) && itemQuery === `cat=${currentCat}`
+              : pathname === itemPath;
             return (
               <Link
                 key={item.href}
@@ -448,5 +454,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#2C3E50] flex items-center justify-center"><div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div></div>}>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </Suspense>
   );
 }

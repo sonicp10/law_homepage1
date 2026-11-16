@@ -46,36 +46,24 @@ export default function AdminColumnsPage() {
     totalListViews: number;
   } | null>(null);
 
-  const fetchPosts = async (silent = false) => {
+  const fetchPosts = async (silent = false, overrideSearch?: string) => {
     if (!silent) {
       if (posts.length > 0) setIsRefreshing(true);
       else setLoading(true);
     }
     try {
+      const q = overrideSearch !== undefined ? overrideSearch : searchTerm;
       const params = new URLSearchParams({
         category: cat,
         page: String(page),
         limit: '10',
-        ...(searchTerm.trim() && { search: searchTerm.trim() }),
+        ...(publishedFilter && { published: publishedFilter }),
+        ...(cat === 'SUCCESS_STORY' && subFilter !== 'ALL' && { subType: subFilter }),
+        ...(q.trim() && { search: q.trim() }),
       });
       const res = await fetch(`/api/posts?${params}`);
       const data = await res.json();
-      let fetchedPosts: Post[] = data.posts || [];
-      
-      // 공개 여부 클라이언트 필터링 (필요 시)
-      if (publishedFilter === 'true') {
-        fetchedPosts = fetchedPosts.filter(p => p.published);
-      } else if (publishedFilter === 'false') {
-        fetchedPosts = fetchedPosts.filter(p => !p.published);
-      }
-
-      // 성공사례 세부 유형 필터링 (개인회생 성공사례 vs 개인파산 성공사례)
-      if (cat === 'SUCCESS_STORY' && subFilter !== 'ALL') {
-        fetchedPosts = fetchedPosts.filter(p => {
-          const isBank = isBankruptcySuccessStory(p);
-          return subFilter === 'BANKRUPTCY' ? isBank : !isBank;
-        });
-      }
+      const fetchedPosts: Post[] = data.posts || [];
 
       setPosts(fetchedPosts);
       setTotal(data.totalCount || 0);
@@ -303,7 +291,11 @@ export default function AdminColumnsPage() {
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => { setSearchTerm(''); setPage(1); }}
+                onClick={() => {
+                  setSearchTerm('');
+                  setPage(1);
+                  fetchPosts(false, '');
+                }}
                 className="text-xs text-gray-400 hover:text-gray-600 underline"
               >
                 초기화

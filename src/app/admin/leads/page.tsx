@@ -48,17 +48,18 @@ export default function AdminLeadsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
-  const fetchData = async (silent = false) => {
+  const fetchData = async (silent = false, overrideSearch?: string) => {
     if (!silent) {
       if (items.length > 0) setIsRefreshing(true);
       else setLoading(true);
     }
     try {
+      const q = overrideSearch !== undefined ? overrideSearch : searchTerm;
       const params = new URLSearchParams({ 
         page: String(page), 
         limit: '10',
         ...(statusFilter && { status: statusFilter }),
-        ...(searchTerm.trim() && { search: searchTerm.trim() }),
+        ...(q.trim() && { search: q.trim() }),
       });
       const res = await fetch(`/api/admin/leads?${params}`);
       const data = await res.json();
@@ -224,7 +225,11 @@ export default function AdminLeadsPage() {
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => { setSearchTerm(''); setPage(1); }}
+                onClick={() => {
+                  setSearchTerm('');
+                  setPage(1);
+                  fetchData(false, '');
+                }}
                 className="text-xs text-gray-400 hover:text-gray-600 underline"
               >
                 초기화

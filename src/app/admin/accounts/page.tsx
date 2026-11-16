@@ -29,6 +29,17 @@ export default function AdminAccountsPage() {
     canManageConsultations: false,
   });
 
+  // 권한/정보 수정 모달 상태
+  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    memo: '',
+    role: 'ADMIN',
+    canManagePosts: false,
+    canManageConsultations: false,
+  });
+  const [isUpdatingAdmin, setIsUpdatingAdmin] = useState(false);
+
   // 비밀번호 재설정 모달 상태
   const [selectedAdminForPassword, setSelectedAdminForPassword] = useState<Admin | null>(null);
   const [resetPasswordInput, setResetPasswordInput] = useState('');
@@ -95,6 +106,30 @@ export default function AdminAccountsPage() {
       fetchAdmins();
     } catch (e) {
       alert('오류가 발생했습니다.');
+    }
+  };
+
+  const handleEditAdminSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAdmin) return;
+    setIsUpdatingAdmin(true);
+    try {
+      const res = await fetch(`/api/admin/accounts/${editingAdmin.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEditingAdmin(null);
+        fetchAdmins();
+      } else {
+        alert(data.error || '권한 수정 실패');
+      }
+    } catch {
+      alert('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setIsUpdatingAdmin(false);
     }
   };
 
@@ -199,6 +234,21 @@ export default function AdminAccountsPage() {
                     </span>
                   </td>
                   <td className="py-4 px-6 text-center whitespace-nowrap">
+                    <button
+                      onClick={() => {
+                        setEditingAdmin(admin);
+                        setEditFormData({
+                          name: admin.name || '',
+                          memo: admin.memo || '',
+                          role: admin.role,
+                          canManagePosts: admin.canManagePosts,
+                          canManageConsultations: admin.canManageConsultations,
+                        });
+                      }}
+                      className="text-xs px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg mr-2 hover:bg-blue-100 font-medium transition-colors"
+                    >
+                      권한/정보 수정
+                    </button>
                     <button 
                       onClick={() => {
                         setSelectedAdminForPassword(admin);
@@ -270,6 +320,66 @@ export default function AdminAccountsPage() {
               <div className="flex gap-3 justify-end mt-6">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-5 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">취소</button>
                 <button type="submit" className="px-5 py-2 bg-[#A67C52] text-white rounded-lg">계정 생성</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 관리자 권한/정보 수정 모달 */}
+      {editingAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-gray-100">
+            <div className="flex items-center justify-between pb-3 border-b mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">관리자 권한 및 정보 수정</h2>
+                <p className="text-xs text-gray-500 mt-0.5">{editingAdmin.email}</p>
+              </div>
+              <button onClick={() => setEditingAdmin(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg">✕</button>
+            </div>
+            <form onSubmit={handleEditAdminSubmit} className="space-y-4">
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-bold mb-1">담당자 이름</label>
+                  <input type="text" value={editFormData.name} onChange={e => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full p-2 border rounded-xl text-sm" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-bold mb-1">메모 (직책 등)</label>
+                  <input type="text" value={editFormData.memo} onChange={e => setEditFormData({ ...editFormData, memo: e.target.value })} className="w-full p-2 border rounded-xl text-sm" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold mb-1">계정 등급</label>
+                <select
+                  value={editFormData.role}
+                  onChange={e => setEditFormData({ ...editFormData, role: e.target.value })}
+                  className="w-full p-2.5 border rounded-xl text-sm"
+                >
+                  <option value="ADMIN">일반 관리자 (ADMIN - 세부 권한 적용)</option>
+                  <option value="SUPERADMIN">최고 관리자 (SUPERADMIN - 모든 권한 허용)</option>
+                </select>
+              </div>
+
+              {editFormData.role === 'ADMIN' && (
+                <div className="p-4 bg-gray-50 border rounded-xl">
+                  <h3 className="font-bold text-sm mb-3">세부 권한 설정</h3>
+                  <label className="flex items-center gap-2 mb-2 cursor-pointer">
+                    <input type="checkbox" checked={editFormData.canManagePosts} onChange={e => setEditFormData({ ...editFormData, canManagePosts: e.target.checked })} />
+                    <span className="text-sm">콘텐츠 (칼럼, 성공사례, 의뢰인 후기) 작성 및 수정</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={editFormData.canManageConsultations} onChange={e => setEditFormData({ ...editFormData, canManageConsultations: e.target.checked })} />
+                    <span className="text-sm">상담(리드, 전화/방문, 게시판) 내역 열람 및 관리</span>
+                  </label>
+                </div>
+              )}
+
+              <div className="flex gap-3 justify-end mt-6">
+                <button type="button" onClick={() => setEditingAdmin(null)} className="px-5 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl">취소</button>
+                <button type="submit" disabled={isUpdatingAdmin} className="px-5 py-2 text-sm font-bold bg-[#A67C52] text-white rounded-xl hover:bg-[#8B6840] disabled:opacity-50">
+                  {isUpdatingAdmin ? '저장 중...' : '저장하기'}
+                </button>
               </div>
             </form>
           </div>

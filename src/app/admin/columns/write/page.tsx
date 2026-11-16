@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
@@ -41,6 +41,16 @@ function WriteColumnContent() {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const newCat = searchParams.get('cat') || 'REHAB';
+    const newSub = searchParams.get('sub') || '';
+    const resolved =
+      newCat === 'SUCCESS_STORY'
+        ? (newSub === 'BANKRUPTCY' ? 'SUCCESS_BANKRUPTCY' : 'SUCCESS_REHAB')
+        : newCat;
+    setForm(prev => ({ ...prev, category: resolved }));
+  }, [searchParams]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

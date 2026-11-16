@@ -61,6 +61,8 @@ export default function AdminDashboard() {
     itemType: 'LEAD' | 'CONSULTATION' | 'BOARD_QNA';
   } | null>(null);
   const [modalUpdating, setModalUpdating] = useState(false);
+  const [qnaReplyInput, setQnaReplyInput] = useState('');
+  const [qnaReplySaving, setQnaReplySaving] = useState(false);
 
   // 이전 데이터 캐싱용 Ref (신규 유입 감지)
   const prevLeadsRef = useRef<any[]>([]);
@@ -216,6 +218,30 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSaveQnaReplyInModal = async () => {
+    if (!selectedItem || selectedItem.itemType !== 'BOARD_QNA') return;
+    if (!qnaReplyInput.trim()) {
+      alert('답변 내용을 입력해주세요.');
+      return;
+    }
+    setQnaReplySaving(true);
+    try {
+      const res = await fetch(`/api/admin/board/${selectedItem.item.id}/reply`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ replyContent: qnaReplyInput.trim() }),
+      });
+      if (!res.ok) throw new Error('Reply failed');
+      alert('답변이 성공적으로 등록되었습니다.');
+      await fetchStats(true);
+      setSelectedItem(null);
+    } catch {
+      alert('답변 저장에 실패했습니다.');
+    } finally {
+      setQnaReplySaving(false);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -309,10 +335,10 @@ export default function AdminDashboard() {
     { 
       label: '의뢰인 후기', 
       value: stats.reviews.total, 
-      sub: '누적 공개 후기', 
+      sub: '누적 공개 후기 관리', 
       color: 'from-pink-500 to-rose-600', 
       icon: '⭐', 
-      link: '/s_story/review',
+      link: '/admin/reviews',
       badge: null
     },
   ] : [];
@@ -621,7 +647,10 @@ export default function AdminDashboard() {
               ) : stats.recent.boardQna.map((item) => (
                 <div 
                   key={item.id} 
-                  onClick={() => setSelectedItem({ item, itemType: 'BOARD_QNA' })}
+                  onClick={() => {
+                    setQnaReplyInput(item.replyContent || '');
+                    setSelectedItem({ item, itemType: 'BOARD_QNA' });
+                  }}
                   className="p-4 hover:bg-green-50/20 active:bg-green-50/30 cursor-pointer transition-colors duration-200 group animate-fade-in"
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -931,16 +960,23 @@ export default function AdminDashboard() {
                       </p>
                     </div>
 
-                    {selectedItem.item.replyContent && (
-                      <div className="mt-4 pt-4 border-t border-gray-100 space-y-1.5">
-                        <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
-                          <span>✅</span> 등록된 답변 내용
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                          <span>✍️</span> 관리자 답변 직접 작성 / 수정
                         </span>
-                        <div className="bg-emerald-50/60 border border-emerald-100 p-3 rounded-xl text-xs text-emerald-950 whitespace-pre-wrap">
-                          {selectedItem.item.replyContent}
-                        </div>
+                        <span className="text-[11px] text-emerald-600 font-semibold">
+                          저장 즉시 &apos;답변완료&apos;로 전환됩니다
+                        </span>
                       </div>
-                    )}
+                      <textarea
+                        rows={4}
+                        value={qnaReplyInput}
+                        onChange={(e) => setQnaReplyInput(e.target.value)}
+                        placeholder="대시보드에서 바로 의뢰인 문의에 대한 답변을 입력하실 수 있습니다."
+                        className="w-full p-3.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#A67C52] focus:bg-white transition-all leading-relaxed"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -968,14 +1004,24 @@ export default function AdminDashboard() {
                     )}
                   </>
                 ) : (
-                  <Link
-                    href="/admin/board"
-                    onClick={() => setSelectedItem(null)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 bg-[#A67C52] hover:bg-[#8B6840] text-white rounded-xl transition-colors shadow-sm"
-                  >
-                    <span>💬</span>
-                    <span>게시판에서 바로 답변 작성하기</span>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveQnaReplyInModal}
+                      disabled={qnaReplySaving}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 bg-[#A67C52] hover:bg-[#8B6840] text-white rounded-xl transition-colors shadow-sm disabled:opacity-50"
+                    >
+                      <span>✅</span>
+                      <span>{qnaReplySaving ? '답변 저장 중...' : '답변 바로 저장하기'}</span>
+                    </button>
+                    <Link
+                      href="/admin/board"
+                      onClick={() => setSelectedItem(null)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl transition-colors"
+                    >
+                      <span>게시판 관리로 이동</span>
+                    </Link>
+                  </div>
                 )}
               </div>
               <button 

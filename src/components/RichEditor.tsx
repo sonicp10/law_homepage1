@@ -412,7 +412,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   <h4 style="margin: 0 0 0.5em; font-size: 1.4em; font-weight: bold; color: #FFF176;">⚖️ 나도 개인회생/파산 자격이 될까?</h4>
   <p style="margin: 0 0 1.2em; font-size: 0.95em; opacity: 0.85; line-height: 1.6;">복잡한 서류 없이, 30초면 자격 요건 및 월 예상 변제금을 확인하실 수 있습니다.</p>
   <div style="display: inline-block;">
-    <a href="/qna/board" style="display: inline-block; padding: 0.8em 2em; background: #A67C52; color: white !important; font-weight: bold; border-radius: 12px; text-decoration: none !important; transition: all 0.2s; font-size: 0.95em;">
+    <a href="/qna/diagnosis" style="display: inline-block; padding: 0.8em 2em; background: #A67C52; color: white !important; font-weight: bold; border-radius: 12px; text-decoration: none !important; transition: all 0.2s; font-size: 0.95em;">
       👉 30초 간편 자격진단 신청하기
     </a>
   </div>

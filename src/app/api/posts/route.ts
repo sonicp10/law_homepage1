@@ -7,7 +7,9 @@ import { isBot, deduplicateRapidLogs } from '@/app/api/admin/analytics/stats/rou
 // GET /api/posts - 법률 칼럼 목록 조회
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category'); // 'REHAB' | 'BANKRUPTCY'
+  const category = searchParams.get('category'); // 'REHAB' | 'BANKRUPTCY' | 'SUCCESS_STORY'
+  const publishedParam = searchParams.get('published'); // '' | 'true' | 'false'
+  const subType = searchParams.get('subType'); // '' | 'REHAB' | 'BANKRUPTCY'
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '6');
@@ -24,6 +26,10 @@ export async function GET(request: Request) {
     const where: any = {};
     if (!isAdmin) {
       where.published = true;
+    } else if (publishedParam === 'true') {
+      where.published = true;
+    } else if (publishedParam === 'false') {
+      where.published = false;
     }
     if (category) where.category = category;
     if (search) {
@@ -34,28 +40,41 @@ export async function GET(request: Request) {
       ];
     }
 
-    const [posts, totalCount] = await Promise.all([
-      prisma.post.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-        select: {
-          id: true,
-          title: true,
-          excerpt: true,
-          thumbnail: true,
-          category: true,
-          tags: true,
-          author: true,
-          readTime: true,
-          viewCount: true,
-          published: true,
-          createdAt: true,
-        },
-      }),
-      prisma.post.count({ where }),
-    ]);
+    const allMatched = await prisma.post.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        excerpt: true,
+        thumbnail: true,
+        category: true,
+        tags: true,
+        author: true,
+        readTime: true,
+        viewCount: true,
+        published: true,
+        createdAt: true,
+      },
+    });
+
+    const isBankruptcyCase = (item: { title: string; tags: string | null }) => {
+      const firstTag = (item.tags || '').split(',')[0]?.trim() || '';
+      if (firstTag.includes('파산') && !firstTag.includes('회생')) return true;
+      if (firstTag.includes('회생')) return false;
+      if (item.title.includes('파산') && !item.title.includes('회생')) return true;
+      if (item.title.includes('회생')) return false;
+      if (item.tags?.includes('파산') && !item.tags?.includes('회생')) return true;
+      return false;
+    };
+
+    const subFiltered =
+      category === 'SUCCESS_STORY' && (subType === 'REHAB' || subType === 'BANKRUPTCY')
+        ? allMatched.filter((p) => (subType === 'BANKRUPTCY' ? isBankruptcyCase(p) : !isBankruptcyCase(p)))
+        : allMatched;
+
+    const totalCount = subFiltered.length;
+    const posts = subFiltered.slice(skip, skip + limit);
 
     // 관리자가 조회할 때는 해당 카테고리 목록 페이지(/s_story/rehab 등)의 누적 방문 조회수도 함께 반환
     let listPageViews: { rehabListViews: number; bankruptcyListViews: number; totalListViews: number } | undefined;

@@ -62,8 +62,51 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!post) {
       return NextResponse.json({ error: '글을 찾을 수 없습니다.' }, { status: 404 });
     }
+
+    // 4. 동일 카테고리(및 성공사례 세부 분류: 개인회생 vs 개인파산) 내 이전글 / 다음글 조회
+    const isBankruptcyCase = (item: { title: string; tags: string | null }) => {
+      const firstTag = (item.tags || '').split(',')[0]?.trim() || '';
+      if (firstTag.includes('파산') && !firstTag.includes('회생')) return true;
+      if (firstTag.includes('회생')) return false;
+      if (item.title.includes('파산') && !item.title.includes('회생')) return true;
+      if (item.title.includes('회생')) return false;
+      if (item.tags?.includes('파산') && !item.tags?.includes('회생')) return true;
+      return false;
+    };
+
+    const siblingPosts = await prisma.post.findMany({
+      where: {
+        published: true,
+        category: post.category,
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        tags: true,
+        createdAt: true,
+      },
+    });
+
+    const filteredSiblings =
+      post.category === 'SUCCESS_STORY'
+        ? siblingPosts.filter((p) => isBankruptcyCase(p) === isBankruptcyCase(post))
+        : siblingPosts;
+
+    const currentIndex = filteredSiblings.findIndex((p) => p.id === post.id);
+    // filteredSiblings는 최신순(createdAt desc) 정렬이므로:
+    // index - 1 이 더 최근에 작성된 '다음 글', index + 1 이 이전에 작성된 '이전 글'
+    const nextPost = currentIndex > 0 ? filteredSiblings[currentIndex - 1] : null;
+    const prevPost =
+      currentIndex >= 0 && currentIndex < filteredSiblings.length - 1
+        ? filteredSiblings[currentIndex + 1]
+        : null;
     
-    const response = NextResponse.json(post);
+    const response = NextResponse.json({
+      ...post,
+      prevPost: prevPost ? { id: prevPost.id, title: prevPost.title, createdAt: prevPost.createdAt } : null,
+      nextPost: nextPost ? { id: nextPost.id, title: nextPost.title, createdAt: nextPost.createdAt } : null,
+    });
     if (!shouldSkipIncrement) {
       const updatedViewed = [...viewedIds.filter(v => v !== id), id].slice(-25).join(',');
       response.cookies.set('viewed_posts', updatedViewed, {

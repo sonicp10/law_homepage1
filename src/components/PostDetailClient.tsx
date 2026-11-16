@@ -4,6 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+interface AdjacentPost {
+  id: string;
+  title: string;
+  createdAt: string;
+}
+
 interface Post {
   id: string;
   title: string;
@@ -17,6 +23,8 @@ interface Post {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
+  prevPost?: AdjacentPost | null;
+  nextPost?: AdjacentPost | null;
 }
 
 export default function PostDetailClient({ backUrl }: { backUrl: string }) {
@@ -132,8 +140,81 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
         }}
       />
 
+      {/* 하단 이전글 / 다음글 & 목록 네비게이션 바 (맨 위로 스크롤하지 않고 하단에서 즉시 이동) */}
+      <nav aria-label="게시글 이동 네비게이션" className="mt-14 pt-8 border-t border-[var(--border)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* 이전 글 카드 */}
+          {post.prevPost ? (
+            <Link
+              href={`${backUrl}/${post.prevPost.id}`}
+              className="group flex items-center gap-4 p-5 rounded-2xl bg-white border border-[var(--border)] hover:border-[#A67C52] hover:shadow-md transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[var(--surface)] group-hover:bg-[#A67C52] text-[var(--primary)] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-extrabold text-[#A67C52] uppercase tracking-wider block mb-1">
+                  이전 글
+                </span>
+                <p className="text-sm sm:text-base font-bold text-[var(--primary)] group-hover:text-[#A67C52] truncate transition-colors">
+                  {post.prevPost.title}
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-4 p-5 rounded-2xl bg-gray-50/70 border border-dashed border-[var(--border)] text-left opacity-60">
+              <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-bold text-gray-400 block mb-1">이전 글</span>
+                <p className="text-sm font-medium text-gray-400">이전 게시글이 없습니다.</p>
+              </div>
+            </div>
+          )}
+
+          {/* 다음 글 카드 */}
+          {post.nextPost ? (
+            <Link
+              href={`${backUrl}/${post.nextPost.id}`}
+              className="group flex items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[var(--border)] hover:border-[#A67C52] hover:shadow-md transition-all text-right sm:flex-row"
+            >
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-extrabold text-[#A67C52] uppercase tracking-wider block mb-1">
+                  다음 글
+                </span>
+                <p className="text-sm sm:text-base font-bold text-[var(--primary)] group-hover:text-[#A67C52] truncate transition-colors">
+                  {post.nextPost.title}
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-[var(--surface)] group-hover:bg-[#A67C52] text-[var(--primary)] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 group-hover:translate-x-0.5 transition-transform">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-center justify-between gap-4 p-5 rounded-2xl bg-gray-50/70 border border-dashed border-[var(--border)] text-right opacity-60">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-bold text-gray-400 block mb-1">다음 글</span>
+                <p className="text-sm font-medium text-gray-400">다음 게시글이 없습니다.</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
+
       {/* 하단 CTA */}
-      <div className="mt-16 p-8 bg-gradient-to-r from-[#A67C52]/8 to-[#A67C52]/4 rounded-2xl border border-[#A67C52]/15 text-center">
+      <div className="mt-10 p-8 bg-gradient-to-r from-[#A67C52]/8 to-[#A67C52]/4 rounded-2xl border border-[#A67C52]/15 text-center">
         <p className="text-[var(--primary)] font-bold text-xl mb-2">더 궁금한 점이 있으신가요?</p>
         <p className="text-[var(--primary)]/60 text-sm mb-6">법무사 김형근이 직접 전화 상담을 도와드립니다.</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -124,10 +124,12 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
         </div>
       )}
 
-      {/* 본문 — Tiptap HTML 렌더링 */}
+      {/* 본문 — Tiptap HTML 렌더링 (빈 단락 <p></p>이 브라우저에서 높이 0으로 붕괴되지 않도록 <p><br /></p>로 보존) */}
       <div
         className="prose-content"
-        dangerouslySetInnerHTML={{ __html: post.content }}
+        dangerouslySetInnerHTML={{
+          __html: (post.content || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
+        }}
       />
 
       {/* 하단 CTA */}

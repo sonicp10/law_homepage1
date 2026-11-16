@@ -14,7 +14,8 @@ const RichEditor = dynamic(() => import('@/components/RichEditor'), { ssr: false
 const catOptions = [
   { value: 'REHAB', label: 'About 개인회생' },
   { value: 'BANKRUPTCY', label: 'About 개인파산' },
-  { value: 'SUCCESS_STORY', label: '성공사례' },
+  { value: 'SUCCESS_REHAB', label: '개인회생 성공사례' },
+  { value: 'SUCCESS_BANKRUPTCY', label: '개인파산 성공사례' },
 ];
 
 export default function EditColumnPage() {
@@ -52,11 +53,23 @@ export default function EditColumnPage() {
       try {
         const res = await fetch(`/api/posts/${params.id}?noIncrement=true`);
         const data = await res.json();
+        const firstTag = (data.tags || '').split(',')[0]?.trim() || '';
+        const isBankruptcySuccess =
+          data.category === 'SUCCESS_STORY' &&
+          !firstTag.includes('회생') &&
+          !(data.title || '').includes('개인회생') &&
+          (firstTag.includes('파산') || (data.title || '').includes('개인파산') || (data.tags || '').includes('파산'));
+
+        const resolvedCategory =
+          data.category === 'SUCCESS_STORY'
+            ? (isBankruptcySuccess ? 'SUCCESS_BANKRUPTCY' : 'SUCCESS_REHAB')
+            : (data.category || 'REHAB');
+
         setForm({
           title: data.title || '',
           content: data.content || '',
           excerpt: data.excerpt || '',
-          category: data.category || 'REHAB',
+          category: resolvedCategory,
           thumbnail: data.thumbnail || '',
           tags: data.tags || '',
           author: data.author || '법무사 김형근',
@@ -81,15 +94,34 @@ export default function EditColumnPage() {
     setSubmitting(true);
     setError('');
     try {
+      const isRehabSuccess = form.category === 'SUCCESS_REHAB';
+      const isBankruptcySuccess = form.category === 'SUCCESS_BANKRUPTCY';
+      const actualCategory = (isRehabSuccess || isBankruptcySuccess) ? 'SUCCESS_STORY' : form.category;
+
+      let finalTags = form.tags;
+      if (isRehabSuccess || isBankruptcySuccess) {
+        const primaryTag = isBankruptcySuccess ? '개인파산' : '개인회생';
+        const oppositeTag = isBankruptcySuccess ? '개인회생' : '개인파산';
+        const existingTags = (form.tags || '')
+          .split(',')
+          .map(t => t.trim())
+          .filter(t => t && t !== primaryTag && t !== oppositeTag && !t.includes(oppositeTag));
+        finalTags = [primaryTag, ...existingTags].join(', ');
+      }
+
       const res = await fetch(`/api/posts/${params.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          category: actualCategory,
+          tags: finalTags,
+        }),
       });
       const data = await res.json();
       if (data.success) {
         alert('수정되었습니다!');
-        router.push(`/admin/columns?cat=${form.category}`);
+        router.push(`/admin/columns?cat=${actualCategory}`);
       } else {
         setError(data.error || '수정에 실패했습니다.');
       }

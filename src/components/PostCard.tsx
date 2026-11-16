@@ -13,6 +13,14 @@ interface PostCardProps {
 
 export default function PostCard({ title, excerpt, thumbnail, date, category, href }: PostCardProps) {
   const defaultThumbnail = "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800";
+  const categoryLabel =
+    category === 'REHAB'
+      ? 'About 개인회생'
+      : category === 'BANKRUPTCY'
+      ? 'About 개인파산'
+      : category === 'SUCCESS_STORY'
+      ? (href.includes('/bankruptcy') ? '개인파산 성공사례' : '개인회생 성공사례')
+      : category;
 
   return (
     <Link href={href} className="group relative bg-white rounded-[var(--radius-card)] overflow-hidden border border-[var(--border)] transition-all hover:shadow-xl hover:-translate-y-2">
@@ -25,7 +33,7 @@ export default function PostCard({ title, excerpt, thumbnail, date, category, hr
         />
         <div className="absolute top-4 left-4">
           <span className="px-3 py-1 bg-[var(--primary)] text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
-            {category}
+            {categoryLabel}
           </span>
         </div>
       </div>

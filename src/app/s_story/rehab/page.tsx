@@ -19,6 +19,7 @@ export default function RehabStoryPage() {
         const data = await res.json();
         setCases(data.cases.map((item: any) => ({
           ...item,
+          category: '개인회생 성공사례',
           date: new Date(item.createdAt).toLocaleDateString(),
           href: `/s_story/rehab/${item.id}`
         })));

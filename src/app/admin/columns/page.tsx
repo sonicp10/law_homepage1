@@ -35,6 +35,7 @@ export default function AdminColumnsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [publishedFilter, setPublishedFilter] = useState(''); // '' | 'true' | 'false'
+  const [subFilter, setSubFilter] = useState<'ALL' | 'REHAB' | 'BANKRUPTCY'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -68,6 +69,14 @@ export default function AdminColumnsPage() {
         fetchedPosts = fetchedPosts.filter(p => !p.published);
       }
 
+      // 성공사례 세부 유형 필터링 (개인회생 성공사례 vs 개인파산 성공사례)
+      if (cat === 'SUCCESS_STORY' && subFilter !== 'ALL') {
+        fetchedPosts = fetchedPosts.filter(p => {
+          const isBank = isBankruptcySuccessStory(p);
+          return subFilter === 'BANKRUPTCY' ? isBank : !isBank;
+        });
+      }
+
       setPosts(fetchedPosts);
       setTotal(data.totalCount || 0);
       setTotalPages(data.totalPages || 1);
@@ -87,7 +96,7 @@ export default function AdminColumnsPage() {
 
   useEffect(() => {
     fetchPosts();
-  }, [cat, page, publishedFilter]);
+  }, [cat, page, publishedFilter, subFilter]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,7 +199,11 @@ export default function AdminColumnsPage() {
             <span>새로고침</span>
           </button>
           <Link
-            href={`/admin/columns/write?cat=${cat}`}
+            href={
+              cat === 'SUCCESS_STORY'
+                ? `/admin/columns/write?cat=SUCCESS_STORY&sub=${subFilter === 'BANKRUPTCY' ? 'BANKRUPTCY' : 'REHAB'}`
+                : `/admin/columns/write?cat=${cat}`
+            }
             className="flex items-center gap-1.5 px-4 py-2 bg-[#A67C52] text-white rounded-xl text-xs font-bold hover:bg-[#8B6840] transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
@@ -221,26 +234,52 @@ export default function AdminColumnsPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          {/* 공개 여부 필터 */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-gray-400 font-bold mr-1">공개 상태:</span>
-            {[
-              { value: '', label: '전체' },
-              { value: 'true', label: '공개글' },
-              { value: 'false', label: '비공개글' },
-            ].map((st) => (
-              <button
-                key={st.value}
-                onClick={() => { setPublishedFilter(st.value); setPage(1); }}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  publishedFilter === st.value
-                    ? 'bg-gray-900 text-white font-bold'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {st.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-4">
+            {/* 성공사례 선택 시 세부 구분 필터 */}
+            {cat === 'SUCCESS_STORY' && (
+              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-200">
+                <span className="text-xs text-gray-400 font-bold mr-1">사례 구분:</span>
+                {[
+                  { value: 'ALL', label: '전체 사례' },
+                  { value: 'REHAB', label: '개인회생 성공사례' },
+                  { value: 'BANKRUPTCY', label: '개인파산 성공사례' },
+                ].map((sb) => (
+                  <button
+                    key={sb.value}
+                    onClick={() => { setSubFilter(sb.value as 'ALL' | 'REHAB' | 'BANKRUPTCY'); setPage(1); }}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      subFilter === sb.value
+                        ? 'bg-[#A67C52] text-white font-bold'
+                        : 'bg-amber-50 text-amber-900 hover:bg-amber-100'
+                    }`}
+                  >
+                    {sb.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* 공개 여부 필터 */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-400 font-bold mr-1">공개 상태:</span>
+              {[
+                { value: '', label: '전체' },
+                { value: 'true', label: '공개글' },
+                { value: 'false', label: '비공개글' },
+              ].map((st) => (
+                <button
+                  key={st.value}
+                  onClick={() => { setPublishedFilter(st.value); setPage(1); }}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                    publishedFilter === st.value
+                      ? 'bg-gray-900 text-white font-bold'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {st.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 검색창 */}
@@ -300,6 +339,17 @@ export default function AdminColumnsPage() {
                     <td className="px-5 py-4 max-w-md">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
+                          {item.category === 'SUCCESS_STORY' && (
+                            <span
+                              className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${
+                                isBankruptcySuccessStory(item)
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}
+                            >
+                              {isBankruptcySuccessStory(item) ? '개인파산 사례' : '개인회생 사례'}
+                            </span>
+                          )}
                           <Link 
                             href={`/admin/columns/edit/${item.id}`}
                             className="font-bold text-gray-900 text-sm hover:text-[#A67C52] transition-colors line-clamp-1"

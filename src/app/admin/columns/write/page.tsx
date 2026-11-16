@@ -14,13 +14,19 @@ const RichEditor = dynamic(() => import('@/components/RichEditor'), { ssr: false
 const catOptions = [
   { value: 'REHAB', label: 'About 개인회생' },
   { value: 'BANKRUPTCY', label: 'About 개인파산' },
-  { value: 'SUCCESS_STORY', label: '성공사례' },
+  { value: 'SUCCESS_REHAB', label: '개인회생 성공사례' },
+  { value: 'SUCCESS_BANKRUPTCY', label: '개인파산 성공사례' },
 ];
 
 function WriteColumnContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const defaultCat = searchParams.get('cat') || 'REHAB';
+  const rawCat = searchParams.get('cat') || 'REHAB';
+  const rawSub = searchParams.get('sub') || '';
+  const defaultCat =
+    rawCat === 'SUCCESS_STORY'
+      ? (rawSub === 'BANKRUPTCY' ? 'SUCCESS_BANKRUPTCY' : 'SUCCESS_REHAB')
+      : rawCat;
 
   const [form, setForm] = useState({
     title: '',
@@ -74,15 +80,35 @@ function WriteColumnContent() {
     setSubmitting(true);
     setError('');
     try {
+      const isRehabSuccess = form.category === 'SUCCESS_REHAB';
+      const isBankruptcySuccess = form.category === 'SUCCESS_BANKRUPTCY';
+      const actualCategory = (isRehabSuccess || isBankruptcySuccess) ? 'SUCCESS_STORY' : form.category;
+
+      // 성공사례인 경우 선택한 세부 카테고리(개인회생 성공사례 vs 개인파산 성공사례)를 첫 번째 태그로 명확히 지정하여 오분류 원천 차단
+      let finalTags = form.tags;
+      if (isRehabSuccess || isBankruptcySuccess) {
+        const primaryTag = isBankruptcySuccess ? '개인파산' : '개인회생';
+        const oppositeTag = isBankruptcySuccess ? '개인회생' : '개인파산';
+        const existingTags = (form.tags || '')
+          .split(',')
+          .map(t => t.trim())
+          .filter(t => t && t !== primaryTag && t !== oppositeTag && !t.includes(oppositeTag));
+        finalTags = [primaryTag, ...existingTags].join(', ');
+      }
+
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          category: actualCategory,
+          tags: finalTags,
+        }),
       });
       const data = await res.json();
       if (data.success) {
         alert('글이 성공적으로 발행되었습니다!');
-        router.push(`/admin/columns?cat=${form.category}`);
+        router.push(`/admin/columns?cat=${actualCategory}`);
       } else {
         setError(data.error || '저장에 실패했습니다.');
       }

@@ -19,6 +19,7 @@ export default function BankruptcyStoryPage() {
         const data = await res.json();
         setCases(data.cases.map((item: any) => ({
           ...item,
+          category: '개인파산 성공사례',
           date: new Date(item.createdAt).toLocaleDateString(),
           href: `/s_story/bankruptcy/${item.id}`
         })));

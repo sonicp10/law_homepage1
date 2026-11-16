@@ -31,7 +31,7 @@ export default function HomePage() {
                 &ldquo;숨&rdquo;
               </span>
               <div className="text-xl md:text-4xl lg:text-[3rem] font-bold leading-[1.4] md:leading-[1.3] text-[var(--primary)]/90" style={{wordBreak: 'keep-all', overflowWrap: 'break-word'}}>
-                <span className="block">막히는 <span className="text-[var(--secondary)]">무거운 빚</span>의 굴레,</span>
+                <span className="block">막히는 <span className="text-[#A67C52]">무거운 빚</span>의 굴레,</span>
                 <span className="block">법무사 김형근 사무소가</span>
                 <span className="block">끊어 드리겠습니다.</span>
               </div>

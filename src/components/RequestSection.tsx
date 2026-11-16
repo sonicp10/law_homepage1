@@ -115,12 +115,12 @@ export default function RequestSection() {
                 {repeatedTickers.map((item, idx) => (
                   <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-[var(--border)] flex justify-between items-center transition-all hover:scale-[1.02]">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-[var(--secondary)]/20 rounded-full flex items-center justify-center text-[var(--primary)] font-bold text-xs">
+                      <div className="w-10 h-10 bg-[#A67C52]/15 rounded-full flex items-center justify-center text-[#8B6840] font-bold text-xs">
                         {item.name[0]}
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-[var(--primary)]">{item.name} <span className="text-xs font-normal text-gray-400">({item.region})</span></div>
-                        <div className="text-[10px] text-[var(--secondary)] font-bold uppercase tracking-wider">검증된 결과</div>
+                        <div className="text-sm font-bold text-[var(--primary)]">{item.name} <span className="text-xs font-normal text-gray-500">({item.region})</span></div>
+                        <div className="text-[11px] text-[#8B6840] font-extrabold uppercase tracking-wider">검증된 결과</div>
                       </div>
                     </div>
                     <div className="text-[var(--primary)] font-bold text-sm bg-[var(--accent)]/30 px-3 py-1 rounded-full">
@@ -163,7 +163,7 @@ export default function RequestSection() {
                       <button 
                         type="button" 
                         onClick={() => setIsSuccess(false)}
-                        className="mt-8 text-sm font-bold text-[var(--secondary)] hover:underline"
+                        className="mt-8 text-sm font-bold text-[#A67C52] hover:underline"
                       >
                         새로 신청하기
                       </button>

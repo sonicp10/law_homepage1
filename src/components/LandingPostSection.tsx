@@ -50,9 +50,9 @@ export default function LandingPostSection({ category, title, subtitle, href, li
             <h2 className="text-3xl md:text-5xl font-bold text-[var(--primary)]">{title}</h2>
             <p className="text-[var(--primary)]/60 mt-4 font-medium">{subtitle}</p>
           </div>
-          <Link href={href} className="group flex items-center gap-2 text-[var(--primary)] font-bold hover:text-[var(--secondary)] transition-colors">
+          <Link href={href} className="group flex items-center gap-2 text-[var(--primary)] font-bold hover:text-[#A67C52] transition-colors">
             더 보기
-            <span className="w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center group-hover:border-[var(--secondary)] group-hover:bg-[var(--secondary)] group-hover:text-white transition-all">
+            <span className="w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center group-hover:border-[#A67C52] group-hover:bg-[#A67C52] group-hover:text-white transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
@@ -69,9 +69,8 @@ export default function LandingPostSection({ category, title, subtitle, href, li
             posts.map((post) => {
               const firstTag = (post.tags || '').split(',')[0]?.trim() || '';
               const isBankruptcyCase =
-                !firstTag.includes('회생') &&
-                !post.title.includes('개인회생') &&
-                (firstTag.includes('파산') || post.title.includes('개인파산') || Boolean(post.tags?.includes('파산')));
+                (firstTag.includes('파산') && !firstTag.includes('회생')) ||
+                (!firstTag.includes('회생') && !post.title.includes('회생') && (post.title.includes('파산') || Boolean(post.tags?.includes('파산'))));
 
               return (
               <Link 
@@ -98,7 +97,7 @@ export default function LandingPostSection({ category, title, subtitle, href, li
                     </div>
                   )}
                   <div className="absolute top-5 left-5">
-                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-[var(--secondary)] text-[10px] font-black rounded-lg border border-[var(--secondary)]/10 shadow-sm uppercase tracking-widest">
+                    <span className="px-3.5 py-1.5 bg-[var(--primary)]/95 backdrop-blur-sm text-white text-[11px] font-extrabold rounded-xl border border-white/15 shadow-md tracking-wider">
                       {category === 'REHAB' ? '회생 정보' : 
                        category === 'BANKRUPTCY' ? '파산 정보' : 
                        (isBankruptcyCase ? '파산 성공사례' : '회생 성공사례')}
@@ -106,7 +105,7 @@ export default function LandingPostSection({ category, title, subtitle, href, li
                   </div>
                 </div>
                 <div className="p-8">
-                  <h3 className="font-bold text-[var(--primary)] text-lg mb-4 line-clamp-2 group-hover:text-[var(--secondary)] transition-colors duration-300">
+                  <h3 className="font-bold text-[var(--primary)] text-lg mb-4 line-clamp-2 group-hover:text-[#A67C52] transition-colors duration-300">
                     {post.title}
                   </h3>
                   <p className="text-sm text-[var(--primary)]/50 leading-relaxed line-clamp-2 mb-6">

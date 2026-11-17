@@ -104,13 +104,14 @@ export default function AdminDashboard() {
     }
   };
 
-  const fetchStats = async (isSilent = false) => {
+  const fetchStats = async (isSilent = false, force = false) => {
     if (!isSilent) {
       if (stats) setIsRefreshing(true);
       else setLoading(true);
     }
     try {
-      const res = await fetch('/api/admin/stats');
+      const url = force ? '/api/admin/stats?force=true' : '/api/admin/stats';
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       
@@ -156,6 +157,11 @@ export default function AdminDashboard() {
       prevConsultsRef.current = data.recent.consultations;
 
       setStats(data);
+      // 세션 스토리지에 캐시하여 다음 대시보드 탭 진입 시 0초 즉시 렌더링(SWR)
+      try {
+        sessionStorage.setItem('admin_stats_cache', JSON.stringify(data));
+      } catch {}
+
       setLastUpdated(new Date().toLocaleTimeString('ko-KR'));
       setErr('');
     } catch {
@@ -172,7 +178,23 @@ export default function AdminDashboard() {
       setSoundEnabled(savedSound === 'true');
     }
 
-    fetchStats();
+    // SWR 캐시 즉각 복원: 대시보드 클릭 시 로딩 스켈레톤 없이 0초 만에 기존 데이터를 즉시 표출
+    try {
+      const cached = sessionStorage.getItem('admin_stats_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setStats(parsed);
+        setLoading(false);
+        prevLeadsRef.current = parsed.recent?.leads || [];
+        prevConsultsRef.current = parsed.recent?.consultations || [];
+        // 백그라운드에서 최신 데이터 무음 갱신
+        fetchStats(true);
+      } else {
+        fetchStats(false);
+      }
+    } catch {
+      fetchStats(false);
+    }
     
     const interval = setInterval(() => fetchStats(true), 10000);
     return () => clearInterval(interval);
@@ -371,7 +393,7 @@ export default function AdminDashboard() {
         <div className="flex flex-wrap items-center gap-3">
           {/* 수동 새로고침 버튼 */}
           <button
-            onClick={() => fetchStats()}
+            onClick={() => fetchStats(false, true)}
             disabled={isRefreshing}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all border border-gray-200 disabled:opacity-50"
             title="데이터 즉시 새로고침"

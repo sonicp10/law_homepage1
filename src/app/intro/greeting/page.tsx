@@ -102,28 +102,6 @@ export default function GreetingPage() {
                 이제 혼자 고민하지 마십시오. 여러분의 인생 2막, 그 첫 호흡을 법무사 김형근 사무소가 진심을 다해 응원하고 함께하겠습니다.
               </p>
             </motion.div>
-
-            {/* Signature Area */}
-            <motion.div 
-              variants={fadeInUp} 
-              className="pt-12 border-t border-[#A67C52]/10 flex flex-col items-end"
-            >
-              <div className="text-right">
-                <div className="flex flex-col gap-2">
-                  <span className="text-3xl text-[var(--primary)]/60 font-medium italic">진심을 다해,</span>
-                  <div 
-                    key="signature-v2" 
-                    className="flex items-end gap-3 translate-y-2 text-[var(--primary)] whitespace-nowrap shrink-0" 
-                    style={{ fontFamily: "'Gungsuh', '궁서체', '궁서', serif" }}
-                  >
-                    <p className="text-[28px] md:text-[44px] leading-none mb-2 md:mb-3 opacity-90 whitespace-nowrap shrink-0">법무사</p>
-                    <p className="text-[60px] md:text-[100px] leading-none origin-bottom-right translate-y-2 md:translate-y-4 font-black whitespace-nowrap shrink-0" style={{ letterSpacing: '0.05em', textShadow: '0.5px 0.5px 0px rgba(0,0,0,0.1)' }}>
-                      김&nbsp;형&nbsp;근
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
         </div>
       </div>

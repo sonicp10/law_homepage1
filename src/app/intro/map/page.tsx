@@ -124,7 +124,7 @@ export default function MapPage() {
                
                <div className="text-center z-10 p-8">
                  <div className="text-8xl mb-6 transform group-hover:rotate-12 transition-transform select-none">🏢</div>
-                 <h4 className="text-2xl font-black text-[var(--primary)] mb-2">법무사 김형근 사무소</h4>
+                 <h4 className="text-2xl font-black text-[var(--primary)] mb-2">개인회생/개인파산 상담센터</h4>
                  <p className="text-[var(--primary)]/60 font-medium">서울 구로구 경인로 579, 502호 (구로역 2번 출구)</p>
                  <div className="mt-8 flex justify-center gap-4">
                     <a 

@@ -78,7 +78,7 @@ export default function Header() {
 
           {/* Center: Office Name & Service Center Info (Desktop Only) */}
           <div className="absolute left-1/2 -translate-x-1/2 text-[#2C3E50] font-bold text-[14px] md:text-[17px] whitespace-nowrap hidden lg:block">
-            <span className="text-[#A67C52] border-b-2 border-[#A67C52]/30 pb-0.5">개인회생/개인파산</span> 상담센터 법무사 김형근 사무소
+            <span className="text-[#A67C52] border-b-2 border-[#A67C52]/30 pb-0.5">개인회생/개인파산</span> 상담센터
           </div>
           
           {/* Mobile Only Logo Text */}
@@ -106,11 +106,10 @@ export default function Header() {
                     </svg>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-lg md:text-2xl font-bold tracking-tight text-[var(--primary)] leading-none mb-0.5 md:mb-1">
-                    법무사 <span className="text-[#A67C52] font-extrabold">김형근</span> <span>사무소</span>
+                <div className="flex items-center">
+                  <span className="text-xl md:text-2xl lg:text-[26px] font-black tracking-tight text-[var(--primary)] leading-none">
+                    All About <span className="text-[#A67C52]">회생파산</span>
                   </span>
-                  <span className="text-[9px] md:text-[11px] text-[var(--primary)]/60 font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">ALL ABOUT 회생파산</span>
                 </div>
               </Link>
             </div>

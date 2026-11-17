@@ -16,9 +16,10 @@ export default function Footer() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c1.052 0 2.062.18 3 .512v-14.25A8.987 8.987 0 0112 6.042m0 12.084a8.967 8.967 0 006-3.75c1.052 0 2.062.18 3 .512v-14.25A8.987 8.987 0 0112 6.042m0 12.084a8.967 8.967 0 006-3.75c1.052 0 2.062.18 3 .512v-14.25A8.987 8.987 0 0018 3.75c-1.052 0-2.062.18-3 .512v14.25z" />
                 </svg>
               </div>
-              <div className="flex flex-col text-left">
-                <span className="text-xl font-bold tracking-tight leading-none mb-1 text-black">법무사 <span className="text-[#A67C52]">김형근</span> 사무소</span>
-                <span className="text-[11px] text-black/50 font-bold tracking-[0.3em] uppercase">All About 회생파산</span>
+              <div className="flex items-center text-left">
+                <span className="text-xl md:text-2xl font-black tracking-tight leading-none text-black">
+                  All About <span className="text-[#A67C52]">회생파산</span>
+                </span>
               </div>
             </Link>
 

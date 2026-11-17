@@ -53,6 +53,100 @@ const FontSize = Extension.create({
   },
 });
 
+// ── 추천 서체(Font Family) 변경 커스텀 Tiptap 확장 ──────────────
+export const RECOMMENDED_FONTS = [
+  { label: '프리텐다드 (기본·추천)', value: "'Pretendard Variable', Pretendard, sans-serif", group: '본문 고딕 (가독성 추천)' },
+  { label: '나눔스퀘어 (단정·깔끔)', value: "'NanumSquare', sans-serif", group: '본문 고딕 (가독성 추천)' },
+  { label: '본고딕 (Noto Sans KR)', value: "'Noto Sans KR', sans-serif", group: '본문 고딕 (가독성 추천)' },
+  { label: '나눔고딕 (네이버 표준)', value: "'Nanum Gothic', sans-serif", group: '본문 고딕 (가독성 추천)' },
+  { label: '고운돋움 (부드러운 돋움)', value: "'Gowun Dodum', sans-serif", group: '본문 고딕 (가독성 추천)' },
+  { label: '마루부리 (네이버 프리미엄 명조)', value: "'MaruBuri', serif", group: '판결문·인용 명조 (신뢰감 추천)' },
+  { label: '나눔명조 (정통 법률 서체)', value: "'Nanum Myeongjo', serif", group: '판결문·인용 명조 (신뢰감 추천)' },
+  { label: '본명조 (Noto Serif KR)', value: "'Noto Serif KR', serif", group: '판결문·인용 명조 (신뢰감 추천)' },
+  { label: '고운바탕 (따뜻한 바탕체)', value: "'Gowun Batang', serif", group: '판결문·인용 명조 (신뢰감 추천)' },
+  { label: '리디바탕 (전자책 가독성 명조)', value: "'RIDIBatang', serif", group: '판결문·인용 명조 (신뢰감 추천)' },
+  { label: '지마켓 산스 (타이틀·강조용)', value: "'GmarketSansMedium', sans-serif", group: '제목·포인트·감성 서체' },
+  { label: '교보 손글씨 2019 (사연·후기용)', value: "'Kyobo2019', cursive", group: '제목·포인트·감성 서체' },
+  { label: '나눔손글씨 펜 (친근한 메모)', value: "'Nanum Pen Script', cursive", group: '제목·포인트·감성 서체' },
+];
+
+const FontFamily = Extension.create({
+  name: 'fontFamily',
+  addOptions() {
+    return {
+      types: ['textStyle'],
+    };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontFamily: {
+            default: null,
+            parseHTML: element => element.style.fontFamily || null,
+            renderHTML: attributes => {
+              if (!attributes.fontFamily) return {};
+              return { style: `font-family: ${attributes.fontFamily}` };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setFontFamily: (fontFamily: string) => ({ chain }: any) => {
+        return chain().setMark('textStyle', { fontFamily }).run();
+      },
+      unsetFontFamily: () => ({ chain }: any) => {
+        return chain().setMark('textStyle', { fontFamily: null }).run();
+      },
+    } as any;
+  },
+});
+
+// ── 줄간격(Line Height) 조절 커스텀 Tiptap 확장 ──────────────────
+const LineHeight = Extension.create({
+  name: 'lineHeight',
+  addOptions() {
+    return {
+      types: ['paragraph', 'heading'],
+    };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          lineHeight: {
+            default: null,
+            parseHTML: element => element.style.lineHeight || null,
+            renderHTML: attributes => {
+              if (!attributes.lineHeight) return {};
+              return { style: `line-height: ${attributes.lineHeight}` };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setLineHeight: (lineHeight: string) => ({ commands }: any) => {
+        return ['paragraph', 'heading'].every((type) =>
+          commands.updateAttributes(type, { lineHeight })
+        );
+      },
+      unsetLineHeight: () => ({ commands }: any) => {
+        return ['paragraph', 'heading'].every((type) =>
+          commands.resetAttributes(type, 'lineHeight')
+        );
+      },
+    } as any;
+  },
+});
+
 // ── 구분선 클래스 보존용 커스텀 HorizontalRule Node ─────────────────
 const CustomHorizontalRule = Node.create({
   name: 'horizontalRule',
@@ -85,17 +179,27 @@ const CustomHorizontalRule = Node.create({
   },
 });
 
-// ── 이미지 삭제 커스텀 노드뷰 ─────────────────────────────────
-function ImageNodeView({ node, deleteNode, selected }: NodeViewProps) {
+// ── 이미지 정렬/크기/삭제 커스텀 노드뷰 ─────────────────────────────────
+function ImageNodeView({ node, updateAttributes, deleteNode, selected }: NodeViewProps) {
   const [isHovered, setIsHovered] = useState(false);
   const isVisible = selected || isHovered;
 
-  const textAlign = (node.attrs as any).style?.match(/text-align:\s*(\w+)/)?.[1] || 'left';
+  const rawStyle = ((node.attrs as any).style as string) || '';
+  const textAlign = rawStyle.match(/text-align:\s*(\w+)/)?.[1] || 'center';
+  const imgWidth = ((node.attrs as any).width as string) || '100%';
+
+  const setAlign = (align: 'left' | 'center' | 'right') => {
+    updateAttributes({ style: `text-align: ${align}` });
+  };
+
+  const setWidth = (w: string) => {
+    updateAttributes({ width: w });
+  };
 
   return (
     <NodeViewWrapper
-      className="relative inline-block w-full"
-      style={{ textAlign }}
+      className="relative block w-full my-6"
+      style={{ textAlign: textAlign as any }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -103,18 +207,67 @@ function ImageNodeView({ node, deleteNode, selected }: NodeViewProps) {
       <img
         src={(node.attrs as any).src}
         alt={(node.attrs as any).alt || ''}
-        className={`max-w-full h-auto rounded-lg transition-all duration-200 ${
+        style={{
+          width: imgWidth,
+          maxWidth: '100%',
+          height: 'auto',
+          display: 'inline-block',
+          margin: 0,
+        }}
+        className={`rounded-lg transition-all duration-200 ${
           isVisible ? 'ring-2 ring-[#A67C52] ring-offset-2' : ''
         }`}
         draggable={false}
       />
 
-      {/* 클릭/호버 시 나타나는 컨트롤 툴바 */}
+      {/* 클릭/호버 시 나타나는 컨트롤 툴바 (정렬 · 크기 조절 · 삭제) */}
       <div
-        className={`absolute top-2 right-2 flex items-center gap-1 transition-all duration-200 ${
+        className={`absolute top-2 right-2 flex flex-wrap items-center gap-1 bg-white/95 backdrop-blur-sm p-1.5 rounded-xl shadow-xl border border-gray-200 transition-all duration-200 z-20 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'
         }`}
       >
+        {/* 정렬 버튼 */}
+        {(['left', 'center', 'right'] as const).map((al) => (
+          <button
+            key={al}
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setAlign(al);
+            }}
+            className={`px-2 py-1 text-[11px] font-bold rounded-md transition-colors ${
+              textAlign === al ? 'bg-[#2C3E50] text-white' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title={al === 'left' ? '왼쪽 정렬' : al === 'center' ? '가운데 정렬' : '오른쪽 정렬'}
+          >
+            {al === 'left' ? '좌' : al === 'center' ? '중' : '우'}
+          </button>
+        ))}
+
+        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+
+        {/* 폭(크기) 비율 버튼 */}
+        {(['50%', '75%', '100%'] as const).map((w) => (
+          <button
+            key={w}
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setWidth(w);
+            }}
+            className={`px-2 py-1 text-[11px] font-bold rounded-md transition-colors ${
+              imgWidth === w ? 'bg-[#A67C52] text-white' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title={`이미지 너비 ${w}`}
+          >
+            {w}
+          </button>
+        ))}
+
+        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+
         {/* 삭제 버튼 */}
         <button
           type="button"
@@ -123,10 +276,10 @@ function ImageNodeView({ node, deleteNode, selected }: NodeViewProps) {
             e.stopPropagation();
             deleteNode();
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-xs font-bold rounded-lg shadow-xl transition-all duration-150 select-none"
+          className="flex items-center gap-1 px-2.5 py-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-[11px] font-bold rounded-md shadow-sm transition-all duration-150 select-none"
           title="이미지 삭제"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3.5 h-3.5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3 h-3">
             <polyline points="3 6 5 6 21 6" />
             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
             <path d="M10 11v6M14 11v6" />
@@ -139,15 +292,43 @@ function ImageNodeView({ node, deleteNode, selected }: NodeViewProps) {
       {/* 선택됨 표시 배지 */}
       {selected && (
         <div className="absolute bottom-2 left-2 px-2 py-1 bg-[#A67C52] text-white text-[10px] font-bold rounded-md shadow-md select-none">
-          이미지 선택됨
+          이미지 선택됨 ({imgWidth})
         </div>
       )}
     </NodeViewWrapper>
   );
 }
 
-// ── 커스텀 Image Extension (NodeView 포함) ──────────────────────
+// ── 커스텀 Image Extension (width, style 속성 보존 + NodeView 포함) ──
 const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: '100%',
+        parseHTML: element => element.getAttribute('width') || element.style.width || '100%',
+        renderHTML: attributes => {
+          const width = attributes.width || '100%';
+          const alignMatch = (attributes.style || '').match(/text-align:\s*(\w+)/)?.[1] || 'center';
+          const marginStyle =
+            alignMatch === 'left'
+              ? 'margin: 1.5em auto 1.5em 0;'
+              : alignMatch === 'right'
+              ? 'margin: 1.5em 0 1.5em auto;'
+              : 'margin: 1.5em auto;';
+          return {
+            width,
+            style: `width: ${width}; max-width: 100%; height: auto; display: block; ${marginStyle} text-align: ${alignMatch};`,
+          };
+        },
+      },
+      style: {
+        default: 'text-align: center',
+        parseHTML: element => element.getAttribute('style') || 'text-align: center',
+        renderHTML: () => ({}),
+      },
+    };
+  },
   addNodeView() {
     return ReactNodeViewRenderer(ImageNodeView);
   },
@@ -206,6 +387,8 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   const highlightColorInputRef = useRef<HTMLInputElement>(null);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({ uploading: false, current: 0, total: 0 });
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showSymbolPalette, setShowSymbolPalette] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'EDIT' | 'DESKTOP' | 'MOBILE'>('EDIT');
   // 커서 이동/선택 변경 시 툴바 상태를 강제 갱신하기 위한 카운터
   const [, forceUpdate] = useState(0);
 
@@ -221,6 +404,8 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
       Underline,
       TextStyle,
       FontSize,
+      FontFamily,
+      LineHeight,
       Color,
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -371,17 +556,74 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   }, [editor]);
 
   // 프리미엄 구분선 삽입
-  const handleInsertDivider = useCallback((type: 'solid' | 'dashed' | 'gradient' | 'wavy') => {
+  const handleInsertDivider = useCallback((type: 'solid' | 'dashed' | 'gradient' | 'wavy' | 'double' | 'diamond') => {
     if (!editor) return;
     let className = 'hr-solid';
     if (type === 'dashed') className = 'hr-dashed';
     else if (type === 'gradient') className = 'hr-gradient';
     else if (type === 'wavy') className = 'hr-wavy';
+    else if (type === 'double') className = 'hr-double';
+    else if (type === 'diamond') className = 'hr-diamond';
 
     editor.chain().focus().insertContent({
       type: 'horizontalRule',
       attrs: { class: className }
     }).run();
+  }, [editor]);
+
+  // 네이버 블로그 스타일 인용구 / 말풍선 / 법조문 박스 삽입
+  const handleInsertQuoteStyle = useCallback((style: 'classic' | 'center' | 'frame' | 'speech' | 'law') => {
+    if (!editor) return;
+    let html = '';
+    if (style === 'classic') {
+      html = `<blockquote style="border-left: 4px solid #A67C52; padding: 1em 1.5em; background: #FDF8F3; border-radius: 0 12px 12px 0; margin: 1.5em 0; color: #2C3E50;"><p>중요한 핵심 내용이나 의뢰인의 사연을 이곳에 입력하세요.</p></blockquote><p></p>`;
+    } else if (style === 'center') {
+      html = `<div style="text-align: center; padding: 2em 1.5em; margin: 1.8em 0; background: #FAF9F6; border-top: 2px solid #A67C52; border-bottom: 2px solid #A67C52;"><div style="font-size: 28px; color: #A67C52; line-height: 1; font-family: Georgia, serif;">“</div><p style="font-family: 'MaruBuri', 'Nanum Myeongjo', serif; font-size: 19px; font-weight: bold; color: #2C3E50; margin: 0.6em 0;">감당하기 힘들었던 채무의 무게, 법무사 김형근 사무소가 함께 덜어드리겠습니다.</p><div style="font-size: 28px; color: #A67C52; line-height: 1; font-family: Georgia, serif;">”</div></div><p></p>`;
+    } else if (style === 'frame') {
+      html = `<div style="border: 2px solid #2C3E50; border-radius: 16px; padding: 1.6em; margin: 1.5em 0; background: #FFFFFF; box-shadow: 0 4px 16px rgba(44,62,80,0.05);"><h4 style="margin: 0 0 0.6em; color: #A67C52; font-size: 1.05em; font-weight: 800;">📌 핵심 요약 노트</h4><p style="margin: 0; color: #2C3E50; line-height: 1.75;">여기에 사건의 핵심 쟁점이나 꼭 기억해야 할 법률 포인트를 정리하세요.</p></div><p></p>`;
+    } else if (style === 'speech') {
+      html = `<div style="background: #F0F4F8; border: 1px solid #D9E2EC; border-radius: 20px 20px 20px 4px; padding: 1.4em 1.6em; margin: 1.5em 0; color: #2C3E50;"><p style="margin: 0 0 0.4em; font-size: 0.85em; font-weight: 800; color: #2563EB;">💬 의뢰인의 실제 고민</p><p style="margin: 0; font-family: 'Gowun Dodum', sans-serif; font-size: 1.02em;">"매달 돌아오는 카드값과 독촉 전화 때문에 일상생활이 불가능할 정도로 힘들었습니다."</p></div><p></p>`;
+    } else if (style === 'law') {
+      html = `<div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-left: 5px solid #2C3E50; border-radius: 12px; padding: 1.4em 1.6em; margin: 1.5em 0;"><p style="margin: 0 0 0.5em; font-weight: 800; color: #2C3E50; font-size: 0.95em;">⚖️ 관련 법률 근거 (채무자 회생 및 파산에 관한 법률)</p><p style="margin: 0; font-family: 'MaruBuri', 'Nanum Myeongjo', serif; font-size: 0.95em; color: #334155; line-height: 1.8;">재정적 어려움으로 인하여 파탄에 직면해 있는 채무자에 대하여 채권자 등 이해관계인의 법률관계를 조정하여 채무자의 효율적 회생과 채권자의 이익을 도모함을 목적으로 한다.</p></div><p></p>`;
+    }
+    editor.chain().focus().insertContent(html).run();
+  }, [editor]);
+
+  // 네이버 블로그 스타일 표(Table) 빠른 삽입
+  const handleInsertTable = useCallback((preset: '2x3' | '3x4' | 'debt' | 'docs') => {
+    if (!editor) return;
+    let html = '';
+    if (preset === '2x3') {
+      html = `<table style="width:100%; border-collapse:collapse; margin:1.5em 0; font-size:0.95em;"><thead><tr style="background:#FAF9F6;"><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50; width:35%;">항목</th><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50;">상세 내용</th></tr></thead><tbody><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">구분 1</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">내용을 입력하세요</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">구분 2</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">내용을 입력하세요</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">구분 3</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">내용을 입력하세요</td></tr></tbody></table><p></p>`;
+    } else if (preset === '3x4') {
+      html = `<table style="width:100%; border-collapse:collapse; margin:1.5em 0; font-size:0.95em; text-align:center;"><thead><tr style="background:#FAF9F6;"><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50;">구분</th><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50;">개인회생</th><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50;">개인파산</th></tr></thead><tbody><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">신청 자격</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">일정 소득이 있는 채무자</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">지급불능 상태의 채무자</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">변제 기간</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">36개월 ~ 60개월</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">즉시 면책 (변제 없음)</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">재산 유지</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">재산 보유 가능</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">원칙적 환가 배당</td></tr></tbody></table><p></p>`;
+    } else if (preset === 'debt') {
+      html = `<table style="width:100%; border-collapse:collapse; margin:1.5em 0; font-size:0.95em;"><thead><tr style="background:#2C3E50; color:#FFFFFF;"><th style="border:1px solid #2C3E50; padding:12px 16px; text-align:left; width:35%;">사건 핵심 지표</th><th style="border:1px solid #2C3E50; padding:12px 16px; text-align:left;">인가 결정 결과</th></tr></thead><tbody><tr><td style="border:1px solid #E8E4D8; padding:11px 16px; font-weight:bold; background:#FAF9F6;">관할 법원 / 의뢰인</td><td style="border:1px solid #E8E4D8; padding:11px 16px;">서울회생법원 / 40대 직장인</td></tr><tr><td style="border:1px solid #E8E4D8; padding:11px 16px; font-weight:bold; background:#FAF9F6;">총 채무 원리금</td><td style="border:1px solid #E8E4D8; padding:11px 16px;">120,000,000원</td></tr><tr><td style="border:1px solid #E8E4D8; padding:11px 16px; font-weight:bold; background:#FAF9F6;">최종 탕감액 (탕감률)</td><td style="border:1px solid #E8E4D8; padding:11px 16px; color:#E53E3E; font-weight:800;">96,000,000원 탕감 (원금 80% 탕감)</td></tr><tr><td style="border:1px solid #E8E4D8; padding:11px 16px; font-weight:bold; background:#FAF9F6;">월 변제금 (기간)</td><td style="border:1px solid #E8E4D8; padding:11px 16px; color:#2563EB; font-weight:bold;">월 66만 원 (36개월)</td></tr></tbody></table><p></p>`;
+    } else if (preset === 'docs') {
+      html = `<table style="width:100%; border-collapse:collapse; margin:1.5em 0; font-size:0.95em;"><thead><tr style="background:#FAF9F6;"><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50; width:30%;">구분</th><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50;">필수 준비 서류 목록</th></tr></thead><tbody><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">인적 서류</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">주민등록등본·초본, 가족관계증명서, 혼인관계증명서, 신분증 사본</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">소득 증빙</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">재직증명서(또는 사업자등록증), 근로소득원천징수영수증, 급여통장 거래내역</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">재산 증빙</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">임대차계약서, 지방세 세목별 과세증명서, 자동차등록원부, 보험 해약환급금 증명서</td></tr></tbody></table><p></p>`;
+    }
+    editor.chain().focus().insertContent(html).run();
+  }, [editor]);
+
+  // 유튜브 / 동영상 임베드 삽입
+  const handleInsertVideo = useCallback(() => {
+    if (!editor) return;
+    const rawUrl = window.prompt('유튜브 영상 주소(URL)를 입력하세요:\n예: https://www.youtube.com/watch?v=xxxx 또는 https://youtu.be/xxxx');
+    if (!rawUrl || !rawUrl.trim()) return;
+    const trimmed = rawUrl.trim();
+    let embedUrl = trimmed;
+    const ytMatch = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+    if (ytMatch && ytMatch[1]) {
+      embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+    }
+    const html = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; max-width:100%; border-radius:16px; margin:1.8em 0; box-shadow:0 8px 24px rgba(0,0,0,0.1);"><iframe src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div><p></p>`;
+    editor.chain().focus().insertContent(html).run();
+  }, [editor]);
+
+  // 법률 특수기호 / 이모지 빠른 삽입
+  const handleInsertSymbol = useCallback((sym: string) => {
+    if (!editor) return;
+    editor.chain().focus().insertContent(sym).run();
   }, [editor]);
 
   // 프리미엄 서식 템플릿 삽입
@@ -545,277 +787,500 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
           <p className="text-xs text-gray-400 mt-2">잠시만 기다려주세요...</p>
         </div>
       )}
-      {/* ── 툴바 ─────────────────────────────── */}
-      <div className="sticky top-[60px] md:top-0 z-30 bg-white border-b border-[var(--border)] px-3 py-2 flex flex-wrap items-center gap-1.5">
-
-        {/* 헤딩 드롭다운 */}
-        <select
-          value={
-            editor.isActive('heading', { level: 1 }) ? '1'
-            : editor.isActive('heading', { level: 2 }) ? '2'
-            : editor.isActive('heading', { level: 3 }) ? '3'
-            : '0'
-          }
-          onChange={(e) => {
-            const level = parseInt(e.target.value);
-            if (level === 0) editor.chain().focus().setParagraph().run();
-            else editor.chain().focus().toggleHeading({ level: level as 1|2|3 }).run();
-          }}
-          className="h-8 px-2 text-sm font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
-          title="문단 스타일"
-        >
-          <option value="0">본문</option>
-          <option value="1">제목 1</option>
-          <option value="2">제목 2</option>
-          <option value="3">제목 3</option>
-        </select>
-
-        {/* 글자 크기 드롭다운 — 커서 위치의 실제 fontSize를 읽어 동적 반영 */}
-        <select
-          value={(() => {
-            // 현재 커서/선택 영역의 textStyle fontSize 속성을 읽음
-            const attrs = editor.getAttributes('textStyle');
-            const fontSize = attrs?.fontSize as string | null | undefined;
-            if (!fontSize) return 'default';
-            // "20px" 처럼 단위가 붙어 있을 수도, "20" 처럼 없을 수도 있어 정규화
-            const normalized = fontSize.includes('px') ? fontSize : `${fontSize}px`;
-            const allowed = ['12px','14px','16px','18px','20px','24px','32px'];
-            return allowed.includes(normalized) ? normalized : 'default';
-          })()}
-          onChange={(e) => {
-            const size = e.target.value;
-            if (size === 'default') {
-              (editor.commands as any).unsetFontSize();
-            } else {
-              (editor.commands as any).setFontSize(size);
-            }
-            editor.commands.focus();
-          }}
-          className="h-8 px-2 text-sm font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
-          title="글자 크기"
-        >
-          <option value="default">크기</option>
-          <option value="12px">12px</option>
-          <option value="14px">14px</option>
-          <option value="16px">16px</option>
-          <option value="18px">18px</option>
-          <option value="20px">20px</option>
-          <option value="24px">24px</option>
-          <option value="32px">32px</option>
-        </select>
-
-        {/* 프리미엄 서식 템플릿 */}
-        <select
-          onChange={(e) => {
-            const template = e.target.value;
-            if (template !== 'none') {
-              handleInsertTemplate(template as any);
-              e.target.value = 'none';
-            }
-          }}
-          className="h-8 px-2.5 text-sm font-bold border border-[#A67C52]/30 rounded-md text-white bg-[#A67C52] cursor-pointer focus:outline-none hover:bg-[#8B6840] transition-colors shadow-sm ml-auto sm:ml-0"
-          defaultValue="none"
-          title="서식 템플릿 불러오기"
-        >
-          <option value="none">⭐ 서식 템플릿</option>
-          <option value="success">성공사례 브리핑</option>
-          <option value="guide">법률 정보 가이드</option>
-          <option value="cta">상담 유도 CTA</option>
-          <option value="profile">대표 법무사 프로필</option>
-          <option value="procedure">개인회생 진행 절차</option>
-          <option value="qa">자주 묻는 질문 FAQ</option>
-          <option value="compare">신청 전후 비교표</option>
-        </select>
-
-        <Divider />
-
-        {/* 텍스트 스타일 */}
-        <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="굵게 (Ctrl+B)">
-          <strong>B</strong>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="기울임 (Ctrl+I)">
-          <em>I</em>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="밑줄 (Ctrl+U)">
-          <span className="underline">U</span>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="취소선">
-          <span className="line-through">S</span>
-        </ToolBtn>
-
-        <Divider />
-
-        {/* 글자색 & 하이라이트 */}
-        <div className="relative group">
+      {/* ── 네이버 블로그 스마트에디터 ONE 스타일 2단 툴바 ─────────────────────────────── */}
+      <div className="sticky top-[60px] md:top-0 z-30 bg-white border-b border-[var(--border)] rounded-t-2xl">
+        
+        {/* [1단 상단 바] 멀티미디어 · 블록 요소 · 템플릿 삽입 (사진, URL, 동영상, 인용구, 구분선, 표, 기호, 서식 템플릿) */}
+        <div className="px-3 py-2 border-b border-gray-100 bg-gray-50/70 flex flex-wrap items-center gap-1.5">
+          {/* 사진 업로드 */}
           <button
             type="button"
-            title="글자색"
-            className="flex flex-col items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors gap-0.5"
+            onMouseDown={(e) => { e.preventDefault(); fileInputRef.current?.click(); }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#A67C52] hover:text-[#A67C52] text-xs font-bold text-[#2C3E50] shadow-2xs transition-all cursor-pointer"
+            title="내 PC에서 사진 업로드 (다중 선택 및 드래그앤드롭 가능)"
           >
-            <span className="text-xs font-black text-[#2C3E50]">A</span>
-            <div className="w-5 h-1 rounded-full bg-[#E53E3E]" />
+            <span>🖼️</span>
+            <span>사진</span>
           </button>
-          <div className="absolute top-full left-0 mt-1 p-2.5 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-7 gap-1 w-[215px]">
-            {[
-              '#000000', '#2C3E50', '#5A6A7A', '#718096', 
-              '#E53E3E', '#C53030', '#FEB2B2', '#ED8936', 
-              '#D69E2E', '#C5A059', '#F6AD55', '#38A169', 
-              '#48BB78', '#9AE6B4', '#3182CE', '#4299E1', 
-              '#90CAF9', '#805AD5', '#9F7AEA', '#E9D8FD'
-            ].map(c => (
-              <button
-                key={c}
-                type="button"
-                onMouseDown={(e) => { e.preventDefault(); handleColor(c); }}
-                className="w-6 h-6 rounded-full border border-gray-200 shadow-sm hover:scale-110 transition-transform"
-                style={{ backgroundColor: c }}
-                title={c}
-              />
-            ))}
-            {/* 커스텀 컬러 피커 버튼 */}
+
+          {/* 이미지 URL */}
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); handleImageUrl(); }}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#A67C52] hover:text-[#A67C52] text-xs font-bold text-[#2C3E50] shadow-2xs transition-all cursor-pointer"
+            title="외부 이미지 주소(URL)로 삽입"
+          >
+            <span>🌐</span>
+            <span>이미지 URL</span>
+          </button>
+
+          {/* 유튜브/동영상 삽입 */}
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); handleInsertVideo(); }}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#A67C52] hover:text-[#A67C52] text-xs font-bold text-[#2C3E50] shadow-2xs transition-all cursor-pointer"
+            title="유튜브 영상 임베드 삽입"
+          >
+            <span>🎬</span>
+            <span>동영상</span>
+          </button>
+
+          <Divider />
+
+          {/* 네이버 블로그 스타일 인용구 5종 */}
+          <select
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val !== 'none') {
+                handleInsertQuoteStyle(val as any);
+                e.target.value = 'none';
+              }
+            }}
+            className="h-8 px-2.5 text-xs font-bold border border-gray-200 rounded-lg text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+            defaultValue="none"
+            title="네이버 블로그 스타일 인용구 삽입"
+          >
+            <option value="none">💬 인용구</option>
+            <option value="classic">기본 좌측 선 인용구</option>
+            <option value="center">큰따옴표 중앙 강조 인용구</option>
+            <option value="frame">핵심 요약 테두리 박스</option>
+            <option value="speech">의뢰인 고민 말풍선</option>
+            <option value="law">법조문·판례 근거 박스</option>
+          </select>
+
+          {/* 구분선 스타일 6종 */}
+          <select
+            onChange={(e) => {
+              const type = e.target.value;
+              if (type !== 'none') {
+                handleInsertDivider(type as any);
+                e.target.value = 'none';
+              }
+            }}
+            className="h-8 px-2.5 text-xs font-bold border border-gray-200 rounded-lg text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+            defaultValue="none"
+            title="구분선 스타일 삽입"
+          >
+            <option value="none">➖ 구분선</option>
+            <option value="solid">기본 실선</option>
+            <option value="dashed">골드 점선</option>
+            <option value="double">클래식 이중선</option>
+            <option value="gradient">그라데이션 선</option>
+            <option value="diamond">다이아몬드 포인트선</option>
+            <option value="wavy">물결 구분선</option>
+          </select>
+
+          {/* 표(Table) 빠른 삽입 */}
+          <select
+            onChange={(e) => {
+              const preset = e.target.value;
+              if (preset !== 'none') {
+                handleInsertTable(preset as any);
+                e.target.value = 'none';
+              }
+            }}
+            className="h-8 px-2.5 text-xs font-bold border border-gray-200 rounded-lg text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+            defaultValue="none"
+            title="표(테이블) 삽입"
+          >
+            <option value="none">📊 표 삽입</option>
+            <option value="debt">탕감 전·후 핵심 요약표 (성공사례 추천)</option>
+            <option value="docs">필수 준비 서류 안내표</option>
+            <option value="2x3">2열 × 3행 기본 표</option>
+            <option value="3x4">3열 × 3행 비교 표</option>
+          </select>
+
+          {/* 링크 삽입 */}
+          <button
+            type="button"
+            onMouseDown={(e) => { e.preventDefault(); handleLink(); }}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+              editor.isActive('link')
+                ? 'bg-[#A67C52] text-white border-[#A67C52]'
+                : 'bg-white text-[#2C3E50] border-gray-200 hover:border-[#A67C52] hover:text-[#A67C52]'
+            }`}
+            title="하이퍼링크 삽입/수정"
+          >
+            <span>🔗</span>
+            <span>링크</span>
+          </button>
+
+          {/* 법률 특수기호 & 아이콘 팔레트 */}
+          <div className="relative">
             <button
               type="button"
               onMouseDown={(e) => {
                 e.preventDefault();
-                textColorInputRef.current?.click();
+                setShowSymbolPalette(prev => !prev);
               }}
-              className="w-6 h-6 rounded-full border border-gray-300 bg-gradient-to-tr from-red-400 via-green-400 to-blue-500 hover:scale-110 transition-transform flex items-center justify-center"
-              title="사용자 지정 색상 선택"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#A67C52] hover:text-[#A67C52] text-xs font-bold text-[#2C3E50] shadow-2xs transition-all cursor-pointer"
+              title="법률 칼럼·성공사례 자주 쓰는 특수기호 및 아이콘"
             >
-              <span className="text-[10px] text-white font-bold drop-shadow-sm">+</span>
+              <span>⚖️</span>
+              <span>기호·아이콘</span>
             </button>
-            <button 
-              type="button" 
-              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetColor().run(); }} 
-              className="w-6 h-6 rounded-full border border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50 flex items-center justify-center"
-              title="색상 초기화"
+            {showSymbolPalette && (
+              <div className="absolute top-full left-0 mt-1 p-2.5 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 w-[250px]">
+                <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-gray-100">
+                  <span className="text-[11px] font-bold text-gray-500">법률·강조 특수기호 클릭 삽입</span>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); setShowSymbolPalette(false); }}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {[
+                    '☎', '⚖️', '🏆', '📌', '✅', '✔️', '❗',
+                    '💡', '🔎', '📋', '💰', '📉', '🛡️', '🏛️',
+                    '※', '★', '☆', '●', '■', '◆', '▶',
+                    '①', '②', '③', '④', '⑤', '➔', '👉',
+                  ].map((sym) => (
+                    <button
+                      key={sym}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleInsertSymbol(sym);
+                        setShowSymbolPalette(false);
+                      }}
+                      className="h-7 rounded-md hover:bg-amber-50 border border-transparent hover:border-amber-200 flex items-center justify-center text-sm"
+                    >
+                      {sym}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 우측 끝: 프리미엄 법률 서식 템플릿 & PC/모바일 미리보기 */}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <select
+              onChange={(e) => {
+                const template = e.target.value;
+                if (template !== 'none') {
+                  handleInsertTemplate(template as any);
+                  e.target.value = 'none';
+                }
+              }}
+              className="h-8 px-3 text-xs font-bold border border-[#A67C52]/30 rounded-lg text-white bg-[#A67C52] cursor-pointer focus:outline-none hover:bg-[#8B6840] transition-colors shadow-sm"
+              defaultValue="none"
+              title="원클릭 법률 서식 템플릿 삽입"
             >
-              ✕
-            </button>
+              <option value="none">⭐ 법률 서식 템플릿</option>
+              <option value="success">🏆 법원 인가 성공사례 브리핑</option>
+              <option value="guide">📌 핵심 체크리스트 가이드</option>
+              <option value="cta">⚖️ 30초 자격진단 유도 배너(CTA)</option>
+              <option value="profile">👨‍⚖️ 대표 법무사 프로필 카드</option>
+              <option value="procedure">📋 개인회생 3단계 절차 타임라인</option>
+              <option value="qa">❓ 자주 묻는 질문 (Q&A 박스)</option>
+              <option value="compare">📊 제도 신청 전·후 비교표</option>
+            </select>
+
+            {/* 네이버 블로그 우측 도크 스타일: 편집 / PC 미리보기 / 모바일 미리보기 전환 */}
+            <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 shadow-2xs">
+              {[
+                { mode: 'EDIT' as const, label: '✍️ 편집' },
+                { mode: 'DESKTOP' as const, label: '🖥️ PC화면' },
+                { mode: 'MOBILE' as const, label: '📱 모바일' },
+              ].map((m) => (
+                <button
+                  key={m.mode}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setPreviewMode(m.mode);
+                  }}
+                  className={`px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    previewMode === m.mode
+                      ? 'bg-[#2C3E50] text-white shadow-xs'
+                      : 'text-gray-500 hover:text-[#2C3E50]'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="relative group">
-          <button
-            type="button"
-            title="하이라이트"
-            className="flex flex-col items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors gap-0.5"
+        {/* [2단 하단 바] 타이포그래피 & 단락 서식 (문단, 서체 선택, 글자 크기, 줄간격, 굵게/기울임/밑줄/취소선, 색상, 정렬, 목록, 서식 지우기, 실행취소) */}
+        <div className="px-3 py-2 flex flex-wrap items-center gap-1.5 bg-white">
+          {/* 문단 스타일 드롭다운 */}
+          <select
+            value={
+              editor.isActive('heading', { level: 1 }) ? '1'
+              : editor.isActive('heading', { level: 2 }) ? '2'
+              : editor.isActive('heading', { level: 3 }) ? '3'
+              : '0'
+            }
+            onChange={(e) => {
+              const level = parseInt(e.target.value);
+              if (level === 0) editor.chain().focus().setParagraph().run();
+              else editor.chain().focus().toggleHeading({ level: level as 1|2|3 }).run();
+            }}
+            className="h-8 px-2 text-xs font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+            title="문단 스타일 (본문 / 소제목)"
           >
-            <span className="text-xs font-black text-[#2C3E50] px-0.5" style={{ backgroundColor: '#FFF176' }}>HL</span>
-          </button>
-          <div className="absolute top-full left-0 mt-1 p-2 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-5 gap-1.5 w-[160px]">
-            {[
-              '#FFF176', '#FFEEBA', '#FEEBC8', '#B9F6CA', 
-              '#E6FFFA', '#C6F6D5', '#B3E5FC', '#EBF4FF', 
-              '#E2E8F0', '#FFCCBC', '#E1BEE7', '#FDE8E8'
-            ].map(c => (
-              <button
-                key={c}
-                type="button"
-                onMouseDown={(e) => { e.preventDefault(); handleHighlight(c); }}
-                className="w-6 h-6 rounded-full border border-gray-200 shadow-sm hover:scale-110 transition-transform"
-                style={{ backgroundColor: c }}
-                title={c}
-              />
+            <option value="0">본문</option>
+            <option value="1">대제목 (H1)</option>
+            <option value="2">중제목 (H2)</option>
+            <option value="3">소제목 (H3)</option>
+          </select>
+
+          {/* ✨ 추천 서체(Font Family) 선택 드롭다운 */}
+          <select
+            value={(() => {
+              const attrs = editor.getAttributes('textStyle');
+              return (attrs?.fontFamily as string) || 'default';
+            })()}
+            onChange={(e) => {
+              const fam = e.target.value;
+              if (fam === 'default') {
+                (editor.commands as any).unsetFontFamily();
+              } else {
+                (editor.commands as any).setFontFamily(fam);
+              }
+              editor.commands.focus();
+            }}
+            className="h-8 px-2 text-xs font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors max-w-[175px]"
+            title="법률 칼럼 & 성공사례 추천 서체 변경"
+          >
+            <option value="default">서체 (프리텐다드 기본)</option>
+            {['본문 고딕 (가독성 추천)', '판결문·인용 명조 (신뢰감 추천)', '제목·포인트·감성 서체'].map((grp) => (
+              <optgroup key={grp} label={grp}>
+                {RECOMMENDED_FONTS.filter(f => f.group === grp).map((font) => (
+                  <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                    {font.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
-            {/* 커스텀 하이라이트 피커 버튼 */}
+          </select>
+
+          {/* 글자 크기 드롭다운 — 네이버 블로그 스타일 세밀한 크기(11px~36px) */}
+          <select
+            value={(() => {
+              const attrs = editor.getAttributes('textStyle');
+              const fontSize = attrs?.fontSize as string | null | undefined;
+              if (!fontSize) return 'default';
+              const normalized = fontSize.includes('px') ? fontSize : `${fontSize}px`;
+              const allowed = ['11px','13px','15px','16px','17px','19px','20px','24px','28px','32px','36px'];
+              return allowed.includes(normalized) ? normalized : 'default';
+            })()}
+            onChange={(e) => {
+              const size = e.target.value;
+              if (size === 'default') {
+                (editor.commands as any).unsetFontSize();
+              } else {
+                (editor.commands as any).setFontSize(size);
+              }
+              editor.commands.focus();
+            }}
+            className="h-8 px-2 text-xs font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+            title="글자 크기 (네이버 블로그 규격 호환)"
+          >
+            <option value="default">크기 (17px)</option>
+            <option value="11px">11px (주석)</option>
+            <option value="13px">13px (작게)</option>
+            <option value="15px">15px (부본문)</option>
+            <option value="16px">16px (본문 기본)</option>
+            <option value="17px">17px (가독성 추천)</option>
+            <option value="19px">19px (네이버 강조)</option>
+            <option value="20px">20px (소제목급)</option>
+            <option value="24px">24px (중제목급)</option>
+            <option value="28px">28px (대제목급)</option>
+            <option value="32px">32px (특대)</option>
+            <option value="36px">36px (배너급)</option>
+          </select>
+
+          {/* 줄간격(Line Height) 드롭다운 */}
+          <select
+            value={(() => {
+              const pAttrs = editor.getAttributes('paragraph');
+              const hAttrs = editor.getAttributes('heading');
+              return (pAttrs?.lineHeight || hAttrs?.lineHeight || 'default') as string;
+            })()}
+            onChange={(e) => {
+              const lh = e.target.value;
+              if (lh === 'default') {
+                (editor.commands as any).unsetLineHeight();
+              } else {
+                (editor.commands as any).setLineHeight(lh);
+              }
+              editor.commands.focus();
+            }}
+            className="h-8 px-2 text-xs font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
+            title="문단 줄간격 조절"
+          >
+            <option value="default">줄간격</option>
+            <option value="1.4">140% (좁게)</option>
+            <option value="1.6">160% (보통)</option>
+            <option value="1.8">180% (기본 추천)</option>
+            <option value="2.0">200% (넓게)</option>
+            <option value="2.2">220% (여유롭게)</option>
+          </select>
+
+          <Divider />
+
+          {/* 텍스트 스타일 */}
+          <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="굵게 (Ctrl+B)">
+            <strong>B</strong>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="기울임 (Ctrl+I)">
+            <em>I</em>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="밑줄 (Ctrl+U)">
+            <span className="underline">U</span>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="취소선">
+            <span className="line-through">S</span>
+          </ToolBtn>
+
+          <Divider />
+
+          {/* 글자색 & 하이라이트 */}
+          <div className="relative group">
             <button
               type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                highlightColorInputRef.current?.click();
-              }}
-              className="w-6 h-6 rounded-full border border-gray-300 bg-gradient-to-tr from-red-400 via-green-400 to-blue-500 hover:scale-110 transition-transform flex items-center justify-center"
-              title="사용자 지정 하이라이트 선택"
+              title="글자색"
+              className="flex flex-col items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors gap-0.5"
             >
-              <span className="text-[10px] text-white font-bold drop-shadow-md">+</span>
+              <span className="text-xs font-black text-[#2C3E50]">A</span>
+              <div className="w-5 h-1 rounded-full bg-[#E53E3E]" />
             </button>
-            <button 
-              type="button" 
-              onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetHighlight().run(); }} 
-              className="w-6 h-6 rounded-full border border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50 flex items-center justify-center"
-              title="하이라이트 초기화"
-            >
-              ✕
-            </button>
+            <div className="absolute top-full left-0 mt-1 p-2.5 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-7 gap-1 w-[215px]">
+              {[
+                '#000000', '#2C3E50', '#5A6A7A', '#718096', 
+                '#E53E3E', '#C53030', '#FEB2B2', '#ED8936', 
+                '#D69E2E', '#C5A059', '#F6AD55', '#38A169', 
+                '#48BB78', '#9AE6B4', '#3182CE', '#4299E1', 
+                '#2563EB', '#805AD5', '#9F7AEA', '#E9D8FD'
+              ].map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); handleColor(c); }}
+                  className="w-6 h-6 rounded-full border border-gray-200 shadow-sm hover:scale-110 transition-transform"
+                  style={{ backgroundColor: c }}
+                  title={c}
+                />
+              ))}
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  textColorInputRef.current?.click();
+                }}
+                className="w-6 h-6 rounded-full border border-gray-300 bg-gradient-to-tr from-red-400 via-green-400 to-blue-500 hover:scale-110 transition-transform flex items-center justify-center"
+                title="사용자 지정 색상 선택"
+              >
+                <span className="text-[10px] text-white font-bold drop-shadow-sm">+</span>
+              </button>
+              <button 
+                type="button" 
+                onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetColor().run(); }} 
+                className="w-6 h-6 rounded-full border border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50 flex items-center justify-center"
+                title="색상 초기화"
+              >
+                ✕
+              </button>
+            </div>
           </div>
+
+          <div className="relative group">
+            <button
+              type="button"
+              title="형광펜 하이라이트"
+              className="flex flex-col items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition-colors gap-0.5"
+            >
+              <span className="text-xs font-black text-[#2C3E50] px-0.5" style={{ backgroundColor: '#FFF176' }}>HL</span>
+            </button>
+            <div className="absolute top-full left-0 mt-1 p-2 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 grid grid-cols-5 gap-1.5 w-[160px]">
+              {[
+                '#FFF176', '#FFEEBA', '#FEEBC8', '#B9F6CA', 
+                '#E6FFFA', '#C6F6D5', '#B3E5FC', '#EBF4FF', 
+                '#E2E8F0', '#FFCCBC', '#E1BEE7', '#FDE8E8'
+              ].map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); handleHighlight(c); }}
+                  className="w-6 h-6 rounded-full border border-gray-200 shadow-sm hover:scale-110 transition-transform"
+                  style={{ backgroundColor: c }}
+                  title={c}
+                />
+              ))}
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  highlightColorInputRef.current?.click();
+                }}
+                className="w-6 h-6 rounded-full border border-gray-300 bg-gradient-to-tr from-red-400 via-green-400 to-blue-500 hover:scale-110 transition-transform flex items-center justify-center"
+                title="사용자 지정 하이라이트 선택"
+              >
+                <span className="text-[10px] text-white font-bold drop-shadow-md">+</span>
+              </button>
+              <button 
+                type="button" 
+                onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().unsetHighlight().run(); }} 
+                className="w-6 h-6 rounded-full border border-gray-300 bg-white text-gray-400 text-[9px] font-bold hover:bg-gray-50 flex items-center justify-center"
+                title="하이라이트 초기화"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* 정렬 (좌 / 중 / 우 / 양쪽 정렬) */}
+          <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="왼쪽 정렬">
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5z"/></svg>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} title="가운데 정렬">
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M4 3.5a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-2 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm2 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-2 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z"/></svg>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="오른쪽 정렬">
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M6 3.5a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-4 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm4 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-4 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z"/></svg>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} title="양쪽 정렬">
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z"/></svg>
+          </ToolBtn>
+
+          <Divider />
+
+          {/* 목록 */}
+          <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="글머리 기호 목록">
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M5 11.5a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm-3 1a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2z"/></svg>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="번호 매기기 목록">
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M5 11.5a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zM1 12a1 1 0 112 0 1 1 0 01-2 0zm0-4a1 1 0 112 0 1 1 0 01-2 0zm0-4a1 1 0 112 0 1 1 0 01-2 0z"/></svg>
+          </ToolBtn>
+
+          <Divider />
+
+          {/* 서식 초기화 (복사/붙여넣기 한 외부 서식 깔끔히 제거) */}
+          <ToolBtn
+            onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+            active={false}
+            title="서식 초기화 (외부에서 복사해온 글꼴·크기·색상 제거)"
+          >
+            <span className="text-[11px] font-extrabold text-gray-500">T✕</span>
+          </ToolBtn>
+
+          {/* 실행취소 / 다시실행 */}
+          <ToolBtn onClick={() => editor.chain().focus().undo().run()} active={false} title="실행취소 (Ctrl+Z)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().redo().run()} active={false} title="다시실행 (Ctrl+Y)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>
+          </ToolBtn>
         </div>
-
-        <Divider />
-
-        {/* 정렬 */}
-        <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="왼쪽 정렬">
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M2 3.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5z"/></svg>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} title="가운데 정렬">
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M4 3.5a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-2 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm2 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-2 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z"/></svg>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="오른쪽 정렬">
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M6 3.5a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-4 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm4 3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-4 3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z"/></svg>
-        </ToolBtn>
-
-        <Divider />
-
-        {/* 목록 */}
-        <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="비순서 목록">
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M5 11.5a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm-3 1a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2zm0 4a1 1 0 100-2 1 1 0 000 2z"/></svg>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="순서 목록">
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M5 11.5a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h9a.5.5 0 010 1h-9a.5.5 0 01-.5-.5zM1 12a1 1 0 112 0 1 1 0 01-2 0zm0-4a1 1 0 112 0 1 1 0 01-2 0zm0-4a1 1 0 112 0 1 1 0 01-2 0z"/></svg>
-        </ToolBtn>
-
-        <Divider />
-
-        {/* 인용구 & 구분선 */}
-        <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="인용구">
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/></svg>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="코드 블록">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        </ToolBtn>
-
-        {/* 프리미엄 구분선 선택 */}
-        <select
-          onChange={(e) => {
-            const type = e.target.value;
-            if (type !== 'none') {
-              handleInsertDivider(type as any);
-              e.target.value = 'none';
-            }
-          }}
-          className="h-8 px-2 text-sm font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white cursor-pointer focus:outline-none hover:border-[#A67C52] transition-colors"
-          defaultValue="none"
-          title="구분선 스타일 삽입"
-        >
-          <option value="none">구분선</option>
-          <option value="solid">실선</option>
-          <option value="dashed">점선</option>
-          <option value="gradient">그라데이션</option>
-          <option value="wavy">물결선</option>
-        </select>
-
-        <Divider />
-
-        {/* 이미지 & 링크 */}
-        <ToolBtn onClick={() => fileInputRef.current?.click()} active={false} title="이미지 업로드">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </ToolBtn>
-        <ToolBtn onClick={handleImageUrl} active={false} title="이미지 URL">
-          <span className="text-[10px] font-black">URL</span>
-        </ToolBtn>
-        <ToolBtn onClick={handleLink} active={editor.isActive('link')} title="링크 삽입">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-        </ToolBtn>
-
-        <Divider />
-
-        {/* 실행취소 / 다시실행 */}
-        <ToolBtn onClick={() => editor.chain().focus().undo().run()} active={false} title="실행취소 (Ctrl+Z)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
-        </ToolBtn>
-        <ToolBtn onClick={() => editor.chain().focus().redo().run()} active={false} title="다시실행 (Ctrl+Y)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>
-        </ToolBtn>
       </div>
 
       {/* ── 숨겨진 파일 입력 ────────────────── */}
@@ -841,12 +1306,59 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
         onChange={(e) => handleHighlight(e.target.value)}
       />
 
-      {/* ── 에디터 본문 ──────────────────────── */}
-      <EditorContent editor={editor} />
+      {/* ── 에디터 본문 & PC/모바일 실시간 미리보기 ──────────────────────── */}
+      {previewMode === 'EDIT' ? (
+        <EditorContent editor={editor} />
+      ) : (
+        <div className="bg-gray-100/80 py-8 px-4 min-h-[550px] flex justify-center">
+          <div
+            className={`bg-white rounded-2xl border border-gray-200 shadow-lg p-6 sm:p-8 transition-all ${
+              previewMode === 'MOBILE' ? 'w-[390px] max-w-full' : 'w-full max-w-4xl'
+            }`}
+          >
+            <div className="mb-4 pb-3 border-b border-gray-100 flex items-center justify-between text-xs text-gray-400 font-bold">
+              <span>{previewMode === 'MOBILE' ? '📱 모바일 화면 미리보기 (390px 기준)' : '🖥️ PC 상세 화면 미리보기'}</span>
+              <button
+                type="button"
+                onClick={() => setPreviewMode('EDIT')}
+                className="text-[#A67C52] hover:underline"
+              >
+                편집 화면으로 돌아가기 ➔
+              </button>
+            </div>
+            <div
+              className="prose-content"
+              dangerouslySetInnerHTML={{
+                __html: (editor.getHTML() || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
+              }}
+            />
+          </div>
+        </div>
+      )}
 
-      {/* ── 버블 메뉴 (플로팅 툴바) ──────────────────────── */}
+        {/* ── 버블 메뉴 (플로팅 툴바) ──────────────────────── */}
       {editor && (
-        <BubbleMenuComponent editor={editor} tippyOptions={{ duration: 100, maxWidth: 450, placement: 'top' }} className="bg-white border border-gray-200 shadow-2xl rounded-xl px-2 py-1.5 flex flex-wrap items-center gap-1.5 z-50">
+        <BubbleMenuComponent editor={editor} tippyOptions={{ duration: 100, maxWidth: 520, placement: 'top' }} className="bg-white border border-gray-200 shadow-2xl rounded-xl px-2.5 py-1.5 flex flex-wrap items-center gap-1.5 z-50">
+          {/* 버블 메뉴 내 빠른 서체 변경 */}
+          <select
+            value={(editor.getAttributes('textStyle')?.fontFamily as string) || 'default'}
+            onChange={(e) => {
+              const fam = e.target.value;
+              if (fam === 'default') (editor.commands as any).unsetFontFamily();
+              else (editor.commands as any).setFontFamily(fam);
+              editor.commands.focus();
+            }}
+            className="h-7 px-1.5 text-[11px] font-bold border border-gray-200 rounded-md text-[#2C3E50] bg-white max-w-[120px]"
+            title="선택 영역 서체 변경"
+          >
+            <option value="default">기본 서체</option>
+            {RECOMMENDED_FONTS.map((f) => (
+              <option key={f.value} value={f.value}>{f.label.split(' ')[0]}</option>
+            ))}
+          </select>
+
+          <Divider />
+
           {/* 텍스트 스타일 */}
           <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="굵게">
             <strong>B</strong>

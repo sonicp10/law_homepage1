@@ -1,6 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Nanum+Brush+Script&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap');
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css");
+@import url('https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@2.0/nanumsquare.css');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'MaruBuri';
+  src: url('https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'MaruBuri';
+  src: url('https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GmarketSansMedium';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RIDIBatang';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
 
 @font-face {
   font-family: 'KCC-Eunyoung';
@@ -358,4 +387,53 @@ strong, b {
   background-position: center !important;
   margin: 2em 0 !important;
 }
+.prose-editor hr.hr-double, .prose-content hr.hr-double {
+  border: none !important;
+  border-top: 4px double #A67C52 !important;
+  margin: 2em 0 !important;
+  height: auto !important;
+}
+.prose-editor hr.hr-diamond, .prose-content hr.hr-diamond {
+  border: none !important;
+  height: 24px !important;
+  margin: 2em 0 !important;
+  position: relative !important;
+  background: linear-gradient(to right, transparent, #E8E4D8 42%, transparent 48%, transparent 52%, #E8E4D8 58%, transparent) !important;
+  background-size: 100% 1px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}
+.prose-editor hr.hr-diamond::after, .prose-content hr.hr-diamond::after {
+  content: "❖";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #A67C52;
+  font-size: 14px;
+  background: #FFFFFF;
+  padding: 0 10px;
+}
+
+/* ── 에디터 본문 내 표(Table) 스타일 ────────────────────────── */
+.prose-editor table, .prose-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.95em;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.prose-editor th, .prose-content th {
+  background: #FAF9F6;
+  color: #2C3E50;
+  font-weight: 700;
+  padding: 10px 14px;
+  border: 1px solid #E8E4D8;
+}
+.prose-editor td, .prose-content td {
+  padding: 10px 14px;
+  border: 1px solid #E8E4D8;
+}
+
 

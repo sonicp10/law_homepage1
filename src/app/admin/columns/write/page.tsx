@@ -41,6 +41,10 @@ function WriteColumnContent() {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string>('');
+  const [hasSavedDraft, setHasSavedDraft] = useState(false);
+
+  const DRAFT_STORAGE_KEY = 'admin_column_write_draft_v1';
 
   useEffect(() => {
     const newCat = searchParams.get('cat') || 'REHAB';
@@ -50,7 +54,70 @@ function WriteColumnContent() {
         ? (newSub === 'BANKRUPTCY' ? 'SUCCESS_BANKRUPTCY' : 'SUCCESS_REHAB')
         : newCat;
     setForm(prev => ({ ...prev, category: resolved }));
+
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (saved) setHasSavedDraft(true);
+    }
   }, [searchParams]);
+
+  // 네이버 블로그 스타일 30초마다 자동 임시저장
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (form.title.trim() || (form.content.trim() && form.content !== '<p></p>')) {
+        try {
+          localStorage.setItem(
+            DRAFT_STORAGE_KEY,
+            JSON.stringify({ ...form, savedAt: new Date().toISOString() })
+          );
+          setHasSavedDraft(true);
+          setLastDraftSavedAt(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+        } catch {}
+      }
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [form]);
+
+  const handleSaveDraftManual = () => {
+    try {
+      localStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify({ ...form, savedAt: new Date().toISOString() })
+      );
+      setHasSavedDraft(true);
+      const timeStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      setLastDraftSavedAt(timeStr);
+      alert(`임시저장되었습니다. (${timeStr})`);
+    } catch {
+      alert('임시저장에 실패했습니다.');
+    }
+  };
+
+  const handleLoadDraft = () => {
+    try {
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!raw) {
+        alert('저장된 임시저장 글이 없습니다.');
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (!confirm(`임시저장된 글("${parsed.title || '제목 없음'}")을 불러오시겠습니까?\n현재 작성 중인 내용은 덮어씌워집니다.`)) {
+        return;
+      }
+      setForm({
+        title: parsed.title || '',
+        content: parsed.content || '',
+        excerpt: parsed.excerpt || '',
+        category: parsed.category || form.category,
+        thumbnail: parsed.thumbnail || '',
+        tags: parsed.tags || '',
+        author: parsed.author || '법무사 김형근',
+        readTime: parsed.readTime || 5,
+      });
+    } catch {
+      alert('임시저장 데이터를 불러오지 못했습니다.');
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -117,6 +184,9 @@ function WriteColumnContent() {
       });
       const data = await res.json();
       if (data.success) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(DRAFT_STORAGE_KEY);
+        }
         alert('글이 성공적으로 발행되었습니다!');
         router.push(`/admin/columns?cat=${actualCategory}`);
       } else {
@@ -131,16 +201,40 @@ function WriteColumnContent() {
 
   return (
     <div className="max-w-5xl space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-center gap-4">
-        <button onClick={() => router.back()} className="text-[var(--primary)]/50 hover:text-[var(--primary)] transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--primary)]">새 글 작성</h1>
-          <p className="text-sm text-[var(--primary)]/50 mt-0.5">법률 칼럼 작성 후 즉시 발행됩니다</p>
+      {/* 헤더 & 네이버 블로그 스타일 임시저장 컨트롤러 */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.back()} className="text-[var(--primary)]/50 hover:text-[var(--primary)] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--primary)]">새 글 작성</h1>
+            <p className="text-sm text-[var(--primary)]/50 mt-0.5">
+              법률 칼럼 및 성공사례 작성 후 즉시 발행됩니다
+              {lastDraftSavedAt && <span className="ml-2 text-xs text-emerald-600 font-bold">· 자동 임시저장됨 ({lastDraftSavedAt})</span>}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {hasSavedDraft && (
+            <button
+              type="button"
+              onClick={handleLoadDraft}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition-colors"
+            >
+              📂 임시저장 불러오기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSaveDraftManual}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-[var(--primary)] border border-[var(--border)] hover:border-[#A67C52] hover:text-[#A67C52] transition-colors shadow-2xs"
+          >
+            💾 임시저장
+          </button>
         </div>
       </div>
 

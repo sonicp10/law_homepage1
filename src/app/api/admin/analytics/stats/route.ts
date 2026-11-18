@@ -59,8 +59,36 @@ export function deduplicateRapidLogs<T extends { ip: string | null; path: string
   return result;
 }
 
-// 유입 출처 스마트 분류 함수
-function categorizeReferrer(rawRef: string | null): { name: string; category: string; icon: string } {
+// 유입 출처 스마트 분류 함수 (Referrer 헤더 및 URL 광고 추적 파라미터 결합 분석)
+function categorizeReferrer(rawRef: string | null, path?: string): { name: string; category: string; icon: string } {
+  // 1. URL 쿼리 파라미터 기반 광고/마케팅 유입 우선 감지 (모바일 인앱/크롬 브라우저의 Referrer 누락 완벽 보정)
+  if (path && path.includes('?')) {
+    const lowerPath = path.toLowerCase();
+    if (
+      lowerPath.includes('gclid=') || 
+      lowerPath.includes('gad_source=') || 
+      lowerPath.includes('gad_campaignid=') || 
+      lowerPath.includes('utm_source=google') || 
+      lowerPath.includes('wbraid=')
+    ) {
+      return { name: '구글 검색/배너 광고 (Google Ads)', category: 'AD', icon: '🎯' };
+    }
+    if (
+      lowerPath.includes('n_media=') || 
+      lowerPath.includes('n_query=') || 
+      lowerPath.includes('utm_source=naver') || 
+      lowerPath.includes('naver_ad=')
+    ) {
+      return { name: '네이버 검색 광고 (PowerLink)', category: 'AD', icon: '🎯' };
+    }
+    if (lowerPath.includes('utm_source=kakao') || lowerPath.includes('k_tracking=')) {
+      return { name: '카카오 모먼트 광고', category: 'AD', icon: '🎯' };
+    }
+    if (lowerPath.includes('utm_source=daangn') || lowerPath.includes('daangn_ad=')) {
+      return { name: '당근마켓 지역 광고', category: 'AD', icon: '🎯' };
+    }
+  }
+
   if (!rawRef || rawRef.trim() === '' || rawRef === 'Direct') {
     return { name: '직접 유입 (Direct / 북마크)', category: 'DIRECT', icon: '📌' };
   }
@@ -389,7 +417,7 @@ export async function GET(request: Request) {
     // 2. 스마트 유입 경로 통계 (순수 사람 기준)
     const smartReferrerMap: { [key: string]: { name: string; count: number; icon: string; category: string } } = {};
     currentLogs.forEach(item => {
-      const cat = categorizeReferrer(item.referrer);
+      const cat = categorizeReferrer(item.referrer, item.path);
       if (!smartReferrerMap[cat.name]) {
         smartReferrerMap[cat.name] = { name: cat.name, count: 0, icon: cat.icon, category: cat.category };
       }

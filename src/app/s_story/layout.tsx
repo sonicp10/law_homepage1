@@ -20,7 +20,7 @@ export default function StoryLayout({ children }: { children: React.ReactNode })
       
       <TabNavigation tabs={storyTabs} />
       
-      <div className="max-w-7xl mx-auto px-6 py-8 md:py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-20">
         {children}
       </div>
     </main>

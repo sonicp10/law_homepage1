@@ -39,16 +39,16 @@ export default function BankruptcyStoryPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-16 gap-4 md:gap-6">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-3 md:mb-14 gap-2 md:gap-6">
         <div className="text-center md:text-left">
-          <h2 className="text-2xl md:text-4xl font-bold text-[var(--primary)] mb-2 md:mb-4">개인파산 성공사례</h2>
-          <div className="w-12 h-1 bg-[#A67C52] mb-3 md:mb-6 md:mx-0 mx-auto"></div>
-          <p className="text-lg text-[var(--primary)]/60 font-medium flex items-center justify-center md:justify-start gap-x-1 flex-wrap break-keep leading-relaxed">
+          <h2 className="text-xl md:text-4xl font-bold text-[var(--primary)] mb-1.5 md:mb-4">개인파산 성공사례</h2>
+          <div className="w-10 md:w-12 h-1 bg-[#A67C52] mb-2 md:mb-6 md:mx-0 mx-auto"></div>
+          <p className="text-sm md:text-lg text-[var(--primary)]/60 font-medium flex items-center justify-center md:justify-start gap-x-1 flex-wrap break-keep leading-relaxed">
             <span>여러분도 다시</span>
-            <span className="flex items-center mx-1">
-              <span className="text-[#A67C52] font-black text-xl self-start translate-y-1">“</span>
-              <span className="text-[32px] font-black text-[#A67C52] inline-block transform rotate-12 mx-1 transition-transform">숨</span>
-              <span className="text-[#A67C52] font-black text-xl self-end -translate-y-1">”</span>
+            <span className="flex items-center mx-0.5 md:mx-1">
+              <span className="text-[#A67C52] font-black text-base md:text-xl self-start translate-y-0.5 md:translate-y-1">“</span>
+              <span className="text-2xl md:text-[32px] font-black text-[#A67C52] inline-block transform rotate-12 mx-0.5 md:mx-1 transition-transform">숨</span>
+              <span className="text-[#A67C52] font-black text-base md:text-xl self-end -translate-y-0.5 md:-translate-y-1">”</span>
             </span>
             <span>쉴 수 있습니다. 채무에서 벗어난 진짜 이야기!!</span>
           </p>

@@ -37,53 +37,27 @@ export default function HomePage() {
               </div>
             </h1>
 
-            {/* 채무자 3대 불안 즉시 해소 안심 혜택 배너 */}
-            <div className="mb-8 md:mb-10 flex flex-col gap-2.5 sm:gap-3 max-w-2xl mx-auto lg:mx-0">
-              <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 bg-white/95 backdrop-blur-md rounded-2xl border border-[var(--border)] shadow-md shadow-[var(--primary)]/5 hover:border-[#A67C52]/40 transition-all text-left">
-                <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#A67C52] text-white flex items-center justify-center shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
+            {/* 수임료 부담 해소 핵심 안내 배너 (모바일/데스크톱 대형 고가독성) */}
+            <div className="mb-8 md:mb-10 flex flex-col gap-3.5 sm:gap-4 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0">
+              <div className="flex items-center gap-3.5 sm:gap-4 px-5 sm:px-6 py-4 sm:py-5 bg-white/95 backdrop-blur-md rounded-2xl border-2 border-[#A67C52]/30 shadow-lg shadow-[var(--primary)]/5 hover:border-[#A67C52] transition-all text-left">
+                <span className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#A67C52] text-white flex items-center justify-center shadow-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                   </svg>
                 </span>
-                <div className="text-[15px] sm:text-[17px] md:text-[18px] font-bold text-[var(--primary)] tracking-tight leading-snug break-keep">
-                  <span className="text-[#A67C52] font-black">빚 독촉·추심 전화 즉시 중단</span>
-                  <span className="text-[var(--primary)]/80 text-[13px] sm:text-[15px] font-medium ml-1.5 sm:ml-2">(금지명령 신속 접수)</span>
+                <div className="text-[17px] sm:text-[21px] md:text-[24px] font-extrabold text-[var(--primary)] tracking-tight leading-snug break-keep">
+                  <span className="text-[#A67C52] font-black">수임료가 없어도</span> 신청 준비부터 시작할 수 있습니다
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 bg-white/95 backdrop-blur-md rounded-2xl border border-[var(--border)] shadow-md shadow-[var(--primary)]/5 hover:border-[#A67C52]/40 transition-all text-left">
-                <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#A67C52] text-white flex items-center justify-center shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
+              <div className="flex items-center gap-3.5 sm:gap-4 px-5 sm:px-6 py-4 sm:py-5 bg-white/95 backdrop-blur-md rounded-2xl border-2 border-[#A67C52]/30 shadow-lg shadow-[var(--primary)]/5 hover:border-[#A67C52] transition-all text-left">
+                <span className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#A67C52] text-white flex items-center justify-center shadow-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                   </svg>
                 </span>
-                <div className="text-[15px] sm:text-[17px] md:text-[18px] font-bold text-[var(--primary)] tracking-tight leading-snug break-keep">
-                  <span>가족·직장 전혀 모르게 </span>
-                  <span className="text-[#A67C52] font-black">100% 비공개 안심 진행</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 bg-white/95 backdrop-blur-md rounded-2xl border border-[var(--border)] shadow-md shadow-[var(--primary)]/5 hover:border-[#A67C52]/40 transition-all text-left">
-                <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#A67C52] text-white flex items-center justify-center shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
-                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                  </svg>
-                </span>
-                <div className="text-[15px] sm:text-[17px] md:text-[18px] font-bold text-[var(--primary)] tracking-tight leading-snug break-keep">
-                  <span className="text-[#A67C52] font-black">사업자 대출·카드 대출</span>
-                  <span> 다중 채무 전문 해결</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 bg-white/95 backdrop-blur-md rounded-2xl border border-[var(--border)] shadow-md shadow-[var(--primary)]/5 hover:border-[#A67C52]/40 transition-all text-left">
-                <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#A67C52] text-white flex items-center justify-center shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
-                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                  </svg>
-                </span>
-                <div className="text-[15px] sm:text-[17px] md:text-[18px] font-bold text-[var(--primary)] tracking-tight leading-snug break-keep">
-                  <span>자영업 폐업 위기 </span>
-                  <span className="text-[#A67C52] font-black">채무 탕감</span>
+                <div className="text-[17px] sm:text-[21px] md:text-[24px] font-extrabold text-[var(--primary)] tracking-tight leading-snug break-keep">
+                  <span className="text-[#A67C52] font-black">초기 부담 없이</span> 시작하는 방법 무료 안내
                 </div>
               </div>
             </div>

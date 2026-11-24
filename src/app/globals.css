@@ -189,10 +189,10 @@ body {
   word-break: keep-all;
 }
 
-.prose-editor h1 { font-size: 2em; font-weight: 800; margin: 1.5em 0 0.8em; color: #1a2e3f; line-height: 1.2; }
-.prose-editor h2 { font-size: 1.5em; font-weight: 700; margin: 1.3em 0 0.7em; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; }
-.prose-editor h3 { font-size: 1.2em; font-weight: 700; margin: 1.1em 0 0.6em; color: #2C3E50; }
-.prose-editor p { margin: 0.85em 0; font-weight: 400 !important; min-height: 1.8em; }
+.prose-editor h1 { font-size: 2em; font-weight: 800; margin: 1.5em auto 0.8em; max-width: 800px; color: #1a2e3f; line-height: 1.2; white-space: pre-wrap; }
+.prose-editor h2 { font-size: 1.5em; font-weight: 700; margin: 1.3em auto 0.7em; max-width: 800px; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; white-space: pre-wrap; }
+.prose-editor h3 { font-size: 1.2em; font-weight: 700; margin: 1.1em auto 0.6em; max-width: 800px; color: #2C3E50; white-space: pre-wrap; }
+.prose-editor p { margin: 0.85em auto; max-width: 800px; font-weight: 400 !important; min-height: 1.8em; white-space: pre-wrap; }
 .prose-editor p:empty::before { content: "\00a0"; }
 .prose-editor h1:first-child, .prose-editor h2:first-child, .prose-editor h3:first-child, .prose-editor p:first-child { margin-top: 0.5em !important; }
 .prose-editor strong, .prose-editor b { font-weight: 700 !important; color: #1a2e3f; }
@@ -284,10 +284,10 @@ strong, b {
   font-weight: 700 !important;
 }
 
-.prose-content h1 { font-size: 2em; font-weight: 800; margin: 1.5em 0 0.7em; color: #1a2e3f; line-height: 1.2; }
-.prose-content h2 { font-size: 1.5em; font-weight: 700; margin: 1.3em 0 0.6em; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; }
-.prose-content h3 { font-size: 1.2em; font-weight: 700; margin: 1.1em 0 0.5em; color: #2C3E50; }
-.prose-content p { margin: 0.85em 0; font-weight: 400; min-height: 1.6em; }
+.prose-content h1 { font-size: 2em; font-weight: 800; margin: 1.5em 0 0.7em; color: #1a2e3f; line-height: 1.2; white-space: pre-wrap; }
+.prose-content h2 { font-size: 1.5em; font-weight: 700; margin: 1.3em 0 0.6em; color: #2C3E50; border-bottom: 2px solid #E8E4D8; padding-bottom: 0.3em; white-space: pre-wrap; }
+.prose-content h3 { font-size: 1.2em; font-weight: 700; margin: 1.1em 0 0.5em; color: #2C3E50; white-space: pre-wrap; }
+.prose-content p { margin: 0.85em 0; font-weight: 400; min-height: 1.6em; white-space: pre-wrap; }
 .prose-content p:empty::before { content: "\00a0"; }
 .prose-content strong, .prose-content b { font-weight: 700 !important; }
 .prose-content em { font-style: italic; }

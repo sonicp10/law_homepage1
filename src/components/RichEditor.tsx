@@ -374,7 +374,7 @@ function RawHtmlBlockNodeView({ node, updateAttributes, deleteNode, editor, getP
       editor
         .chain()
         .focus()
-        .insertContentAt(Math.min(afterPos, docSize), `<p><strong>${insertText}</strong></p><p></p>`)
+        .insertContentAt(Math.min(afterPos, docSize), `<p style="text-align: right;"><span style="font-size: 19px;"><strong>${insertText}</strong></span></p><p></p>`)
         .run();
     } else if (afterPos >= docSize) {
       editor
@@ -437,7 +437,7 @@ function RawHtmlBlockNodeView({ node, updateAttributes, deleteNode, editor, getP
         </div>
       </div>
 
-      {/* 실제 HTML 렌더링 영역 */}
+      {/* 실제 HTML 렌더링 영역 (실제 상세 페이지와 좌우 끝라인이 1:1로 일치하도록 패딩 통일) */}
       <div
         ref={containerRef}
         contentEditable={inlineEdit}
@@ -447,7 +447,7 @@ function RawHtmlBlockNodeView({ node, updateAttributes, deleteNode, editor, getP
           const updated = (e.currentTarget as HTMLDivElement).innerHTML;
           updateAttributes({ html: updated });
         }}
-        className={`prose-content p-4 sm:p-6 focus:outline-none ${
+        className={`prose-content py-4 px-0 focus:outline-none ${
           inlineEdit ? 'ring-2 ring-emerald-500/40 bg-emerald-50/10' : ''
         }`}
       />
@@ -667,6 +667,24 @@ function fromTiptapDocHtml(editorHtml: string): string {
   );
   // HTML 블록 뒤에 자동으로 붙은 빈 <p></p> 1개만 있고 사용자가 아무 글자도 안 썼을 때는 불필요한 말미 빈 태그 정리
   restored = restored.replace(/<!--RAW_HTML_END-->\s*<p><\/p>\s*$/i, '<!--RAW_HTML_END-->');
+
+  // 만약 외부 HTML 블록이 max-width: 800px; margin: 0 auto; 컨테이너로 되어 있을 때,
+  // 그 뒤에 이어 쓴 Tiptap 문단(<p>...</p>)의 좌우 끝라인도 위 HTML 문서의 끝라인(800px)과 칼같이 일치하도록 max-width 동기화
+  if (/<!--RAW_HTML_START-->[\s\S]*?max-width:\s*800px[\s\S]*?<!--RAW_HTML_END-->/i.test(restored)) {
+    const parts = restored.split('<!--RAW_HTML_END-->');
+    if (parts.length === 2 && parts[1].trim()) {
+      const trailing = parts[1].replace(
+        /<p(\s+style="([^"]*)")?>/gi,
+        (_m, _styleAttr, styleVal) => {
+          const baseStyle = styleVal ? styleVal.trim().replace(/;$/, '') + '; ' : '';
+          if (baseStyle.includes('max-width')) return `<p style="${baseStyle}">`;
+          return `<p style="${baseStyle}max-width: 800px; margin-left: auto; margin-right: auto;">`;
+        }
+      );
+      restored = `${parts[0]}<!--RAW_HTML_END-->${trailing}`;
+    }
+  }
+
   return restored;
 }
 
@@ -1035,13 +1053,13 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     editor.chain().focus().insertContent(sym).run();
   }, [editor, previewMode, htmlSource, applyRawHtml]);
 
-  // 본문 맨 끝(HTML 블록 아래 자체 편집기 영역)에 상담문의 서명 문구 즉시 삽입
+  // 본문 맨 끝(HTML 블록 아래 자체 편집기 영역)에 상담문의 서명 문구 즉시 삽입 (위 HTML 문서의 오른쪽 끝라인에 자동 맞춤)
   const handleInsertContactFooter = useCallback(() => {
     const contactText = '☎ 상담 문의 : All About 회생•파산 | 02-6405-6363';
     if (previewMode === 'HTML') {
       const base = htmlSource === '<p></p>' ? '' : htmlSource;
-      const next = `${base}\n<p><strong>${contactText}</strong></p>`;
-      applyRawHtml(next, '✅ 본문 끝에 상담 문의 문구가 추가되었습니다!');
+      const next = `${base}\n<p style="text-align: right; max-width: 800px; margin-left: auto; margin-right: auto;"><span style="font-size: 19px;"><strong>${contactText}</strong></span></p>`;
+      applyRawHtml(next, '✅ 본문 끝에 상담 문의 문구가 위 HTML 끝라인에 맞춰 추가되었습니다!');
       return;
     }
     if (!editor) return;
@@ -1049,10 +1067,10 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     editor
       .chain()
       .focus()
-      .insertContentAt(docSize, `<p><strong>${contactText}</strong></p><p></p>`)
+      .insertContentAt(docSize, `<p style="text-align: right;"><span style="font-size: 19px;"><strong>${contactText}</strong></span></p><p></p>`)
       .focus('end')
       .run();
-    showTempNotice('✅ 본문 끝에 상담 문의 문구가 추가되었습니다! 드래그하여 서체·크기·색상을 변경하실 수 있습니다.');
+    showTempNotice('✅ 본문 끝에 상담 문의 문구가 위 HTML 오른쪽 끝라인에 맞춰 추가되었습니다!');
   }, [editor, previewMode, htmlSource, applyRawHtml, showTempNotice]);
 
   // 프리미엄 서식 템플릿 삽입

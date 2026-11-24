@@ -74,14 +74,15 @@ export async function GET(request: Request) {
         : allMatched;
 
     const totalCount = subFiltered.length;
-    const posts = subFiltered.slice(skip, skip + limit);
+    let totalDetailViews = subFiltered.reduce((acc, p) => acc + (p.viewCount || 0), 0);
+    let posts: Array<(typeof subFiltered)[number] & { listExposureCount?: number }> = subFiltered.slice(skip, skip + limit);
 
-    // 관리자가 조회할 때는 해당 카테고리 목록 페이지(/s_story/rehab 등)의 누적 방문 조회수도 함께 반환
-    let listPageViews: { rehabListViews: number; bankruptcyListViews: number; totalListViews: number } | undefined;
+    // 관리자가 조회할 때는 해당 카테고리 목록 페이지(/s_story/rehab 등)의 누적 방문 조회수 및 게시글별 목록 노출수·Analytics 상세 조회수 동기화 수행
+    let listPageViews: { rehabListViews: number; bankruptcyListViews: number; totalListViews: number; totalDetailViews: number } | undefined;
     if (isAdmin) {
       const targetPrefixes =
         category === 'SUCCESS_STORY'
-          ? ['/s_story/rehab', '/s_story/bankruptcy', '/s_story']
+          ? ['/s_story/rehab', '/s_story/bankruptcy', '/s_story', '/']
           : category === 'REHAB'
           ? ['/rehab/posts', '/rehab']
           : category === 'BANKRUPTCY'
@@ -89,9 +90,15 @@ export async function GET(request: Request) {
           : [];
 
       if (targetPrefixes.length > 0) {
+        const orConditions: any[] = targetPrefixes
+          .filter(p => p !== '/')
+          .map(p => ({ path: { startsWith: p } }));
+        if (category === 'SUCCESS_STORY') {
+          orConditions.push({ path: '/' }, { path: { startsWith: '/?' } });
+        }
         const rawLogs = await prisma.analytics.findMany({
           where: {
-            OR: targetPrefixes.map(p => ({ path: { startsWith: p } })),
+            OR: orConditions,
           },
           select: { id: true, ip: true, path: true, userAgent: true, createdAt: true },
         });
@@ -99,6 +106,69 @@ export async function GET(request: Request) {
           rawLogs.filter(r => !isBot(r.userAgent, r.ip, r.path))
         );
         const normalize = (p: string) => (p.split('?')[0] || '/').trim().replace(/\/+$/, '') || '/';
+
+        // 1) Analytics 상세 페이지 로그(/s_story/rehab/[id] 등)와 Post.viewCount 간 누락 보정(자동 동기화)
+        const detailViewMap = new Map<string, number>();
+        for (const log of cleanLogs) {
+          const normPath = normalize(log.path);
+          const match = normPath.match(/^\/(?:s_story\/(?:rehab|bankruptcy)|(?:rehab|bankruptcy)\/posts)\/([^/?#]+)$/);
+          if (match && match[1]) {
+            const pid = match[1];
+            detailViewMap.set(pid, (detailViewMap.get(pid) || 0) + 1);
+          }
+        }
+
+        // Analytics 로그 상 실제 상세 열람 횟수가 DB viewCount보다 높은 경우 DB를 즉시 보정
+        for (const item of subFiltered) {
+          const loggedViews = detailViewMap.get(item.id) || 0;
+          if (loggedViews > item.viewCount) {
+            item.viewCount = loggedViews;
+            prisma.post.update({
+              where: { id: item.id },
+              data: { viewCount: loggedViews },
+            }).catch(() => {});
+          }
+        }
+        totalDetailViews = subFiltered.reduce((acc, p) => acc + (p.viewCount || 0), 0);
+
+        // 2) 게시글별 목록 노출수(List Impressions) 계산: 게시글 작성 시점 이후 해당 목록 페이지(1페이지 상위 6개) 또는 메인 홈(상위 3개)에 노출된 횟수
+        const publishedRehabStories = allMatched.filter(p => p.published && !isBankruptcyCase(p));
+        const publishedBankruptcyStories = allMatched.filter(p => p.published && isBankruptcyCase(p));
+        const publishedAllTop3Ids = new Set(allMatched.filter(p => p.published).slice(0, 3).map(p => p.id));
+        const rehabPage1Ids = new Set(publishedRehabStories.slice(0, 6).map(p => p.id));
+        const bankruptcyPage1Ids = new Set(publishedBankruptcyStories.slice(0, 6).map(p => p.id));
+        const columnPage1Ids = new Set(allMatched.filter(p => p.published).slice(0, 6).map(p => p.id));
+
+        posts = subFiltered.slice(skip, skip + limit).map((post) => {
+          let listExposureCount = 0;
+          if (post.published) {
+            const postCreatedMs = new Date(post.createdAt).getTime();
+            if (category === 'SUCCESS_STORY') {
+              const isBank = isBankruptcyCase(post);
+              const onCategoryPage1 = isBank ? bankruptcyPage1Ids.has(post.id) : rehabPage1Ids.has(post.id);
+              const onHomeTop3 = publishedAllTop3Ids.has(post.id);
+              const targetListPath = isBank ? '/s_story/bankruptcy' : '/s_story/rehab';
+              for (const log of cleanLogs) {
+                if (new Date(log.createdAt).getTime() >= postCreatedMs) {
+                  const np = normalize(log.path);
+                  if (onCategoryPage1 && np === targetListPath) listExposureCount++;
+                  else if (onHomeTop3 && np === '/') listExposureCount++;
+                }
+              }
+            } else if (category === 'REHAB' || category === 'BANKRUPTCY') {
+              const targetListPath = category === 'REHAB' ? '/rehab/posts' : '/bankruptcy/posts';
+              if (columnPage1Ids.has(post.id)) {
+                for (const log of cleanLogs) {
+                  if (new Date(log.createdAt).getTime() >= postCreatedMs && normalize(log.path) === targetListPath) {
+                    listExposureCount++;
+                  }
+                }
+              }
+            }
+          }
+          return { ...post, listExposureCount };
+        });
+
         if (category === 'SUCCESS_STORY') {
           const rehabListViews = cleanLogs.filter(r => normalize(r.path) === '/s_story/rehab').length;
           const bankruptcyListViews = cleanLogs.filter(r => normalize(r.path) === '/s_story/bankruptcy').length;
@@ -106,13 +176,14 @@ export async function GET(request: Request) {
             rehabListViews,
             bankruptcyListViews,
             totalListViews: rehabListViews + bankruptcyListViews,
+            totalDetailViews,
           };
         } else if (category === 'REHAB') {
           const rehabListViews = cleanLogs.filter(r => normalize(r.path) === '/rehab/posts').length;
-          listPageViews = { rehabListViews, bankruptcyListViews: 0, totalListViews: rehabListViews };
+          listPageViews = { rehabListViews, bankruptcyListViews: 0, totalListViews: rehabListViews, totalDetailViews };
         } else if (category === 'BANKRUPTCY') {
           const bankruptcyListViews = cleanLogs.filter(r => normalize(r.path) === '/bankruptcy/posts').length;
-          listPageViews = { rehabListViews: 0, bankruptcyListViews, totalListViews: bankruptcyListViews };
+          listPageViews = { rehabListViews: 0, bankruptcyListViews, totalListViews: bankruptcyListViews, totalDetailViews };
         }
       }
     }
@@ -120,6 +191,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       posts,
       totalCount,
+      totalDetailViews,
       totalPages: Math.ceil(totalCount / limit),
       currentPage: page,
       ...(listPageViews && { listPageViews }),

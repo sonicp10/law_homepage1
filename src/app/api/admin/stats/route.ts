@@ -29,12 +29,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    // 한국 시간(KST, UTC+9) 기준 오늘 00:00:00 계산
+    // 한국 시간(KST, UTC+9) 기준 오늘 00:00:00 계산 및 방문 예약일(visitDate) 범위 설정
     const now = new Date();
     const kstOffset = 9 * 60 * 60 * 1000;
     const kstNow = new Date(now.getTime() + kstOffset);
     const todayKstStr = kstNow.toISOString().split('T')[0];
     const todayStartUtc = new Date(new Date(`${todayKstStr}T00:00:00+09:00`).toISOString());
+    // visitDate는 프론트엔드 날짜 문자열("YYYY-MM-DD")을 new Date()로 저장하므로 UTC 00:00 또는 KST 00:00 모두 포괄하도록 범위 지정
+    const visitDayStart = new Date(`${todayKstStr}T00:00:00.000Z`);
+    const visitDayEnd = new Date(`${todayKstStr}T23:59:59.999Z`);
 
     // 현재 접속한 관리자의 IP 추출
     const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
@@ -61,6 +64,7 @@ export async function GET(request: Request) {
       recentLeads,
       recentConsultations,
       recentBoardQna,
+      todayVisitSchedules,
     ] = await Promise.all([
       // 1. 게시글 카테고리별 집계 (REHAB, BANKRUPTCY, SUCCESS_STORY, 전체)
       prisma.post.groupBy({
@@ -125,6 +129,22 @@ export async function GET(request: Request) {
         select: { 
           id: true, author: true, title: true, content: true, 
           status: true, createdAt: true, replyContent: true, isSecret: true 
+        },
+      }),
+      // 13. 오늘 방문 예정된 방문상담 전체 조회 (최근 신청 6건 외에 며칠 전 미리 예약한 오늘 방문 건 누락 방지)
+      prisma.consultation.findMany({
+        where: {
+          type: 'VISIT',
+          visitDate: {
+            gte: visitDayStart,
+            lte: visitDayEnd,
+          },
+        },
+        orderBy: { visitTime: 'asc' },
+        select: {
+          id: true, name: true, phone: true, type: true,
+          category: true, visitDate: true, visitTime: true,
+          content: true, status: true, createdAt: true, location: true,
         },
       }),
     ]);
@@ -210,7 +230,8 @@ export async function GET(request: Request) {
       recent: { 
         leads: recentLeads, 
         consultations: recentConsultations, 
-        boardQna: recentBoardQna 
+        boardQna: recentBoardQna,
+        todayVisitors: todayVisitSchedules,
       },
     };
 

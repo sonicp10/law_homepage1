@@ -21,6 +21,7 @@ interface Post {
   category: string;
   author: string | null;
   viewCount: number;
+  listExposureCount?: number;
   published: boolean;
   createdAt: string;
   tags: string | null;
@@ -38,12 +39,14 @@ export default function AdminColumnsPage() {
   const [subFilter, setSubFilter] = useState<'ALL' | 'REHAB' | 'BANKRUPTCY'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [total, setTotal] = useState(0);
+  const [totalDetailViews, setTotalDetailViews] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [listPageViews, setListPageViews] = useState<{
     rehabListViews: number;
     bankruptcyListViews: number;
     totalListViews: number;
+    totalDetailViews?: number;
   } | null>(null);
 
   const fetchPosts = async (silent = false, overrideSearch?: string) => {
@@ -61,12 +64,13 @@ export default function AdminColumnsPage() {
         ...(cat === 'SUCCESS_STORY' && subFilter !== 'ALL' && { subType: subFilter }),
         ...(q.trim() && { search: q.trim() }),
       });
-      const res = await fetch(`/api/posts?${params}`);
+      const res = await fetch(`/api/posts?${params}`, { cache: 'no-store' });
       const data = await res.json();
       const fetchedPosts: Post[] = data.posts || [];
 
       setPosts(fetchedPosts);
       setTotal(data.totalCount || 0);
+      setTotalDetailViews(data.totalDetailViews ?? fetchedPosts.reduce((acc, p) => acc + (p.viewCount || 0), 0));
       setTotalPages(data.totalPages || 1);
       setListPageViews(data.listPageViews || null);
     } catch {
@@ -163,17 +167,17 @@ export default function AdminColumnsPage() {
           </p>
           {listPageViews && (
             <div className="mt-2.5 inline-flex flex-wrap items-center gap-2 px-3 py-1.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-950">
-              <span className="font-bold text-[#A67C52]">📊 카테고리 목록 유입 vs 개별 글 열람 안내:</span>
+              <span className="font-bold text-[#A67C52]">📊 카테고리 목록 유입 vs 개별 글 상세 클릭 안내:</span>
               {cat === 'SUCCESS_STORY' ? (
                 <span>
                   성공사례 목록 페이지 유입 총 <strong>{listPageViews.totalListViews.toLocaleString()}회</strong>
                   (개인회생 목록 <strong>{listPageViews.rehabListViews.toLocaleString()}회</strong> · 개인파산 목록 <strong>{listPageViews.bankruptcyListViews.toLocaleString()}회</strong>)
-                  {' '}/ 개별 사례 상세 클릭 합계 <strong>{posts.reduce((acc, p) => acc + (p.viewCount || 0), 0).toLocaleString()}회</strong>
+                  {' '}/ 전체 사례 상세 클릭 합계 <strong>{totalDetailViews.toLocaleString()}회</strong>
                 </span>
               ) : (
                 <span>
                   칼럼 목록 페이지 유입 <strong>{listPageViews.totalListViews.toLocaleString()}회</strong>
-                  {' '}/ 현재 페이지 개별 글 열람 합계 <strong>{posts.reduce((acc, p) => acc + (p.viewCount || 0), 0).toLocaleString()}회</strong>
+                  {' '}/ 전체 개별 글 상세 열람 합계 <strong>{totalDetailViews.toLocaleString()}회</strong>
                 </span>
               )}
             </div>
@@ -382,7 +386,19 @@ export default function AdminColumnsPage() {
                     </td>
 
                     <td className="px-5 py-4 text-xs font-bold text-gray-700 whitespace-nowrap">
-                      👁️ {item.viewCount.toLocaleString()}
+                      <div className="flex flex-col gap-0.5">
+                        <span title="개별 게시글 본문을 클릭하여 상세 열람한 횟수">
+                          👁️ 상세 {item.viewCount.toLocaleString()}
+                        </span>
+                        {typeof item.listExposureCount === 'number' && item.listExposureCount > 0 && (
+                          <span
+                            className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200/70 px-1.5 py-0.5 rounded w-fit"
+                            title="목록 페이지(/s_story/rehab 등) 및 메인 화면에서 의뢰인에게 카드가 노출된 횟수"
+                          >
+                            목록노출 {item.listExposureCount.toLocaleString()}회
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-5 py-4 whitespace-nowrap">

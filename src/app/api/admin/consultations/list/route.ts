@@ -30,7 +30,8 @@ export async function GET(request: Request) {
       ];
     }
 
-    const [items, totalCount] = await Promise.all([
+    const pendingWhere = { ...where, status: 'PENDING' };
+    const [items, totalCount, pendingCount] = await Promise.all([
       prisma.consultation.findMany({ 
         where, 
         orderBy: { createdAt: 'desc' }, 
@@ -38,11 +39,13 @@ export async function GET(request: Request) {
         take: limit 
       }),
       prisma.consultation.count({ where }),
+      prisma.consultation.count({ where: pendingWhere }),
     ]);
 
     return NextResponse.json({ 
       items, 
-      totalCount, 
+      totalCount,
+      pendingCount,
       totalPages: Math.ceil(totalCount / limit) 
     });
   } catch (error) {

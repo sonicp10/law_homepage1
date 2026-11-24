@@ -277,6 +277,9 @@ export default function AdminDashboard() {
 
   const getTodayVisitors = () => {
     if (!stats) return [];
+    if (Array.isArray((stats.recent as any)?.todayVisitors)) {
+      return (stats.recent as any).todayVisitors;
+    }
     const todayStr = getKoreaTodayStr();
     return stats.recent.consultations.filter((item: any) => 
       item.type === 'VISIT' && 

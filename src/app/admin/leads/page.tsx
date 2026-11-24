@@ -44,6 +44,7 @@ export default function AdminLeadsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [total, setTotal] = useState(0);
+  const [totalPendingCount, setTotalPendingCount] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -61,10 +62,11 @@ export default function AdminLeadsPage() {
         ...(statusFilter && { status: statusFilter }),
         ...(q.trim() && { search: q.trim() }),
       });
-      const res = await fetch(`/api/admin/leads?${params}`);
+      const res = await fetch(`/api/admin/leads?${params}`, { cache: 'no-store' });
       const data = await res.json();
       setItems(data.items || []);
       setTotal(data.totalCount || 0);
+      setTotalPendingCount(typeof data.pendingCount === 'number' ? data.pendingCount : null);
       setTotalPages(data.totalPages || 1);
       
       // 모달이 열려있는 상태라면 최신 데이터로 모달 상태 갱신
@@ -96,11 +98,12 @@ export default function AdminLeadsPage() {
 
   const changeStatus = async (id: string, status: string) => {
     try {
-      await fetch(`/api/admin/leads/${id}`, {
+      const res = await fetch(`/api/admin/leads/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
+      if (!res.ok) throw new Error();
       setSelectedLead(prev => prev && prev.id === id ? { ...prev, status } : prev);
       fetchData(true);
     } catch { 
@@ -148,7 +151,7 @@ export default function AdminLeadsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const pendingCount = items.filter(it => it.status === 'PENDING').length;
+  const pendingCount = totalPendingCount ?? items.filter(it => it.status === 'PENDING').length;
 
   return (
     <div className="space-y-6">
@@ -159,7 +162,7 @@ export default function AdminLeadsPage() {
             <span>📌</span> 빠른 상담 (리드) 관리
           </h1>
           <p className="text-sm text-[var(--primary)]/60 mt-1">
-            총 <span className="font-bold text-[#A67C52]">{total}건</span>의 상담 신청 (현재 페이지 대기: {pendingCount}건) | 행을 클릭하면 자가진단 상세 내역을 조회할 수 있습니다.
+            총 <span className="font-bold text-[#A67C52]">{total}건</span>의 상담 신청 (전체 대기: <span className="font-bold text-amber-700">{pendingCount}건</span>) | 행을 클릭하면 자가진단 상세 내역을 조회할 수 있습니다.
           </p>
         </div>
 

@@ -106,6 +106,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       ...post,
       prevPost: prevPost ? { id: prevPost.id, title: prevPost.title, createdAt: prevPost.createdAt } : null,
       nextPost: nextPost ? { id: nextPost.id, title: nextPost.title, createdAt: nextPost.createdAt } : null,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     });
     if (!shouldSkipIncrement) {
       const updatedViewed = [...viewedIds.filter(v => v !== id), id].slice(-25).join(',');

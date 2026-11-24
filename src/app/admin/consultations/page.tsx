@@ -46,6 +46,7 @@ export default function AdminConsultationsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [totalPendingCount, setTotalPendingCount] = useState<number | null>(null);
 
   // 상세 모달 상태
   const [selectedItem, setSelectedItem] = useState<Consultation | null>(null);
@@ -64,10 +65,11 @@ export default function AdminConsultationsPage() {
         ...(statusFilter && { status: statusFilter }),
         ...(q.trim() && { search: q.trim() }),
       });
-      const res = await fetch(`/api/admin/consultations/list?${params}`);
+      const res = await fetch(`/api/admin/consultations/list?${params}`, { cache: 'no-store' });
       const data = await res.json();
       setItems(data.items || []);
       setTotal(data.totalCount || 0);
+      setTotalPendingCount(typeof data.pendingCount === 'number' ? data.pendingCount : null);
       setTotalPages(data.totalPages || 1);
 
       if (selectedItem) {
@@ -154,7 +156,7 @@ export default function AdminConsultationsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const pendingCount = items.filter(it => it.status === 'PENDING').length;
+  const pendingCount = totalPendingCount ?? items.filter(it => it.status === 'PENDING').length;
 
   return (
     <div className="space-y-6">
@@ -165,7 +167,7 @@ export default function AdminConsultationsPage() {
             <span>📞</span> 전화/방문 상담 관리
           </h1>
           <p className="text-sm text-[var(--primary)]/60 mt-1">
-            총 <span className="font-bold text-[#A67C52]">{total}건</span>의 상담 신청이 접수되었습니다. (현재 페이지 대기: {pendingCount}건)
+            총 <span className="font-bold text-[#A67C52]">{total}건</span>의 상담 신청이 접수되었습니다. (전체 대기: <span className="font-bold text-amber-700">{pendingCount}건</span>)
           </p>
         </div>
 

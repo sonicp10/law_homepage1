@@ -27,6 +27,7 @@ export default function AdminBoardPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [total, setTotal] = useState(0);
+  const [totalPendingCount, setTotalPendingCount] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selected, setSelected] = useState<BoardQna | null>(null);
@@ -47,10 +48,11 @@ export default function AdminBoardPage() {
         ...(statusFilter && { status: statusFilter }),
         ...(q.trim() && { search: q.trim() }),
       });
-      const res = await fetch(`/api/board-qna?${params}`);
+      const res = await fetch(`/api/board-qna?${params}`, { cache: 'no-store' });
       const data = await res.json();
       setItems(data.items || []);
       setTotal(data.totalCount || 0);
+      setTotalPendingCount(typeof data.pendingCount === 'number' ? data.pendingCount : null);
       setTotalPages(data.totalPages || 1);
 
       if (selected) {
@@ -128,7 +130,7 @@ export default function AdminBoardPage() {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  const pendingCount = items.filter(it => it.status !== 'ANSWERED').length;
+  const pendingCount = totalPendingCount ?? items.filter(it => it.status !== 'ANSWERED').length;
 
   return (
     <div className="space-y-6">
@@ -139,7 +141,7 @@ export default function AdminBoardPage() {
             <span>💬</span> 게시판 상담 관리
           </h1>
           <p className="text-sm text-[var(--primary)]/60 mt-1">
-            총 <span className="font-bold text-[#A67C52]">{total}건</span>의 1:1 상담 문의 (현재 페이지 미답변: {pendingCount}건)
+            총 <span className="font-bold text-[#A67C52]">{total}건</span>의 1:1 상담 문의 (전체 미답변: <span className="font-bold text-amber-700">{pendingCount}건</span>)
           </p>
         </div>
 

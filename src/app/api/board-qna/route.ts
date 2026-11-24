@@ -40,7 +40,8 @@ export async function GET(request: Request) {
       ];
     }
 
-    const [items, totalCount] = await Promise.all([
+    const pendingWhere = { ...where, status: { not: 'ANSWERED' } };
+    const [items, totalCount, pendingCount] = await Promise.all([
       prisma.boardQna.findMany({
         where,
         orderBy: { createdAt: 'desc' },
@@ -61,6 +62,7 @@ export async function GET(request: Request) {
         },
       }),
       prisma.boardQna.count({ where }),
+      prisma.boardQna.count({ where: pendingWhere }),
     ]);
 
     // 일반 방문자에게는 민감 개인정보 마스킹 및 비밀글 본문 보호
@@ -89,6 +91,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       items: sanitizedItems,
       totalCount,
+      pendingCount,
       totalPages: Math.ceil(totalCount / limit),
     });
   } catch (error) {

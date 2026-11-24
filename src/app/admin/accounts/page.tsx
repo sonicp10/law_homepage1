@@ -88,11 +88,16 @@ export default function AdminAccountsPage() {
   const handleToggleActive = async (id: string, currentStatus: boolean) => {
     if (!confirm(`해당 관리자를 ${currentStatus ? '비활성화' : '활성화'} 하시겠습니까?`)) return;
     try {
-      await fetch(`/api/admin/accounts/${id}`, {
+      const res = await fetch(`/api/admin/accounts/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !currentStatus }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || '상태 변경에 실패했습니다.');
+        return;
+      }
       fetchAdmins();
     } catch (e) {
       alert('오류가 발생했습니다.');
@@ -102,7 +107,12 @@ export default function AdminAccountsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('정말로 이 계정을 삭제하시겠습니까?')) return;
     try {
-      await fetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || '계정 삭제에 실패했습니다.');
+        return;
+      }
       fetchAdmins();
     } catch (e) {
       alert('오류가 발생했습니다.');

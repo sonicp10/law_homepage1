@@ -38,7 +38,7 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
     const fetchPost = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/posts/${params.id}`);
+        const res = await fetch(`/api/posts/${params.id}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Not found');
         const data = await res.json();
         setPost(data);

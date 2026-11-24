@@ -428,6 +428,8 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   const highlightColorInputRef = useRef<HTMLInputElement>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
   const visualHtmlRef = useRef<HTMLDivElement>(null);
+  const splitPreviewRef = useRef<HTMLDivElement>(null);
+  const fullPreviewRef = useRef<HTMLDivElement>(null);
 
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({ uploading: false, current: 0, total: 0 });
   const [isDragOver, setIsDragOver] = useState(false);
@@ -533,6 +535,32 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
       }
     }
   }, [previewMode, isComplexHtml, htmlSource]);
+
+  // 미리보기 영역(HTML 분할 미리보기 및 PC/모바일 미리보기)에서 <script> 및 <button> 인터랙션이 작동하도록 활성화
+  useEffect(() => {
+    const activateScriptsInContainer = (container: HTMLDivElement | null) => {
+      if (!container) return;
+      // 관리자 <form> 안에서 미리보기 버튼 클릭 시 폼이 submit되지 않도록 type="button" 강제 부여
+      const buttons = container.querySelectorAll('button:not([type])');
+      buttons.forEach((btn) => btn.setAttribute('type', 'button'));
+
+      const scripts = container.querySelectorAll('script');
+      scripts.forEach((oldScript) => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach((attr) => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+        newScript.textContent = oldScript.textContent;
+        oldScript.parentNode?.replaceChild(newScript, oldScript);
+      });
+    };
+
+    if (previewMode === 'HTML' && splitHtmlPreview) {
+      activateScriptsInContainer(splitPreviewRef.current);
+    } else if (previewMode === 'DESKTOP' || previewMode === 'MOBILE') {
+      activateScriptsInContainer(fullPreviewRef.current);
+    }
+  }, [previewMode, splitHtmlPreview, htmlSource]);
 
   // ✅ 통합 이미지 업로드 함수 (다중 파일 지원)
   const uploadFiles = useCallback(async (files: File[]) => {
@@ -1579,6 +1607,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
                 <div className="w-full min-h-[460px] max-h-[620px] overflow-y-auto p-6 bg-white text-[#2C3E50] border border-slate-700 rounded-b-xl">
                   {htmlSource && htmlSource !== '<p></p>' ? (
                     <div
+                      ref={splitPreviewRef}
                       className="prose-content"
                       dangerouslySetInnerHTML={{
                         __html: htmlSource.replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
@@ -1668,6 +1697,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
               </div>
             </div>
             <div
+              ref={fullPreviewRef}
               className="prose-content"
               dangerouslySetInnerHTML={{
                 __html: ((isComplexHtml ? htmlSource : editor.getHTML()) || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),

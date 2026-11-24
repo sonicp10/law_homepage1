@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -32,6 +32,7 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -49,6 +50,27 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
     };
     if (params.id) fetchPost();
   }, [params.id]);
+
+  // 본문 HTML 내의 <script> 태그(체크리스트 진단기, 계산기, 인터랙티브 버튼 등)를 브라우저에서 실제 작동하도록 활성화
+  useEffect(() => {
+    if (!post?.content || !contentContainerRef.current) return;
+    const container = contentContainerRef.current;
+
+    // 1. type이 지정되지 않은 <button>에 기본 type="button" 부여
+    const buttons = container.querySelectorAll('button:not([type])');
+    buttons.forEach((btn) => btn.setAttribute('type', 'button'));
+
+    // 2. dangerouslySetInnerHTML로 삽입되어 비활성 상태인 <script> 태그를 실행 가능한 script 노드로 교체
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach((oldScript) => {
+      const newScript = document.createElement('script');
+      Array.from(oldScript.attributes).forEach((attr) => {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode?.replaceChild(newScript, oldScript);
+    });
+  }, [post?.content]);
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -132,8 +154,9 @@ export default function PostDetailClient({ backUrl }: { backUrl: string }) {
         </div>
       )}
 
-      {/* 본문 — Tiptap HTML 렌더링 (빈 단락 <p></p>이 브라우저에서 높이 0으로 붕괴되지 않도록 <p><br /></p>로 보존) */}
+      {/* 본문 — HTML 및 인터랙티브 스크립트 렌더링 (빈 단락 <p></p>이 브라우저에서 높이 0으로 붕괴되지 않도록 <p><br /></p>로 보존) */}
       <div
+        ref={contentContainerRef}
         className="prose-content"
         dangerouslySetInnerHTML={{
           __html: (post.content || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),

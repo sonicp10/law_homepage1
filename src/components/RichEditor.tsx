@@ -334,6 +334,201 @@ const CustomImage = Image.extend({
   },
 });
 
+// ── 외부 HTML 코드 무손실 보존 및 자체 편집기(Tiptap) 완벽 연동용 커스텀 노드뷰 ──
+function RawHtmlBlockNodeView({ node, updateAttributes, deleteNode, editor, getPos }: NodeViewProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [inlineEdit, setInlineEdit] = useState(false);
+  const rawHtml = ((node.attrs as any).html as string) || '';
+
+  // HTML 블록 내부 DOM 및 <script> 활성화
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (document.activeElement === el && inlineEdit) return;
+
+    el.innerHTML = rawHtml;
+
+    const buttons = el.querySelectorAll('button:not([type])');
+    buttons.forEach((btn) => btn.setAttribute('type', 'button'));
+
+    const scripts = el.querySelectorAll('script');
+    scripts.forEach((oldScript) => {
+      const newScript = document.createElement('script');
+      Array.from(oldScript.attributes).forEach((attr) => {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode?.replaceChild(newScript, oldScript);
+    });
+  }, [rawHtml, inlineEdit]);
+
+  // HTML 블록 바로 아래(끝)의 자체 편집기(Tiptap) 문단으로 커서 이동
+  const focusEditorBelow = (insertText?: string) => {
+    if (!editor || typeof getPos !== 'function') return;
+    const pos = getPos();
+    if (typeof pos !== 'number') return;
+    const afterPos = pos + node.nodeSize;
+    const docSize = editor.state.doc.content.size;
+
+    if (insertText) {
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(Math.min(afterPos, docSize), `<p><strong>${insertText}</strong></p><p></p>`)
+        .run();
+    } else if (afterPos >= docSize) {
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(docSize, '<p></p>')
+        .focus('end')
+        .run();
+    } else {
+      editor.chain().focus(afterPos + 1).run();
+    }
+  };
+
+  return (
+    <NodeViewWrapper className="my-4 relative rounded-2xl border-2 border-[#A67C52]/30 bg-white overflow-hidden shadow-xs">
+      {/* 상단 미니 상태 바 */}
+      <div
+        contentEditable={false}
+        className="px-4 py-2 bg-[#FAF9F6] border-b border-[#E8E4D8] flex flex-wrap items-center justify-between gap-2 text-xs select-none"
+      >
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded bg-[#0F172A] text-[#E5C158] text-[10px] font-black">
+            &lt;/&gt; 외부 HTML 블록 연동됨
+          </span>
+          <span className="text-[11px] font-bold text-[#2C3E50]/70">
+            {inlineEdit
+              ? '✍️ 블록 내부 글자 직접 수정 중 (클릭하여 타이핑하세요)'
+              : '디자인·표·스크립트가 보호되고 있습니다. 이 블록 아래에서 자체 편집기로 이어 쓸 수 있습니다.'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setInlineEdit((prev) => !prev);
+            }}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+              inlineEdit
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-white border border-gray-300 text-[#2C3E50] hover:border-[#A67C52]'
+            }`}
+          >
+            {inlineEdit ? '✅ 내부 글자 수정 완료' : '✍️ 블록 내부 글자 수정'}
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (confirm('이 HTML 블록을 삭제하시겠습니까?')) {
+                deleteNode();
+              }
+            }}
+            className="px-2 py-1 rounded-md bg-red-50 hover:bg-red-100 text-red-600 text-[11px] font-bold transition-colors cursor-pointer"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+
+      {/* 실제 HTML 렌더링 영역 */}
+      <div
+        ref={containerRef}
+        contentEditable={inlineEdit}
+        suppressContentEditableWarning
+        onInput={(e) => {
+          if (!inlineEdit) return;
+          const updated = (e.currentTarget as HTMLDivElement).innerHTML;
+          updateAttributes({ html: updated });
+        }}
+        className={`prose-content p-4 sm:p-6 focus:outline-none ${
+          inlineEdit ? 'ring-2 ring-emerald-500/40 bg-emerald-50/10' : ''
+        }`}
+      />
+
+      {/* 하단 자체 편집기 연동 액션 바 (HTML 끝에서 바로 이어쓰기 & 상담문의 문구 원클릭 추가) */}
+      <div
+        contentEditable={false}
+        className="px-4 py-2.5 bg-amber-50/70 border-t border-[#E8E4D8] flex flex-wrap items-center justify-between gap-2 select-none"
+      >
+        <span className="text-[11px] font-bold text-[#8B6840]">
+          💡 아래 빈 영역을 클릭하거나 우측 버튼을 누르면 <strong>홈페이지 자체 편집기(서체·크기·색상·기호)</strong>로 이어서 작성됩니다.
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              focusEditorBelow('☎ 상담 문의 : All About 회생•파산 | 02-6405-6363');
+            }}
+            className="px-3 py-1.5 rounded-lg bg-[#0F172A] hover:bg-[#1E293B] text-[#E5C158] text-[11px] font-extrabold shadow-xs transition-all cursor-pointer"
+          >
+            + &ldquo;☎ 상담 문의 : All About 회생•파산 | 02-6405-6363&rdquo; 바로 넣기
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              focusEditorBelow();
+            }}
+            className="px-3 py-1.5 rounded-lg bg-[#A67C52] hover:bg-[#8B6840] text-white text-[11px] font-extrabold shadow-xs transition-all cursor-pointer"
+          >
+            ↓ HTML 끝에 커서 두고 자체 편집기로 이어쓰기
+          </button>
+        </div>
+      </div>
+    </NodeViewWrapper>
+  );
+}
+
+const RawHtmlBlock = Node.create({
+  name: 'rawHtmlBlock',
+  group: 'block',
+  atom: true,
+  draggable: false,
+  addAttributes() {
+    return {
+      html: {
+        default: '',
+        parseHTML: (element) => {
+          const encoded = element.getAttribute('data-html');
+          if (encoded) {
+            try {
+              return decodeURIComponent(encoded);
+            } catch {
+              return encoded;
+            }
+          }
+          return element.innerHTML || '';
+        },
+        renderHTML: (attributes) => {
+          return {
+            'data-raw-html-block': 'true',
+            'data-html': encodeURIComponent(attributes.html || ''),
+          };
+        },
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'div[data-raw-html-block]' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes(HTMLAttributes)];
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(RawHtmlBlockNodeView);
+  },
+});
+
 interface RichEditorProps {
   value: string;
   onChange: (html: string) => void;
@@ -419,7 +614,60 @@ function isRawHtmlCodeText(text: string): boolean {
 // Tiptap 기본 스키마가 훼손할 수 있는 고급 HTML(div, table, style, section, inline layout 등) 포함 여부 판별
 function hasComplexHtmlStructure(html: string): boolean {
   if (!html) return false;
-  return /<(?:div|table|thead|tbody|tr|td|th|style|section|article|header|footer|aside|nav|figure|figcaption|iframe|svg|details|summary|button)\b/i.test(html);
+  return /<(?:div|table|thead|tbody|tr|td|th|style|section|article|header|footer|aside|nav|figure|figcaption|iframe|svg|details|summary|button|script)\b/i.test(html);
+}
+
+// 외부/저장된 HTML 문자열을 Tiptap 에디터 문서 구조(RawHtmlBlock + 자체 편집 문단)로 변환
+function toTiptapDocHtml(rawHtml: string): string {
+  if (!rawHtml || rawHtml.trim() === '' || rawHtml.trim() === '<p></p>') {
+    return '<p></p>';
+  }
+  const trimmed = rawHtml.trim();
+
+  // 이미 data-raw-html-block 노드 형태인 경우
+  if (trimmed.includes('data-raw-html-block')) {
+    return /<\/div>\s*$/i.test(trimmed) ? `${trimmed}<p></p>` : trimmed;
+  }
+
+  // <!--RAW_HTML_START--> ... <!--RAW_HTML_END--> 마커가 있는 경우 (HTML 블록과 자체 편집기로 이어 쓴 문단이 결합된 상태)
+  if (trimmed.includes('<!--RAW_HTML_START-->')) {
+    let converted = trimmed.replace(
+      /<!--RAW_HTML_START-->([\s\S]*?)<!--RAW_HTML_END-->/g,
+      (_match, inner) => `<div data-raw-html-block="true" data-html="${encodeURIComponent(inner.trim())}"></div>`
+    );
+    if (/<\/div>\s*$/i.test(converted)) {
+      converted += '<p></p>';
+    }
+    return converted;
+  }
+
+  // 마커가 없는 복합 HTML인 경우 (외부에서 처음 붙여넣은 HTML 또는 기존 DB 저장 HTML)
+  if (hasComplexHtmlStructure(trimmed)) {
+    return `<div data-raw-html-block="true" data-html="${encodeURIComponent(trimmed)}"></div><p></p>`;
+  }
+
+  return trimmed;
+}
+
+// Tiptap 에디터의 HTML 출력을 실제 저장용 표준 HTML(원본 HTML 코드 + 자체 편집기 추가 문단)로 역변환
+function fromTiptapDocHtml(editorHtml: string): string {
+  if (!editorHtml) return '';
+  let restored = editorHtml.replace(
+    /<div[^>]*data-raw-html-block="true"[^>]*><\/div>/gi,
+    (fullTag) => {
+      const match = fullTag.match(/data-html="([^"]*)"/i);
+      if (!match || !match[1]) return '';
+      try {
+        const decoded = decodeURIComponent(match[1]);
+        return `<!--RAW_HTML_START-->\n${decoded}\n<!--RAW_HTML_END-->`;
+      } catch {
+        return match[1];
+      }
+    }
+  );
+  // HTML 블록 뒤에 자동으로 붙은 빈 <p></p> 1개만 있고 사용자가 아무 글자도 안 썼을 때는 불필요한 말미 빈 태그 정리
+  restored = restored.replace(/<!--RAW_HTML_END-->\s*<p><\/p>\s*$/i, '<!--RAW_HTML_END-->');
+  return restored;
 }
 
 export default function RichEditor({ value, onChange, placeholder = '내용을 입력하세요...' }: RichEditorProps) {
@@ -427,9 +675,9 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   const textColorInputRef = useRef<HTMLInputElement>(null);
   const highlightColorInputRef = useRef<HTMLInputElement>(null);
   const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const visualHtmlRef = useRef<HTMLDivElement>(null);
   const splitPreviewRef = useRef<HTMLDivElement>(null);
   const fullPreviewRef = useRef<HTMLDivElement>(null);
+  const lastSyncedValueRef = useRef<string>(value || '');
 
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({ uploading: false, current: 0, total: 0 });
   const [isDragOver, setIsDragOver] = useState(false);
@@ -443,26 +691,12 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
 
   const isComplexHtml = hasComplexHtmlStructure(htmlSource);
 
-  // 외부 value prop 변경 시(예: 수정 페이지 초기 로드, 임시저장 불러오기) htmlSource 및 에디터 동기화
-  useEffect(() => {
-    if (value !== undefined && value !== htmlSource) {
-      setHtmlSource(value);
-    }
-  }, [value]);
-
   const showTempNotice = useCallback((msg: string) => {
     setHtmlNotice(msg);
     setTimeout(() => {
       setHtmlNotice(prev => (prev === msg ? '' : prev));
     }, 4500);
   }, []);
-
-  const applyRawHtml = useCallback((rawInput: string, noticeMsg?: string) => {
-    const normalized = cleanAndNormalizeHtml(rawInput);
-    setHtmlSource(normalized);
-    onChange(normalized);
-    if (noticeMsg) showTempNotice(noticeMsg);
-  }, [onChange, showTempNotice]);
 
   const editor = useEditor({
     extensions: [
@@ -473,6 +707,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
         horizontalRule: false, // 기존 내장 hr 비활성화
       }),
       CustomHorizontalRule,
+      RawHtmlBlock,
       Underline,
       TextStyle,
       FontSize,
@@ -485,33 +720,41 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
       Link.configure({ openOnClick: false, autolink: true }),
       Placeholder.configure({ placeholder }),
     ],
-    content: value,
+    content: toTiptapDocHtml(value || ''),
     editorProps: {
       attributes: {
-        class: 'prose-editor min-h-[550px] pt-8 px-6 pb-6 focus:outline-none',
+        class: 'prose-editor min-h-[550px] pt-8 px-6 pb-16 focus:outline-none',
       },
-      // 일반 비주얼 에디터 화면에 생 HTML 코드를 그대로 붙여넣었을 때 텍스트로 깨지지 않고 HTML로 자동 감지·적용
+      // 일반 비주얼 에디터 화면에 생 HTML 코드를 그대로 붙여넣었을 때 텍스트로 깨지지 않고 HTML 블록 + 하단 이어쓰기 문단으로 자동 삽입
       handlePaste: (_view, event) => {
         const plain = event.clipboardData?.getData('text/plain') || '';
         if (isRawHtmlCodeText(plain)) {
           event.preventDefault();
           const normalized = cleanAndNormalizeHtml(plain);
-          setHtmlSource(normalized);
-          onChange(normalized);
           setTimeout(() => {
-            showTempNotice('✅ 붙여넣으신 HTML 코드가 감지되어 디자인과 서식이 그대로 적용되었습니다!');
-          }, 50);
+            if (editor) {
+              editor
+                .chain()
+                .focus()
+                .insertContent([
+                  { type: 'rawHtmlBlock', attrs: { html: normalized } },
+                  { type: 'paragraph' },
+                ])
+                .focus('end')
+                .run();
+            }
+            showTempNotice('✅ 붙여넣으신 HTML 코드가 자체 편집기와 연동되었습니다! 바로 아래에 이어서 글을 작성하실 수 있습니다.');
+          }, 20);
           return true;
         }
         return false;
       },
     },
     onUpdate({ editor }) {
-      // 복합 HTML 모드일 때는 Tiptap이 원본 태그를 덮어쓰지 않도록 보호
-      if (hasComplexHtmlStructure(htmlSource)) return;
-      const html = editor.getHTML();
-      setHtmlSource(html);
-      onChange(html);
+      const serialized = fromTiptapDocHtml(editor.getHTML());
+      lastSyncedValueRef.current = serialized;
+      setHtmlSource(serialized);
+      onChange(serialized);
     },
     // 커서 이동/선택 변경 시 툴바(폰트 크기 등)를 실시간으로 갱신
     onSelectionUpdate() {
@@ -520,21 +763,28 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     immediatelyRender: false,
   });
 
-  // 단순 HTML이 외부에서 로드되었을 때 Tiptap 에디터 내용도 동기화
-  useEffect(() => {
-    if (editor && value && !hasComplexHtmlStructure(value) && editor.getHTML() !== value) {
-      editor.commands.setContent(value, { emitUpdate: false });
+  // HTML/코드 입력창에서 코드를 수정하거나 붙여넣었을 때 자체 편집기(Tiptap)에도 실시간 동기화
+  const applyRawHtml = useCallback((rawInput: string, noticeMsg?: string) => {
+    const normalized = cleanAndNormalizeHtml(rawInput);
+    lastSyncedValueRef.current = normalized;
+    setHtmlSource(normalized);
+    onChange(normalized);
+    if (editor) {
+      editor.commands.setContent(toTiptapDocHtml(normalized), { emitUpdate: false });
     }
-  }, [editor, value]);
+    if (noticeMsg) showTempNotice(noticeMsg);
+  }, [editor, onChange, showTempNotice]);
 
-  // 복합 HTML 비주얼 직접 편집기(contentEditable)에 htmlSource 동기화
+  // 외부 value prop 변경 시(예: 수정 페이지 초기 데이터 로드, 임시저장 불러오기) Tiptap 에디터와 htmlSource 완벽 동기화
   useEffect(() => {
-    if (previewMode === 'EDIT' && isComplexHtml && visualHtmlRef.current) {
-      if (document.activeElement !== visualHtmlRef.current && visualHtmlRef.current.innerHTML !== htmlSource) {
-        visualHtmlRef.current.innerHTML = htmlSource;
+    if (value !== undefined && value !== lastSyncedValueRef.current) {
+      lastSyncedValueRef.current = value;
+      setHtmlSource(value);
+      if (editor) {
+        editor.commands.setContent(toTiptapDocHtml(value), { emitUpdate: false });
       }
     }
-  }, [previewMode, isComplexHtml, htmlSource]);
+  }, [editor, value]);
 
   // 미리보기 영역(HTML 분할 미리보기 및 PC/모바일 미리보기)에서 <script> 및 <button> 인터랙션이 작동하도록 활성화
   useEffect(() => {
@@ -704,25 +954,29 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     }).run();
   }, [editor]);
 
-  // HTML 조각(인용구, 표, 동영상, 템플릿 등)을 현재 상태에 맞게 안전하게 삽입
+  // HTML 조각(인용구, 표, 동영상, 템플릿 등)을 자체 편집기(Tiptap)에 무손실 블록으로 삽입
   const insertHtmlFragment = useCallback((fragment: string) => {
-    if (previewMode === 'HTML' || isComplexHtml) {
+    if (previewMode === 'HTML') {
       const base = htmlSource === '<p></p>' ? '' : htmlSource;
       const nextHtml = base ? `${base}\n${fragment}` : fragment;
-      setHtmlSource(nextHtml);
-      onChange(nextHtml);
+      applyRawHtml(nextHtml);
       return;
     }
-    if (editor && !hasComplexHtmlStructure(fragment)) {
-      editor.chain().focus().insertContent(fragment).run();
+    if (!editor) return;
+    if (hasComplexHtmlStructure(fragment)) {
+      editor
+        .chain()
+        .focus()
+        .insertContent([
+          { type: 'rawHtmlBlock', attrs: { html: fragment } },
+          { type: 'paragraph' },
+        ])
+        .focus('end')
+        .run();
     } else {
-      const base = (editor ? editor.getHTML() : htmlSource) || '';
-      const cleanBase = base === '<p></p>' ? '' : base;
-      const nextHtml = cleanBase ? `${cleanBase}\n${fragment}` : fragment;
-      setHtmlSource(nextHtml);
-      onChange(nextHtml);
+      editor.chain().focus().insertContent(fragment).run();
     }
-  }, [previewMode, isComplexHtml, htmlSource, editor, onChange]);
+  }, [previewMode, htmlSource, editor, applyRawHtml]);
 
   // 네이버 블로그 스타일 인용구 / 말풍선 / 법조문 박스 삽입
   const handleInsertQuoteStyle = useCallback((style: 'classic' | 'center' | 'frame' | 'speech' | 'law') => {
@@ -774,22 +1028,32 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   const handleInsertSymbol = useCallback((sym: string) => {
     if (previewMode === 'HTML') {
       const next = htmlSource + sym;
-      setHtmlSource(next);
-      onChange(next);
-      return;
-    }
-    if (isComplexHtml) {
-      document.execCommand('insertText', false, sym);
-      if (visualHtmlRef.current) {
-        const updated = visualHtmlRef.current.innerHTML;
-        setHtmlSource(updated);
-        onChange(updated);
-      }
+      applyRawHtml(next);
       return;
     }
     if (!editor) return;
     editor.chain().focus().insertContent(sym).run();
-  }, [editor, previewMode, isComplexHtml, htmlSource, onChange]);
+  }, [editor, previewMode, htmlSource, applyRawHtml]);
+
+  // 본문 맨 끝(HTML 블록 아래 자체 편집기 영역)에 상담문의 서명 문구 즉시 삽입
+  const handleInsertContactFooter = useCallback(() => {
+    const contactText = '☎ 상담 문의 : All About 회생•파산 | 02-6405-6363';
+    if (previewMode === 'HTML') {
+      const base = htmlSource === '<p></p>' ? '' : htmlSource;
+      const next = `${base}\n<p><strong>${contactText}</strong></p>`;
+      applyRawHtml(next, '✅ 본문 끝에 상담 문의 문구가 추가되었습니다!');
+      return;
+    }
+    if (!editor) return;
+    const docSize = editor.state.doc.content.size;
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(docSize, `<p><strong>${contactText}</strong></p><p></p>`)
+      .focus('end')
+      .run();
+    showTempNotice('✅ 본문 끝에 상담 문의 문구가 추가되었습니다! 드래그하여 서체·크기·색상을 변경하실 수 있습니다.');
+  }, [editor, previewMode, htmlSource, applyRawHtml, showTempNotice]);
 
   // 프리미엄 서식 템플릿 삽입
   const handleInsertTemplate = useCallback((type: 'success' | 'guide' | 'cta' | 'profile' | 'procedure' | 'qa' | 'compare') => {
@@ -1145,6 +1409,20 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
             )}
           </div>
 
+          {/* 하단 상담문의 문구 원클릭 추가 버튼 */}
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleInsertContactFooter();
+            }}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#FDF8F3] border border-[#A67C52]/40 hover:bg-[#A67C52] hover:text-white text-xs font-extrabold text-[#8B6840] shadow-2xs transition-all cursor-pointer"
+            title='본문 끝에 "☎ 상담 문의 : All About 회생•파산 | 02-6405-6363" 문구를 즉시 추가합니다'
+          >
+            <span>☎</span>
+            <span>상담문의 문구</span>
+          </button>
+
           {/* 우측 끝: 프리미엄 법률 서식 템플릿 & PC/모바일 미리보기 */}
           <div className="flex items-center gap-1.5 ml-auto">
             <select
@@ -1182,11 +1460,12 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
                   type="button"
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    if (m.mode === 'HTML' && !isComplexHtml && editor) {
-                      const currentEditorHtml = editor.getHTML();
-                      if (currentEditorHtml && currentEditorHtml !== '<p></p>') {
-                        setHtmlSource(currentEditorHtml);
-                      }
+                    if (m.mode === 'HTML' && editor) {
+                      const serialized = fromTiptapDocHtml(editor.getHTML());
+                      setHtmlSource(serialized);
+                    } else if (m.mode === 'EDIT' && previewMode === 'HTML' && editor) {
+                      editor.commands.setContent(toTiptapDocHtml(htmlSource), { emitUpdate: false });
+                      setTimeout(() => editor.commands.focus('end'), 50);
                     }
                     setPreviewMode(m.mode);
                   }}
@@ -1566,10 +1845,16 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
               </button>
               <button
                 type="button"
-                onClick={() => setPreviewMode('EDIT')}
+                onClick={() => {
+                  if (editor) {
+                    editor.commands.setContent(toTiptapDocHtml(htmlSource), { emitUpdate: false });
+                    setTimeout(() => editor.commands.focus('end'), 50);
+                  }
+                  setPreviewMode('EDIT');
+                }}
                 className="px-3.5 py-2 rounded-lg bg-white text-[#0F172A] hover:bg-slate-100 text-xs font-black transition-all cursor-pointer shadow-sm"
               >
-                ✅ 적용 후 편집 화면 보기 ➔
+                ✅ 적용 후 자체 편집기로 이어쓰기 ➔
               </button>
             </div>
           </div>
@@ -1624,52 +1909,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
           </div>
         </div>
       ) : previewMode === 'EDIT' ? (
-        isComplexHtml ? (
-          <div>
-            {/* 고급 HTML 디자인 보존 비주얼 직접 편집 안내 바 */}
-            <div className="px-5 py-2.5 bg-amber-50/90 border-b border-amber-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2 text-amber-900 font-bold">
-                <span className="px-2 py-0.5 rounded bg-[#A67C52] text-white text-[10px] font-black">HTML 디자인 보존 모드</span>
-                <span>붙여넣으신 HTML 코드의 레이아웃·표·스타일을 깨뜨리지 않고 아래 화면에서 글자를 직접 클릭해 수정할 수 있습니다.</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('HTML')}
-                  className="px-2.5 py-1 rounded-md bg-[#0F172A] text-[#E5C158] font-bold text-[11px] hover:bg-slate-800 transition-colors cursor-pointer"
-                >
-                  &lt;/&gt; HTML 코드 직접 보기/수정
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (confirm('현재 HTML 코드를 비우고 기본 텍스트 에디터로 초기화하시겠습니까?')) {
-                      setHtmlSource('');
-                      onChange('');
-                      editor.commands.setContent('', { emitUpdate: false });
-                    }
-                  }}
-                  className="px-2.5 py-1 rounded-md bg-white border border-amber-300 text-amber-800 font-bold text-[11px] hover:bg-amber-100 transition-colors cursor-pointer"
-                >
-                  초기화
-                </button>
-              </div>
-            </div>
-            <div
-              ref={visualHtmlRef}
-              contentEditable
-              suppressContentEditableWarning
-              onInput={(e) => {
-                const updated = (e.currentTarget as HTMLDivElement).innerHTML;
-                setHtmlSource(updated);
-                onChange(updated);
-              }}
-              className="prose-content min-h-[550px] pt-8 px-6 pb-16 focus:outline-none"
-            />
-          </div>
-        ) : (
-          <EditorContent editor={editor} />
-        )
+        <EditorContent editor={editor} />
       ) : (
         <div className="bg-gray-100/80 py-8 px-4 min-h-[550px] flex justify-center">
           <div
@@ -1700,7 +1940,7 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
               ref={fullPreviewRef}
               className="prose-content"
               dangerouslySetInnerHTML={{
-                __html: ((isComplexHtml ? htmlSource : editor.getHTML()) || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
+                __html: (htmlSource || fromTiptapDocHtml(editor.getHTML()) || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
               }}
             />
           </div>

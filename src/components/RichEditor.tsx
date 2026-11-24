@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 const BubbleMenuComponent = BubbleMenu as any;
@@ -381,16 +381,86 @@ interface UploadProgress {
   total: number;
 }
 
+// 외부에서 복사한 HTML 코드(마크다운 코드블록 또는 전체 HTML 문서 포함)를 홈페이지 본문용으로 무손실 정규화
+function cleanAndNormalizeHtml(raw: string): string {
+  if (!raw) return '';
+  let cleaned = raw.trim();
+
+  // 1. 앞뒤 마크다운 코드블록 펜스(```html ... ```) 자동 제거
+  cleaned = cleaned.replace(/^```(?:html|HTML|xml)?\s*\r?\n?/i, '').replace(/\r?\n?```\s*$/i, '').trim();
+
+  // 2. <!DOCTYPE html> 또는 <html>...<body> 전체 문서 구조인 경우 <style>과 <body> 내부 콘텐츠를 무손실 추출
+  if (/<html[\s>]/i.test(cleaned) || /<!DOCTYPE\s+html/i.test(cleaned) || /<body[\s>]/i.test(cleaned)) {
+    const styleMatches = cleaned.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || [];
+    const bodyMatch = cleaned.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    if (bodyMatch && bodyMatch[1]) {
+      cleaned = [...styleMatches, bodyMatch[1].trim()].join('\n');
+    } else {
+      cleaned = cleaned
+        .replace(/<!DOCTYPE[^>]*>/gi, '')
+        .replace(/<\/?(?:html|head|meta|title|body)[^>]*>/gi, '')
+        .trim();
+    }
+  }
+
+  return cleaned;
+}
+
+// 클립보드 텍스트가 생 HTML 코드인지 판별
+function isRawHtmlCodeText(text: string): boolean {
+  if (!text) return false;
+  const trimmed = text.trim().replace(/^```(?:html|HTML)?\s*/i, '');
+  return (
+    /^<!DOCTYPE\s+html/i.test(trimmed) ||
+    /^<(?:html|style|div|section|article|table|header|main|aside|figure|blockquote|h[1-6]|p|ul|ol)\b[^>]*>/i.test(trimmed)
+  ) && /<\/[a-zA-Z0-9]+>/.test(trimmed);
+}
+
+// Tiptap 기본 스키마가 훼손할 수 있는 고급 HTML(div, table, style, section, inline layout 등) 포함 여부 판별
+function hasComplexHtmlStructure(html: string): boolean {
+  if (!html) return false;
+  return /<(?:div|table|thead|tbody|tr|td|th|style|section|article|header|footer|aside|nav|figure|figcaption|iframe|svg|details|summary|button)\b/i.test(html);
+}
+
 export default function RichEditor({ value, onChange, placeholder = '내용을 입력하세요...' }: RichEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textColorInputRef = useRef<HTMLInputElement>(null);
   const highlightColorInputRef = useRef<HTMLInputElement>(null);
+  const htmlTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const visualHtmlRef = useRef<HTMLDivElement>(null);
+
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({ uploading: false, current: 0, total: 0 });
   const [isDragOver, setIsDragOver] = useState(false);
   const [showSymbolPalette, setShowSymbolPalette] = useState(false);
-  const [previewMode, setPreviewMode] = useState<'EDIT' | 'DESKTOP' | 'MOBILE'>('EDIT');
+  const [previewMode, setPreviewMode] = useState<'EDIT' | 'HTML' | 'DESKTOP' | 'MOBILE'>('EDIT');
+  const [htmlSource, setHtmlSource] = useState<string>(value || '');
+  const [splitHtmlPreview, setSplitHtmlPreview] = useState<boolean>(true);
+  const [htmlNotice, setHtmlNotice] = useState<string>('');
   // 커서 이동/선택 변경 시 툴바 상태를 강제 갱신하기 위한 카운터
   const [, forceUpdate] = useState(0);
+
+  const isComplexHtml = hasComplexHtmlStructure(htmlSource);
+
+  // 외부 value prop 변경 시(예: 수정 페이지 초기 로드, 임시저장 불러오기) htmlSource 및 에디터 동기화
+  useEffect(() => {
+    if (value !== undefined && value !== htmlSource) {
+      setHtmlSource(value);
+    }
+  }, [value]);
+
+  const showTempNotice = useCallback((msg: string) => {
+    setHtmlNotice(msg);
+    setTimeout(() => {
+      setHtmlNotice(prev => (prev === msg ? '' : prev));
+    }, 4500);
+  }, []);
+
+  const applyRawHtml = useCallback((rawInput: string, noticeMsg?: string) => {
+    const normalized = cleanAndNormalizeHtml(rawInput);
+    setHtmlSource(normalized);
+    onChange(normalized);
+    if (noticeMsg) showTempNotice(noticeMsg);
+  }, [onChange, showTempNotice]);
 
   const editor = useEditor({
     extensions: [
@@ -418,9 +488,28 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
       attributes: {
         class: 'prose-editor min-h-[550px] pt-8 px-6 pb-6 focus:outline-none',
       },
+      // 일반 비주얼 에디터 화면에 생 HTML 코드를 그대로 붙여넣었을 때 텍스트로 깨지지 않고 HTML로 자동 감지·적용
+      handlePaste: (_view, event) => {
+        const plain = event.clipboardData?.getData('text/plain') || '';
+        if (isRawHtmlCodeText(plain)) {
+          event.preventDefault();
+          const normalized = cleanAndNormalizeHtml(plain);
+          setHtmlSource(normalized);
+          onChange(normalized);
+          setTimeout(() => {
+            showTempNotice('✅ 붙여넣으신 HTML 코드가 감지되어 디자인과 서식이 그대로 적용되었습니다!');
+          }, 50);
+          return true;
+        }
+        return false;
+      },
     },
     onUpdate({ editor }) {
-      onChange(editor.getHTML());
+      // 복합 HTML 모드일 때는 Tiptap이 원본 태그를 덮어쓰지 않도록 보호
+      if (hasComplexHtmlStructure(htmlSource)) return;
+      const html = editor.getHTML();
+      setHtmlSource(html);
+      onChange(html);
     },
     // 커서 이동/선택 변경 시 툴바(폰트 크기 등)를 실시간으로 갱신
     onSelectionUpdate() {
@@ -428,6 +517,22 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     },
     immediatelyRender: false,
   });
+
+  // 단순 HTML이 외부에서 로드되었을 때 Tiptap 에디터 내용도 동기화
+  useEffect(() => {
+    if (editor && value && !hasComplexHtmlStructure(value) && editor.getHTML() !== value) {
+      editor.commands.setContent(value, { emitUpdate: false });
+    }
+  }, [editor, value]);
+
+  // 복합 HTML 비주얼 직접 편집기(contentEditable)에 htmlSource 동기화
+  useEffect(() => {
+    if (previewMode === 'EDIT' && isComplexHtml && visualHtmlRef.current) {
+      if (document.activeElement !== visualHtmlRef.current && visualHtmlRef.current.innerHTML !== htmlSource) {
+        visualHtmlRef.current.innerHTML = htmlSource;
+      }
+    }
+  }, [previewMode, isComplexHtml, htmlSource]);
 
   // ✅ 통합 이미지 업로드 함수 (다중 파일 지원)
   const uploadFiles = useCallback(async (files: File[]) => {
@@ -571,9 +676,28 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     }).run();
   }, [editor]);
 
+  // HTML 조각(인용구, 표, 동영상, 템플릿 등)을 현재 상태에 맞게 안전하게 삽입
+  const insertHtmlFragment = useCallback((fragment: string) => {
+    if (previewMode === 'HTML' || isComplexHtml) {
+      const base = htmlSource === '<p></p>' ? '' : htmlSource;
+      const nextHtml = base ? `${base}\n${fragment}` : fragment;
+      setHtmlSource(nextHtml);
+      onChange(nextHtml);
+      return;
+    }
+    if (editor && !hasComplexHtmlStructure(fragment)) {
+      editor.chain().focus().insertContent(fragment).run();
+    } else {
+      const base = (editor ? editor.getHTML() : htmlSource) || '';
+      const cleanBase = base === '<p></p>' ? '' : base;
+      const nextHtml = cleanBase ? `${cleanBase}\n${fragment}` : fragment;
+      setHtmlSource(nextHtml);
+      onChange(nextHtml);
+    }
+  }, [previewMode, isComplexHtml, htmlSource, editor, onChange]);
+
   // 네이버 블로그 스타일 인용구 / 말풍선 / 법조문 박스 삽입
   const handleInsertQuoteStyle = useCallback((style: 'classic' | 'center' | 'frame' | 'speech' | 'law') => {
-    if (!editor) return;
     let html = '';
     if (style === 'classic') {
       html = `<blockquote style="border-left: 4px solid #A67C52; padding: 1em 1.5em; background: #FDF8F3; border-radius: 0 12px 12px 0; margin: 1.5em 0; color: #2C3E50;"><p>중요한 핵심 내용이나 의뢰인의 사연을 이곳에 입력하세요.</p></blockquote><p></p>`;
@@ -586,12 +710,11 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     } else if (style === 'law') {
       html = `<div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-left: 5px solid #2C3E50; border-radius: 12px; padding: 1.4em 1.6em; margin: 1.5em 0;"><p style="margin: 0 0 0.5em; font-weight: 800; color: #2C3E50; font-size: 0.95em;">⚖️ 관련 법률 근거 (채무자 회생 및 파산에 관한 법률)</p><p style="margin: 0; font-family: 'MaruBuri', 'Nanum Myeongjo', serif; font-size: 0.95em; color: #334155; line-height: 1.8;">재정적 어려움으로 인하여 파탄에 직면해 있는 채무자에 대하여 채권자 등 이해관계인의 법률관계를 조정하여 채무자의 효율적 회생과 채권자의 이익을 도모함을 목적으로 한다.</p></div><p></p>`;
     }
-    editor.chain().focus().insertContent(html).run();
-  }, [editor]);
+    insertHtmlFragment(html);
+  }, [insertHtmlFragment]);
 
   // 네이버 블로그 스타일 표(Table) 빠른 삽입
   const handleInsertTable = useCallback((preset: '2x3' | '3x4' | 'debt' | 'docs') => {
-    if (!editor) return;
     let html = '';
     if (preset === '2x3') {
       html = `<table style="width:100%; border-collapse:collapse; margin:1.5em 0; font-size:0.95em;"><thead><tr style="background:#FAF9F6;"><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50; width:35%;">항목</th><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50;">상세 내용</th></tr></thead><tbody><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">구분 1</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">내용을 입력하세요</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">구분 2</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">내용을 입력하세요</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">구분 3</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">내용을 입력하세요</td></tr></tbody></table><p></p>`;
@@ -602,12 +725,11 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
     } else if (preset === 'docs') {
       html = `<table style="width:100%; border-collapse:collapse; margin:1.5em 0; font-size:0.95em;"><thead><tr style="background:#FAF9F6;"><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50; width:30%;">구분</th><th style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold; color:#2C3E50;">필수 준비 서류 목록</th></tr></thead><tbody><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">인적 서류</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">주민등록등본·초본, 가족관계증명서, 혼인관계증명서, 신분증 사본</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">소득 증빙</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">재직증명서(또는 사업자등록증), 근로소득원천징수영수증, 급여통장 거래내역</td></tr><tr><td style="border:1px solid #E8E4D8; padding:10px 14px; font-weight:bold;">재산 증빙</td><td style="border:1px solid #E8E4D8; padding:10px 14px;">임대차계약서, 지방세 세목별 과세증명서, 자동차등록원부, 보험 해약환급금 증명서</td></tr></tbody></table><p></p>`;
     }
-    editor.chain().focus().insertContent(html).run();
-  }, [editor]);
+    insertHtmlFragment(html);
+  }, [insertHtmlFragment]);
 
   // 유튜브 / 동영상 임베드 삽입
   const handleInsertVideo = useCallback(() => {
-    if (!editor) return;
     const rawUrl = window.prompt('유튜브 영상 주소(URL)를 입력하세요:\n예: https://www.youtube.com/watch?v=xxxx 또는 https://youtu.be/xxxx');
     if (!rawUrl || !rawUrl.trim()) return;
     const trimmed = rawUrl.trim();
@@ -617,18 +739,32 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
       embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
     }
     const html = `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; max-width:100%; border-radius:16px; margin:1.8em 0; box-shadow:0 8px 24px rgba(0,0,0,0.1);"><iframe src="${embedUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe></div><p></p>`;
-    editor.chain().focus().insertContent(html).run();
-  }, [editor]);
+    insertHtmlFragment(html);
+  }, [insertHtmlFragment]);
 
   // 법률 특수기호 / 이모지 빠른 삽입
   const handleInsertSymbol = useCallback((sym: string) => {
+    if (previewMode === 'HTML') {
+      const next = htmlSource + sym;
+      setHtmlSource(next);
+      onChange(next);
+      return;
+    }
+    if (isComplexHtml) {
+      document.execCommand('insertText', false, sym);
+      if (visualHtmlRef.current) {
+        const updated = visualHtmlRef.current.innerHTML;
+        setHtmlSource(updated);
+        onChange(updated);
+      }
+      return;
+    }
     if (!editor) return;
     editor.chain().focus().insertContent(sym).run();
-  }, [editor]);
+  }, [editor, previewMode, isComplexHtml, htmlSource, onChange]);
 
   // 프리미엄 서식 템플릿 삽입
   const handleInsertTemplate = useCallback((type: 'success' | 'guide' | 'cta' | 'profile' | 'procedure' | 'qa' | 'compare') => {
-    if (!editor) return;
     let html = '';
     if (type === 'success') {
       html = `<blockquote class="template-success-story" style="border-left: 4px solid #A67C52; padding: 1.5em; background: #FDF8F3; border-radius: 12px; margin: 1.5em 0;">
@@ -741,14 +877,39 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
   </table>
 </div><p></p>`;
     }
-    editor.chain().focus().insertContent(html).run();
-  }, [editor]);
+    insertHtmlFragment(html);
+  }, [insertHtmlFragment]);
+
+  // 클립보드에서 HTML 코드 바로 읽어와 적용
+  const handlePasteFromClipboard = useCallback(async () => {
+    try {
+      const clipText = await navigator.clipboard.readText();
+      if (!clipText || !clipText.trim()) {
+        alert('클립보드에 복사된 텍스트나 HTML 코드가 없습니다.');
+        return;
+      }
+      applyRawHtml(clipText, '✅ 클립보드의 HTML 코드가 입력 영역에 그대로 붙여넣어졌습니다!');
+    } catch {
+      alert('브라우저 권한 설정으로 인해 자동 붙여넣기가 제한되었습니다. 아래 코드 입력창을 클릭한 후 Ctrl+V 로 직접 붙여넣어 주세요.');
+      htmlTextareaRef.current?.focus();
+    }
+  }, [applyRawHtml]);
 
   if (!editor) return null;
 
-  const wordCount = editor.getText().trim().split(/\s+/).filter(Boolean).length;
-  const charCount = editor.getText().length;
-  const charCountWithoutSpaces = editor.getText().replace(/\s/g, '').length;
+  // HTML 태그 및 <style> 블록을 제외한 순수 본문 텍스트 기준으로 글자수 계산
+  const plainTextForCount = (isComplexHtml || previewMode === 'HTML')
+    ? htmlSource
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    : editor.getText();
+  const wordCount = plainTextForCount.trim().split(/\s+/).filter(Boolean).length;
+  const charCount = plainTextForCount.length;
+  const charCountWithoutSpaces = plainTextForCount.replace(/\s/g, '').length;
 
   return (
     <div
@@ -980,10 +1141,11 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
               <option value="compare">📊 제도 신청 전·후 비교표</option>
             </select>
 
-            {/* 네이버 블로그 우측 도크 스타일: 편집 / PC 미리보기 / 모바일 미리보기 전환 */}
+            {/* 네이버 블로그 우측 도크 스타일: 편집 / HTML 코드 입력 / PC 미리보기 / 모바일 미리보기 전환 */}
             <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 shadow-2xs">
               {[
                 { mode: 'EDIT' as const, label: '✍️ 편집' },
+                { mode: 'HTML' as const, label: '</> HTML/코드 입력' },
                 { mode: 'DESKTOP' as const, label: '🖥️ PC화면' },
                 { mode: 'MOBILE' as const, label: '📱 모바일' },
               ].map((m) => (
@@ -992,11 +1154,21 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
                   type="button"
                   onMouseDown={(e) => {
                     e.preventDefault();
+                    if (m.mode === 'HTML' && !isComplexHtml && editor) {
+                      const currentEditorHtml = editor.getHTML();
+                      if (currentEditorHtml && currentEditorHtml !== '<p></p>') {
+                        setHtmlSource(currentEditorHtml);
+                      }
+                    }
                     setPreviewMode(m.mode);
                   }}
-                  className={`px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                     previewMode === m.mode
-                      ? 'bg-[#2C3E50] text-white shadow-xs'
+                      ? m.mode === 'HTML'
+                        ? 'bg-[#0F172A] text-[#E5C158] shadow-xs ring-1 ring-[#C5A059]/50'
+                        : 'bg-[#2C3E50] text-white shadow-xs'
+                      : m.mode === 'HTML'
+                      ? 'text-[#A67C52] bg-[#A67C52]/10 hover:bg-[#A67C52]/20'
                       : 'text-gray-500 hover:text-[#2C3E50]'
                   }`}
                 >
@@ -1306,9 +1478,169 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
         onChange={(e) => handleHighlight(e.target.value)}
       />
 
-      {/* ── 에디터 본문 & PC/모바일 실시간 미리보기 ──────────────────────── */}
-      {previewMode === 'EDIT' ? (
-        <EditorContent editor={editor} />
+      {/* ── HTML 적용 알림 배너 ──────────────────── */}
+      {htmlNotice && (
+        <div className="mx-4 mt-3 px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between shadow-xs">
+          <span>{htmlNotice}</span>
+          <button type="button" onClick={() => setHtmlNotice('')} className="text-emerald-600 hover:text-emerald-900 font-black ml-3">✕</button>
+        </div>
+      )}
+
+      {/* ── 에디터 본문 & HTML/코드 입력 영역 & PC/모바일 실시간 미리보기 ──────────────────────── */}
+      {previewMode === 'HTML' ? (
+        <div className="p-4 sm:p-6 bg-[#0F172A] text-white space-y-4 min-h-[560px]">
+          {/* 상단 안내 및 원클릭 액션 바 */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-[#1E293B] border border-[#C5A059]/40 rounded-xl p-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-[#C5A059] text-[#0F172A] text-[11px] font-black uppercase">HTML / 코드 입력 영역</span>
+                <span className="text-xs sm:text-sm font-extrabold text-[#E5C158]">
+                  만들어진 HTML 코드를 복사해 홈페이지 편집기의 HTML/코드 입력 영역에 그대로 붙여넣으시면 됩니다.
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                외부에서 제작된 HTML 코드(표, 박스 디자인, 인라인 CSS, &lt;style&gt; 태그 포함)가 태그 손실 없이 100% 원형 그대로 반영됩니다.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="px-3.5 py-2 rounded-lg bg-[#C5A059] hover:bg-[#D4AF6A] text-[#0F172A] text-xs font-black flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+              >
+                <span>📋</span>
+                <span>클립보드 HTML 바로 붙여넣기</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSplitHtmlPreview(prev => !prev)}
+                className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                  splitHtmlPreview
+                    ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                    : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                {splitHtmlPreview ? '👁️ 우측 실시간 미리보기 켜짐' : '👁️ 우측 실시간 미리보기 켜기'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('입력된 HTML 코드를 모두 비우시겠습니까?')) {
+                    setHtmlSource('');
+                    onChange('');
+                    editor.commands.setContent('', { emitUpdate: false });
+                  }
+                }}
+                className="px-3 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-400/40 text-red-200 text-xs font-bold transition-all cursor-pointer"
+              >
+                🧹 코드 비우기
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode('EDIT')}
+                className="px-3.5 py-2 rounded-lg bg-white text-[#0F172A] hover:bg-slate-100 text-xs font-black transition-all cursor-pointer shadow-sm"
+              >
+                ✅ 적용 후 편집 화면 보기 ➔
+              </button>
+            </div>
+          </div>
+
+          {/* 코드 입력창 & 실시간 렌더링 분할 뷰 */}
+          <div className={`grid grid-cols-1 ${splitHtmlPreview ? 'lg:grid-cols-2' : ''} gap-4`}>
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between px-3 py-2 bg-slate-900 border border-slate-700 border-b-0 rounded-t-xl text-[11px] text-slate-400 font-mono">
+                <span>&lt;/&gt; HTML SOURCE CODE (여기에 Ctrl+V 로 붙여넣으세요)</span>
+                <span>{htmlSource.length.toLocaleString()} bytes</span>
+              </div>
+              <textarea
+                ref={htmlTextareaRef}
+                value={htmlSource === '<p></p>' ? '' : htmlSource}
+                onChange={(e) => applyRawHtml(e.target.value)}
+                onPaste={(e) => {
+                  const pasted = e.clipboardData?.getData('text/plain');
+                  if (pasted && (pasted.includes('```') || /<!DOCTYPE|<html|<body/i.test(pasted))) {
+                    e.preventDefault();
+                    applyRawHtml(pasted, '✅ HTML 코드가 홈페이지 규격에 맞게 자동 정리되어 적용되었습니다!');
+                  }
+                }}
+                placeholder={`<!-- 만들어진 HTML 코드를 복사해 이 영역에 그대로 붙여넣으시면 됩니다 (Ctrl+V) -->\n<div style="padding: 24px; border-radius: 16px; background: #FAF9F6;">\n  <h2>제목을 입력하세요</h2>\n  <p>본문 내용을 입력하세요.</p>\n</div>`}
+                spellCheck={false}
+                className="w-full min-h-[460px] p-4 bg-slate-950 text-emerald-300 font-mono text-xs sm:text-[13px] leading-relaxed border border-slate-700 rounded-b-xl focus:outline-none focus:border-[#C5A059] resize-y"
+              />
+            </div>
+
+            {splitHtmlPreview && (
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-800 border border-slate-700 border-b-0 rounded-t-xl text-[11px] text-slate-300 font-bold">
+                  <span>🖥️ 실시간 홈페이지 렌더링 미리보기</span>
+                  <span className="text-[#E5C158]">실제 게시글과 100% 동일</span>
+                </div>
+                <div className="w-full min-h-[460px] max-h-[620px] overflow-y-auto p-6 bg-white text-[#2C3E50] border border-slate-700 rounded-b-xl">
+                  {htmlSource && htmlSource !== '<p></p>' ? (
+                    <div
+                      className="prose-content"
+                      dangerouslySetInnerHTML={{
+                        __html: htmlSource.replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
+                      }}
+                    />
+                  ) : (
+                    <div className="h-full min-h-[380px] flex items-center justify-center text-gray-400 text-xs font-medium text-center">
+                      왼쪽 HTML/코드 입력 영역에 HTML 코드를 붙여넣으면<br />이곳에 실제 홈페이지 화면이 즉시 표시됩니다.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : previewMode === 'EDIT' ? (
+        isComplexHtml ? (
+          <div>
+            {/* 고급 HTML 디자인 보존 비주얼 직접 편집 안내 바 */}
+            <div className="px-5 py-2.5 bg-amber-50/90 border-b border-amber-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 text-amber-900 font-bold">
+                <span className="px-2 py-0.5 rounded bg-[#A67C52] text-white text-[10px] font-black">HTML 디자인 보존 모드</span>
+                <span>붙여넣으신 HTML 코드의 레이아웃·표·스타일을 깨뜨리지 않고 아래 화면에서 글자를 직접 클릭해 수정할 수 있습니다.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('HTML')}
+                  className="px-2.5 py-1 rounded-md bg-[#0F172A] text-[#E5C158] font-bold text-[11px] hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  &lt;/&gt; HTML 코드 직접 보기/수정
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('현재 HTML 코드를 비우고 기본 텍스트 에디터로 초기화하시겠습니까?')) {
+                      setHtmlSource('');
+                      onChange('');
+                      editor.commands.setContent('', { emitUpdate: false });
+                    }
+                  }}
+                  className="px-2.5 py-1 rounded-md bg-white border border-amber-300 text-amber-800 font-bold text-[11px] hover:bg-amber-100 transition-colors cursor-pointer"
+                >
+                  초기화
+                </button>
+              </div>
+            </div>
+            <div
+              ref={visualHtmlRef}
+              contentEditable
+              suppressContentEditableWarning
+              onInput={(e) => {
+                const updated = (e.currentTarget as HTMLDivElement).innerHTML;
+                setHtmlSource(updated);
+                onChange(updated);
+              }}
+              className="prose-content min-h-[550px] pt-8 px-6 pb-16 focus:outline-none"
+            />
+          </div>
+        ) : (
+          <EditorContent editor={editor} />
+        )
       ) : (
         <div className="bg-gray-100/80 py-8 px-4 min-h-[550px] flex justify-center">
           <div
@@ -1318,18 +1650,27 @@ export default function RichEditor({ value, onChange, placeholder = '내용을 �
           >
             <div className="mb-4 pb-3 border-b border-gray-100 flex items-center justify-between text-xs text-gray-400 font-bold">
               <span>{previewMode === 'MOBILE' ? '📱 모바일 화면 미리보기 (390px 기준)' : '🖥️ PC 상세 화면 미리보기'}</span>
-              <button
-                type="button"
-                onClick={() => setPreviewMode('EDIT')}
-                className="text-[#A67C52] hover:underline"
-              >
-                편집 화면으로 돌아가기 ➔
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('HTML')}
+                  className="text-[#0F172A] hover:underline"
+                >
+                  &lt;/&gt; HTML 코드 입력으로 이동
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('EDIT')}
+                  className="text-[#A67C52] hover:underline"
+                >
+                  편집 화면으로 돌아가기 ➔
+                </button>
+              </div>
             </div>
             <div
               className="prose-content"
               dangerouslySetInnerHTML={{
-                __html: (editor.getHTML() || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
+                __html: ((isComplexHtml ? htmlSource : editor.getHTML()) || '').replace(/<p(\s[^>]*)?><\/p>/gi, '<p$1><br /></p>'),
               }}
             />
           </div>

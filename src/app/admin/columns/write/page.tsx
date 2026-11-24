@@ -363,13 +363,16 @@ function WriteColumnContent() {
 
         {/* 본문 에디터 카드 */}
         <div className="bg-white rounded-2xl shadow-sm border border-[var(--border)]">
-          <div className="px-6 py-4 border-b border-[var(--border)] bg-gray-50/50">
+          <div className="px-6 py-4 border-b border-[var(--border)] bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h2 className="text-sm font-bold text-[var(--primary)]/50 uppercase tracking-widest">본문 편집 *</h2>
+            <p className="text-xs font-bold text-[#A67C52] bg-[#A67C52]/10 px-3 py-1.5 rounded-lg border border-[#A67C52]/20">
+              💡 만들어진 HTML 코드를 복사해 홈페이지 편집기의 <strong className="underline">[&lt;/&gt; HTML/코드 입력]</strong> 영역에 그대로 붙여넣으시면 됩니다.
+            </p>
           </div>
           <RichEditor
             value={form.content}
             onChange={(html) => setForm(prev => ({ ...prev, content: html }))}
-            placeholder="본문 내용을 자유롭게 작성하세요. 서식, 이미지, 링크 등 다양한 기능을 활용하세요."
+            placeholder="본문 내용을 자유롭게 작성하세요. 서식, 이미지, 링크 또는 [</> HTML/코드 입력] 탭에서 만들어진 HTML 코드를 그대로 붙여넣으실 수 있습니다."
           />
         </div>
 

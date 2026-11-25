@@ -100,7 +100,7 @@ export default function HomePage() {
       <LandingPostSection 
         category="SUCCESS_STORY" 
         title="성공사례" 
-        subtitle="법무사 김형근 사무소가 함께 이뤄낸 소중한 재기 성공 사례들입니다."
+        subtitle="All About 회생파산이 함께 이뤄낸 소중한 재기 성공 사례들입니다."
         href="/s_story"
         limit={6}
       />

@@ -166,7 +166,7 @@ export default function Header() {
                   <span className="text-[32px] font-black text-[#A67C52]">숨</span>
                   <p className="text-[20px] font-extrabold text-[var(--primary)]">쉴 수 있는 공간</p>
                 </div>
-                <p className="text-[18px] font-black text-[var(--primary)]">법무사 <span className="text-[#A67C52]">김형근</span> 사무소</p>
+                <p className="text-[18px] font-black text-[var(--primary)]">All About <span className="text-[#A67C52]">회생파산</span></p>
               </div>
             </div>
 
